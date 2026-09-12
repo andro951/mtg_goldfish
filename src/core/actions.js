@@ -79,6 +79,7 @@ export const actionMethods = {
       this.state.reserveAccess = !!action.enabled; this.record('HARNESS_RESERVE_ACCESS', { enabled: this.state.reserveAccess }); return;
     }
     if (type.startsWith('DEBUG_')) return this.debugAction(action);
+    if (type === 'REVISE_DRAFT_INPUT') return this.reviseDraftInput(action);
     if (this.state.pending || this.state.actionDraft) {
       if (type === 'ACTIVATE_ABILITY' && ['payment', 'effectPayment'].includes(this.state.pending?.kind)) return this.beginPaymentManaAbility(action);
       requireRule(false, 'Finish the highlighted choice before taking another action.', 'CHOICE_PENDING');
@@ -225,12 +226,33 @@ export const actionMethods = {
       const mana = typeof definition.cost === 'function' ? definition.cost(this, source, context) : definition.cost || '';
       if (mana.includes('/P}')) specs.push({ key: 'phyrexian', type: 'option', label: 'Phyrexian mana', options: [{ value: 'mana', label: 'Pay colored mana' }, { value: 'life', label: 'Pay 2 life instead' }] });
     }
+    // Announcement inputs (modes, targets, X, etc.) are chosen before costs.
     specs.push(...list(definition.inputs, this, source, context));
     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
       if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
       specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
     }
+    // Effect choices that are not modes/targets belong after additional-cost
+    // selections. This keeps UX/rules sequencing clear for abilities such as
+    // Scene of the Crime: choose the creature paying the tap cost, then choose
+    // which color the effect will produce.
+    specs.push(...list(definition.effectInputs, this, source, context));
     return specs;
+  },
+  reviseDraftInput(action) {
+    const draft = this.state.actionDraft;
+    requireRule(draft && this.state.pending?.kind === 'draft', 'There is no draft choice to revise.', 'NO_DRAFT_CHOICE');
+    const key = String(action.key || '');
+    const specs = this.inputSpecs(draft), index = specs.findIndex(spec => spec.key === key);
+    requireRule(index >= 0, 'That earlier choice cannot be revised.', 'CHOICE_NOT_REVISABLE');
+    // Remove the requested choice and every dependent choice after it. Costs
+    // have not been paid yet while a draft decision is pending, so this is a
+    // safe rewind within the same transaction rather than an undo action.
+    for (const spec of specs.slice(index)) delete draft.context.inputs[spec.key];
+    draft.targets = [];
+    this.state.pending = null;
+    this.record('DRAFT_CHOICE_REVISED', { key });
+    this.advanceDraft();
   },
   materializeInput(spec, context) {
     const input = clone(spec); input.min ??= 1; input.max ??= input.min;

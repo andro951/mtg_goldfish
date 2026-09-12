@@ -31,5 +31,6 @@
   "checkpoints/058-deck-editor-browser-menus.json": "f7737db5b967fe8461219d3cfe38f5b4b491bac9f27e3242bd6e614ef8335435",
   "checkpoints/059-deck-editor-browser-version.json": "8208a6112157e0c0896530afa0463cfd53b78e58488f0d8b4561296262298bf5",
   "checkpoints/060-deck-editor-portable-version.json": "c1d3a0b312247e99e73311227f689f071cfc0cefc49f26563de0d88651c90ad9",
-  "checkpoints/062-deck-editor-package-gate.json": "3b23eea709561d48ccc21f2195774394ff96181dffa9e4d903dddbaaea45d6c5"
+  "checkpoints/062-deck-editor-package-gate.json": "3b23eea709561d48ccc21f2195774394ff96181dffa9e4d903dddbaaea45d6c5",
+  "checkpoints/061-core-choice-ordering.patch": "46889e14da1191f683ec5299bb3782b003f035ce2e21008f0f1744ad6b8b0430"
 }

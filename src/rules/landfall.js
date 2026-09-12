@@ -48,16 +48,23 @@ export function installLandfall(registry) {
       test: (g, s, e) => e.changes.some(c => c.to === 'graveyard' && c.lki.owner === s.controller && !c.lki.token && c.lki.characteristics.types.includes('Land')), effect: () => [draw()] },
   ] });
   register(registry, 'Retreat to Coralhelm', { triggers: [landfall('retreat', 'Tap/untap a creature or scry', (g, ctx) => ctx.inputs.mode === 'scry' ? [{ op: 'scry', count: 1 }] : tapChoice(), {
+    modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'creature', label: 'Creature' }, { value: 'scry', label: 'Scry' }] },
     inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Retreat’s mode', options: [{ value: 'creature', label: 'You may tap or untap target creature' }, { value: 'scry', label: 'Scry 1' }] },
       ...(ctx.inputs.mode === 'creature' ? [target({ zones: ['battlefield'], creature: true })] : [])],
   })] });
+  const raftModes = (g, controller = 0) => [
+    ...(g.count({ creature: true, controller: 'opponent' }, { controller }) ? [{ value: 'tap', label: 'Tap target creature an opponent controls' }] : []),
+    ...(g.count({ creature: true, controller: 'you' }, { controller }) ? [{ value: 'untap', label: 'Untap target creature you control' }] : []),
+  ];
   register(registry, 'Elven Raft-Steerer', { triggers: [landfall('steer', 'Tap an opposing creature or untap your creature', (g, ctx) => [{ op: ctx.inputs.mode, ids: '$input.target' }], {
-    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: [{ value: 'tap', label: 'Tap target creature an opponent controls' }, { value: 'untap', label: 'Untap target creature you control' }] },
+    modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'tap', label: 'Tap opponent' }, { value: 'untap', label: 'Untap yours' }] },
+    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: raftModes(g, s.controller) },
       ...(ctx.inputs.mode ? [target({ zones: ['battlefield'], creature: true, controller: ctx.inputs.mode === 'tap' ? 'opponent' : 'you' })] : [])],
   })] });
   register(registry, 'Tideforce Elemental', { activated: [{ id: 'tideforce', label: 'Tap or untap another creature', cost: '{U}', tap: true, inputs: [target({ zones: ['battlefield'], creature: true, another: true })], effect: () => tapChoice() }],
     triggers: [landfall('untap', 'You may untap Tideforce Elemental', () => [{ op: 'untap', ids: '$source' }], { optional: true })] });
   register(registry, 'Scaretiller', { triggers: [{ id: 'tiller', label: 'Put a land from hand or return a land from graveyard', event: 'BECAME_TAPPED', test: (g, s, e) => sameRef(s, e.object),
+    modePreference: { key: 'mode', label: 'Tapped trigger mode', options: [{ value: 'hand', label: 'Hand land' }, { value: 'graveyard', label: 'Graveyard land' }] },
     inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Scaretiller’s mode', options: [{ value: 'hand', label: 'You may put a land from hand onto the battlefield tapped' }, { value: 'graveyard', label: 'Return target land from your graveyard tapped' }] },
       ...(ctx.inputs.mode === 'graveyard' ? [target({ ...GY, land: true })] : [])],
     effect: (g, ctx) => ctx.inputs.mode === 'graveyard' ? [move('$input.target', 'battlefield', { tapped: true })] : handLand(true),

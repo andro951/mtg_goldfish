@@ -21,7 +21,7 @@ export function installLands(registry) {
   register(registry, 'Buried Ruin', { activated: [{ id: 'recover', label: 'Return target artifact card', cost: '{2}', tap: true, costs: [selfSacrifice], inputs: [target({ ...GY, artifact: true })], effect: () => [move('$input.target', 'hand')] }] });
   register(registry, 'Treasure Vault', { activated: [{ id: 'treasures', label: 'Create X Treasures', cost: '{X}{X}', tap: true, inputs: [xInput], costs: [selfSacrifice], effect: (g, ctx) => [{ op: 'token', card: 'Treasure', count: ctx.inputs.x }] }] });
   register(registry, 'Scene of the Crime', { possibleMana: ['C', ...anyColor], activated: [
-    { id: 'filter', label: 'Tap a creature: add any color', mana: true, tap: true, inputs: [colorInput()], costs: [tapOthers({ ...BF, creature: true }, 1)], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] },
+    { id: 'filter', label: 'Tap a creature: add any color', mana: true, tap: true, costs: [tapOthers({ ...BF, creature: true }, 1)], effectInputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] },
     { id: 'clue', label: 'Sacrifice Clue: draw a card', cost: '{2}', costs: [selfSacrifice], effect: () => [draw()] },
   ] });
   register(registry, 'Power Depot', { possibleMana: ['C', ...anyColor], entersCounters: { '+1/+1': 1 }, activated: [

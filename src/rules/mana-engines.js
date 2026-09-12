@@ -27,7 +27,7 @@ export function installManaEngines(registry) {
   register(registry, 'Priest of Yawgmoth', { activated: [{ id: 'sacrifice', label: 'Sacrifice an artifact: add its mana value in black', tap: true, mana: true,
     costs: [sacrifice({ ...BF, artifact: true })], effect: (g, ctx) => [{ op: 'mana', production: { B: paidMV(ctx) } }] }] });
   register(registry, 'Radiant Lotus', { activated: [{ id: 'lotus', label: 'Sacrifice artifacts; target player adds 3N mana', tap: true, mana: false,
-    inputs: [playerTarget(), colorInput()], costs: [{ kind: 'sacrifice', key: 'sacrificed', selector: { ...BF, artifact: true }, min: 1, max: 10000 }],
+    inputs: [playerTarget()], costs: [{ kind: 'sacrifice', key: 'sacrificed', selector: { ...BF, artifact: true }, min: 1, max: 10000 }], effectInputs: [colorInput()],
     effect: (g, ctx) => [{ op: 'mana', player: ctx.inputs.player, color: ctx.inputs.color, amount: 3 * paid(ctx).length }] }] });
   register(registry, 'Urza, Lord High Artificer', { triggers: [etb('construct', 'Create a Construct', () => [{ op: 'token', card: 'Construct' }])], activated: [
     { id: 'artifact-mana', label: 'Tap an artifact: add U', mana: true, costs: [tapOthers({ ...BF, artifact: true }, 1)], effect: () => [{ op: 'mana', production: { U: 1 } }] },
@@ -50,6 +50,7 @@ export function installManaEngines(registry) {
     return unique(colors);
   };
   register(registry, 'Squandered Resources', { activated: [{ id: 'land-mana', label: 'Sacrifice a land: add a type it could produce', mana: true,
-    inputs: (g, s, ctx) => [selectInput('sacrificed', 'Choose a land to sacrifice', { ...BF, land: true }), ...(ctx.inputs.sacrificed?.length ? [colorInput('color', landMana(g, g.object(ctx.inputs.sacrificed[0])))] : [])],
-    costs: [sacrifice({ ...BF, land: true })], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
+    costs: [sacrifice({ ...BF, land: true })],
+    effectInputs: (g, s, ctx) => ctx.inputs.sacrificed?.length ? [colorInput('color', landMana(g, g.object(ctx.inputs.sacrificed[0])))] : [],
+    effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
 }
