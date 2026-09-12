@@ -1,11 +1,11 @@
 {
   "build": "offline-with-local-assets",
   "output": "index.html",
-  "modules": 35,
+  "modules": 40,
   "candidateCards": 160,
   "definitions": 175,
-  "htmlBytes": 1000508,
-  "sha256": "d2722401927974575e128a0090ddc0d59bf34fa55965c926b6189b0920a91e95",
+  "htmlBytes": 1057224,
+  "sha256": "99a076164d282567958b14da7fa9e32991e2cab245be4eb3b9601b4c0802bfe4",
   "runtimeDependencies": [],
   "networkRequired": false
 }
