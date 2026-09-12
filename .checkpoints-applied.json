@@ -48,5 +48,7 @@
   "checkpoints/073a-program-state-ui.patch": "f569daa7a08cdbe890951a7a14be6e2a43c92f6731584397339c317a82a7cc30",
   "checkpoints/073b-priority-and-selection-ui.patch": "d5bc519dc66adcebf17bb3ceb83c0c5ff029e7054c4612a250fdce0901d323f4",
   "checkpoints/073c-sequence-rule-controls.patch": "3db28870d8e4509ecea3f8c7dab3ea866eda80ead72c5f02dbbfd85cd8b02e9b",
-  "checkpoints/073d-program-input-persistence.patch": "53d365bd12434c1b9eec619760204be689c8a811bd4851a446a38f4ea8ec0fae"
+  "checkpoints/073d-program-input-persistence.patch": "53d365bd12434c1b9eec619760204be689c8a811bd4851a446a38f4ea8ec0fae",
+  "checkpoints/074-dialogs-and-order-layout.patch": "21b3006cee0ef6a9b86a9a55d4754f2e8925ce2b6cf6c585d50a66a1fda447d0",
+  "checkpoints/075a-tablebar-and-stack-hooks.patch": "f076b7013780499ee8229f6879a92c2f145c49d232b902f7ccc8562504d70129"
 }
