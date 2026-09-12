@@ -1,0 +1,124 @@
+import { captureStep, cleanPrograms, restorePrograms, preflightSequence, ruleMatches, eventSignals, PROGRAM_LIMIT } from './programs.js';
+
+/** Runs only validated game intents at ordinary priority boundaries. Configuration
+ * is data, never executable code; automatic chains and repetitions are bounded. */
+export function createProgramController(api) {
+  let model=cleanPrograms(), recording=null, running=null, busy=false, chain=0;
+  const changed=()=>api.changed?.();
+  const cleanBoundary=()=>!api.g.state.pending&&!api.g.state.actionDraft&&!api.g.state.resolving&&!api.g.transaction;
+  const pause=reason=>{model.paused=true;model.pauseReason=reason;changed();};
+  const remember=key=>{model.seen.push(key);if(model.seen.length>5000)model.seen.splice(0,model.seen.length-5000);};
+  const ruleKey=(r,e)=>`${r.id}/${e.event}/${e.stackId||e.serial}`;
+  function observe(events) {
+    if(recording)return;
+    model.queue.push(...eventSignals(api.g,events));
+    if(model.queue.length>200){model.queue.length=200;pause('Automation queue limit reached. Review rules, then resume.');}
+  }
+  function execute(sequence) {
+    const check=preflightSequence(api.g,sequence);
+    if(!check.ok)return check;
+    const result=api.g.perform({type:'RUN_SEQUENCE',name:sequence.name,commands:check.commands});
+    if(!result.ok)return {ok:false,error:result.error.message};
+    observe(api.g.lastActionEvents||[]);
+    return {ok:true};
+  }
+  function applyRule(rule,event) {
+    const key=ruleKey(rule,event);if(model.seen.includes(key))return;
+    remember(key);
+    if(++chain>100){pause('Automatic chain stopped after 100 rules. This protects against a self-triggering loop.');return;}
+    if(rule.action!=='hold') {
+      const sequence=model.sequences.find(s=>s.id===rule.sequenceId);
+      const result=execute(sequence);
+      if(!result.ok){pause(`${rule.name}: ${result.error}`);return;}
+    }
+    if((rule.action==='hold'||rule.action==='sequenceHold')&&api.g.state.stack.length)pause(rule.name+' — priority is yours.');
+  }
+  function pump() {
+    if(busy||recording||running||model.paused||!model.queue.length||!cleanBoundary())return;
+    busy=true;
+    try {
+      while(model.queue.length&&!model.paused&&cleanBoundary()) {
+        const event=model.queue.shift();
+        for(const rule of model.rules)if(ruleMatches(api.g,rule,event)) {
+          applyRule(rule,event);
+          if(model.paused){model.queue.unshift(event);break;}
+        }
+      }
+    } finally {busy=false;changed();}
+  }
+  function beforeResolve() {
+    pump();if(model.paused||!cleanBoundary())return false;
+    const top=api.g.state.stack.at(-1);if(!top)return false;
+    const event={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id,source:top.source};
+    for(const rule of model.rules)if(ruleMatches(api.g,rule,event)) {
+      applyRule(rule,event);
+      if(model.paused||!cleanBoundary())return false;
+    }
+    return api.g.state.stack.at(-1)?.id===top.id;
+  }
+  return {
+    get model(){return model;},get recording(){return recording;},get running(){return running;},get busy(){return busy;},
+    reset(session,future){running&&(running.stop=true);running=null;recording=null;busy=false;chain=0;model=restorePrograms(session,future);},
+    snapshot(){return cleanPrograms(model);},
+    userAction(){chain=0;},
+    prepare(action){return recording?captureStep(api.g,action):null;},
+    completed(action,result,step) {
+      if(!result.ok)return;
+      if(['UNDO','REDO','CANCEL'].includes(action.type)) {
+        if(recording){recording=null;api.toast('Recording stopped because the action was undone or cancelled. Re-record the intended line.');}
+        model.queue=[];model.seen=[];model.paused=false;model.pauseReason='';changed();return;
+      }
+      if(recording&&step) {
+        recording.steps.push(step);
+        if(recording.steps.length>=PROGRAM_LIMIT)api.toast('Recording reached 256 steps. Finish or cancel the current decision, then save.');
+      }
+      observe(api.g.lastActionEvents||[]);pump();
+    },
+    pump,beforeResolve,
+    resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed();},
+    stop(){if(running)running.stop=true;else pause('Paused by you.');changed();},
+    startRecording(name) {
+      if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
+      recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed();
+    },
+    finishRecording(name,saved=false) {
+      if(!recording)throw new Error('No sequence is being recorded.');
+      if(!cleanBoundary())throw new Error('Finish the pending choice before saving the recording.');
+      if(!recording.steps.length)throw new Error('Perform at least one game action before saving.');
+      if(recording.steps.length>PROGRAM_LIMIT)throw new Error('The recording exceeds 256 steps.');
+      const sequence={id:'seq-'+crypto.randomUUID(),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
+      model.sequences.push(sequence);recording=null;changed();return sequence;
+    },
+    cancelRecording(){recording=null;model.queue=[];changed();},
+    async repeat(id,count=1) {
+      if(running||recording)throw new Error('Stop the current run or recording first.');
+      const sequence=model.sequences.find(s=>s.id===id);
+      if(!sequence)throw new Error('Sequence not found.');
+      if(!Number.isInteger(count)||count<1||count>1000)throw new Error('Choose 1–1000 iterations. Each iteration is checked separately.');
+      const job=running={id,completed:0,count,stop:false};model.paused=false;model.pauseReason='';chain=0;changed();
+      try {
+        for(let i=0;i<count&&!job.stop;i++) {
+          const result=execute(sequence);
+          if(!result.ok){pause(`Stopped before iteration ${i+1}: ${result.error}`);break;}
+          job.completed++;changed();
+          // Process configured holds between iterations, never during a payment.
+          running=null;pump();running=job;
+          if(model.paused)break;
+          await new Promise(resolve=>setTimeout(resolve,0));
+        }
+        return {completed:job.completed,requested:count,reason:model.pauseReason||(job.stop?'Stopped by you.':'')};
+      } finally {if(running===job)running=null;changed();}
+    },
+    preflight(id){return preflightSequence(api.g,model.sequences.find(s=>s.id===id));},
+    saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new Error('Invalid rule.');
+      if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new Error('Choose a recorded sequence first.');
+      const old=model.rules.findIndex(r=>r.id===clean.id);if(old<0)model.rules.push(clean);else model.rules[old]=clean;changed();},
+    toggleRule(id,enabled){const rule=model.rules.find(r=>r.id===id);if(rule){rule.enabled=enabled;changed();}},
+    removeRule(id){model.rules=model.rules.filter(r=>r.id!==id);changed();},
+    saveSequence(id,saved){const s=model.sequences.find(s=>s.id===id);if(s){s.saved=saved;changed();}},
+    renameSequence(id,name){const s=model.sequences.find(s=>s.id===id);if(s&&name.trim()){s.name=name.trim().slice(0,120);changed();}},
+    removeSequence(id){if(model.rules.some(r=>r.sequenceId===id))throw new Error('Remove rules that use this sequence first.');model.sequences=model.sequences.filter(s=>s.id!==id);changed();},
+    editStep(id,index,direction){const s=model.sequences.find(s=>s.id===id);if(!s)return;
+      if(direction==='remove')s.steps.splice(index,1);else {const to=index+Number(direction);if(to>=0&&to<s.steps.length)[s.steps[index],s.steps[to]]=[s.steps[to],s.steps[index]];}changed();},
+  };
+}
