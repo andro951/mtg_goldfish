@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Verify checkpoint transport
+        run: python tools/repair_checkpoint_transport.py
       - name: Apply durable source checkpoints
         run: python tools/apply_checkpoints.py
       - name: Verify canonical data and complete related local images
