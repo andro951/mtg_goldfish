@@ -1,0 +1,78 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -1,5 +1,5 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.0.0",
++  "version": "1.1.0",
+   "private": true,
+   "type": "module",
+diff --git a/tests/portable_test.py b/tests/portable_test.py
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -31,7 +31,7 @@
+         page.goto(destination.as_uri())
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.brand').is_visible())
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.1.0')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+-        check('all 175 local images are embedded', count == 175)
++        check('all 175 card images and the real Magic back are embedded', count == 176)
+         image_report = page.evaluate('''async () => {
+             const values = Object.values(window.ASTRA_IMAGES);
+@@ -43,4 +43,5 @@
+         }''')
+         check('every embedded image decodes successfully', image_report)
++        page.locator('[data-action="menu"]').click()
+         page.locator('[data-dialog="labs"]').click()
+         page.locator('[data-lab="breakfast"]').click()
+diff --git a/tools/package.py b/tools/package.py
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -39,7 +39,8 @@
+ cards = read_json('data/cards.json')
+ assets = read_json('data/assets-manifest.json')
++ui_assets = read_json('data/ui-assets.json')
+ require(sum(bool(c.get('candidate')) for c in cards) == 160, 'Expected exactly 160 candidates.')
+ require(len(cards) == 175 and len(assets) == 175, 'Expected 175 local definitions and images.')
+-for name, entry in assets.items():
++for name, entry in {**assets, **ui_assets}.items():
+     contents = safe_file(name).read_bytes()
+     require(len(contents) == entry['bytes'] and digest(contents) == entry['sha256'], f'Asset mismatch: {name}')
+@@ -71,5 +72,6 @@
+ portable = browser_report('test-results/portable.json')
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser['checksPassed'] >= 77, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.1.0', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 180, 'Browser regression suite is incomplete.')
+ 
+ builds = []
+@@ -90,5 +92,5 @@
+     'engineTestsPassed': engine_tests, 'browserChecksPassed': browser['checksPassed'],
+     'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0,
+-    'candidateCards': 160, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets),
++    'candidateCards': 160, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets),
+     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
+     'scope': 'supplied-pool goldfish; abstract opponents and user-assisted blocking/combat damage',
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -92,3 +92,4 @@
+  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
++ if(prefs.dock==='workspace'&&!g.state.lookWorkspace?.ids?.length)prefs.dock=null;
+  prepareChoice();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
+  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
+@@ -102,3 +103,3 @@
+ function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
+- else if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();return result;}
++ else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();}return result;}
+ function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
+diff --git a/tests/ui_acceptance_effects.py b/tests/ui_acceptance_effects.py
+--- a/tests/ui_acceptance_effects.py
++++ b/tests/ui_acceptance_effects.py
+@@ -28,3 +28,4 @@
+  check('Top keeps hand size and applies top-first order',state(p,'state.zones.hand.length')==hand and state(p,'state.zones.libraryActive[0]')==old[1])
++ check('completed Look workspace closes and returns space to battlefield',p.locator('[data-surface=workspace]').count()==0 and p.locator('[data-zone=workspace]').count()==0)
+  activate(p,'Scroll Rack','rack');pay(p);click(p,'resolve','.stack-window');choose_cards(p,[obj(p,'Ancient Den','hand')['id']]);settle(p)
+  check('Scroll Rack makes linked exchange without extra hand-size change',state(p,'state.zones.hand.length')==hand and obj(p,'Ancient Den','libraryActive'))
