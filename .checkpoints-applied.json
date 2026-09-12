@@ -12,5 +12,7 @@
   "checkpoints/041-offline-image-cache.patch": "22e7021da1446671ad2430f305bae1f370c2a2d918f4e0eb904a88ded9000751",
   "checkpoints/042-policy-and-import.patch": "a2e172f0f928441a93073003684935ff5bd8e2593d906d23ae5d532e2f5f2d19",
   "checkpoints/043-tabletop-core.patch": "033ef3515bed4d9da66357a72706d54fc860fb1a3aea709c5d4d9f47d2ae6c47",
-  "checkpoints/047-table-interactions.json": "3626f0e6776536664bd49bb336623654fe5ee69fb256c4483f3666b89018410c"
+  "checkpoints/047-table-interactions.json": "3626f0e6776536664bd49bb336623654fe5ee69fb256c4483f3666b89018410c",
+  "checkpoints/044-compact-table-views.json": "6a4c0f8e9cb6743da0b0194bb6ada68c8333e1b0119646cc9ce836122f4c009c",
+  "checkpoints/045-compact-table-styles.json": "4cf68654aac21bf6e95ae39f26cef7022cea01aa99084baa2bfab0844b70238d"
 }
