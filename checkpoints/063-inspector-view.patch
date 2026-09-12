@@ -1,0 +1,48 @@
+diff --git a/src/tabletop/styles.css b/src/tabletop/styles.css
+index 6efd3b2..e672a2b 100644
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -34,3 +34,5 @@
+ .deck-advanced{flex-shrink:0;margin-top:6px;padding-top:5px;border-top:1px solid var(--line)}.deck-advanced summary{cursor:pointer;color:#b6c7cd;font-size:10px}.deck-advanced p{font-size:9px;margin:5px 0}.deck-advanced textarea{font:10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;max-height:210px;resize:vertical}.deck-editor-modal .modal-footer{padding:6px 12px}
+ @media(max-width:900px){.deck-editor-modal{height:96dvh}.deck-editor-shell{grid-template-columns:1fr;grid-template-rows:minmax(230px,.9fr) minmax(260px,1.1fr)}.deck-search-tools{grid-template-columns:1fr 1fr 1fr}.deck-search-tools input{grid-column:1/-1}.deck-editor-summary{grid-template-columns:repeat(5,minmax(70px,1fr));overflow-x:auto}.deck-browser-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}.deck-browser-heading small,.deck-section-heading>span{display:none}}
+ @media(max-width:520px){.deck-editor-modal .modal-body{padding:6px}.deck-editor-summary{gap:3px}.deck-editor-summary>div{padding:3px 5px}.deck-editor-summary strong{font-size:14px}.deck-editor-summary small{font-size:8px}.deck-drop-tabs{grid-template-columns:1fr 1fr}.deck-pool-target,.deck-trash-target{min-height:34px}.deck-entry{grid-template-columns:30px minmax(70px,1fr) auto 22px;gap:4px}.deck-entry img,.deck-entry-missing{width:30px;height:40px}.deck-quantity input{width:39px}.deck-browser-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.deck-browser-card{padding:3px}}
++
++.mode-preferences{border-top:1px solid var(--line);margin-top:7px;padding-top:5px}.mode-pref-row{display:flex;align-items:center;gap:5px;justify-content:space-between;font-size:10px}.mode-pref-row>span{color:#b5c6cd;white-space:nowrap}.mode-pref-buttons{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}.mode-pref-buttons button{padding:3px 5px;font-size:9px;line-height:1.2}.float-header [data-action="revise-choice"]{padding:2px 5px;font-size:9px;min-height:20px;color:var(--gold);border:1px solid #78633f;background:#2a251c}
+diff --git a/src/tabletop/views.js b/src/tabletop/views.js
+index 2a9cdad..39b2e21 100644
+--- a/src/tabletop/views.js
++++ b/src/tabletop/views.js
+@@ -37,14 +37,19 @@ export function stackPopup({g,ui,registry}){
+   const body=`<div class="stack-gallery">${entries.map((v,i)=>{const o=g.object(v.source),d=o?g.definition(o):(v.context?.sourceSnapshot?.definition||registry.get(v.sourceCardId));return `<button class="stack-card ${v.kind==='spell'?'spell':'effect'}" data-action="stack-inspect" data-stack-id="${h(v.id)}" title="${h((v.resolving?'Resolving':i===0?'Resolves next':'Then '+(i+1))+': '+v.label)}" aria-label="${h(v.label)}"><img src="${h(asset(d.image))}" alt="${h(d.name)}"><span class="stack-kind">${v.resolving?'Resolving':v.kind==='spell'?'Spell':'Effect'} ${!v.resolving?i+1:''}</span></button>`;}).join('')}</div><div class="stack-controls">${button('Resolve','resolve',s.pending?'disabled':'','primary')}${button('All','resolve-all',s.pending?'disabled':'')}${button('Pass','pass',s.pending?'disabled':'')}<label title="Keep priority so you can respond"><input type="checkbox" data-setting="holdPriority" ${s.settings.holdPriority?'checked':''}> Hold</label></div>`;
+   return floating('stack','Stack',body,`<span class="stack-legend" title="Gold border: spell · teal border: ability/effect">${entries.length}</span>`,'stack-window');
+ }
+-export function inspectorPopup({g,ui,registry}){
++export function inspectorPopup({g,ui,registry,prefs}){
+   const o=g.object(ui.inspected);const d=o?g.definition(o):(ui.inspectDefinition?registry.get(ui.inspectDefinition):null);if(!d)return '';
+   const c=o?g.characteristics(o):d,mod=o?g.module(o):registry.module(d.id);
+   const abilities=o?g.abilities(o):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
+   const waiting=!!g.state.pending,payment=['payment','effectPayment'].includes(g.state.pending?.kind);
+-  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div><details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}`;
++  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div>${o?modePolicies(g,o,prefs):''}<details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}`;
+   return floating('inspector',d.name,body,tool('close','close-inspector'),'inspector-window');
+ }
++function modePolicies(g,o,prefs){
++  const rulesId=o.copy?.rulesId||o.cardId,module=g.module(o),definitions=[...(module.triggers||[]),...(module.activated||[])].filter(def=>def.modePreference);
++  if(!definitions.length)return '';
++  return `<div class="mode-preferences">${definitions.map(def=>{const meta=def.modePreference,key=`${rulesId}/${def.id}/${meta.key}`,value=prefs.modeDefaults?.[key]||'ASK';return `<div class="mode-pref-row"><span title="Always use this mode until you switch back to Ask. A current trigger can still use Modes to choose differently once.">${h(meta.label||def.label||'Default mode')}</span><div class="mode-pref-buttons">${button('Ask','mode-default',`data-mode-key="${h(key)}" data-mode-value="ASK" title="Ask every time"`,value==='ASK'?'active':'')}${(meta.options||[]).map(option=>button(h(option.label||option.value),'mode-default',`data-mode-key="${h(key)}" data-mode-value="${h(option.value)}" title="Always choose ${h(option.label||option.value)}"`,value===option.value?'active':'')).join('')}</div></div>`;}).join('')}</div>`;
++}
+ function optionalPolicies(g,o){
+   const keys=(g.module(o).triggers||[]).filter(t=>t.optional).map(t=>({id:t.id,label:t.label||t.id}));
+   if(g.definition(o).name==='Tireless Provisioner')keys.push({id:'token-kind',label:'Landfall token',token:true});
+@@ -54,7 +59,10 @@ function optionalPolicies(g,o){
+ export function decisionPopup(ctx){
+   const p=ctx.g.state.pending;if(!p)return '';
+   if(isManaColorChoice(p))return manaChoiceHTML(p);
+-  return floating('decision',p.label,decisionHTML(ctx),tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window');
++  const draft=ctx.g.state.actionDraft,definition=draft?ctx.g.draftDefinition(draft):null,mode=definition?.modePreference;
++  const revise=draft&&p.kind==='draft'&&mode&&p.key!==mode.key&&Object.hasOwn(draft.context.inputs,mode.key)
++    ?button('Modes','revise-choice',`data-key="${h(mode.key)}" title="Choose a different mode for this trigger only"`,'quiet'):'';
++  return floating('decision',p.label,decisionHTML(ctx),revise+tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window');
+ }
+ export function openingPopup({g}){
+   if(g.state.started||g.state.pending)return '';
