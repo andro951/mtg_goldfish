@@ -44,5 +44,7 @@
   "checkpoints/068-inspector-failed-activation.patch": "3182e49306352249d5b58f5f993f44de77dccbd6848508d78c258467687c6720",
   "checkpoints/070-corner-performance.patch": "645e059fe9d24006b848ebed9ac5850da5965dcd355049b41f1f17b1b07ba911",
   "checkpoints/071-core-program-support.patch": "f18c190245a3630ccaae849bc1ca2c87483199074e131bf045d60c7e457481e7",
-  "checkpoints/072-interaction-performance.patch": "ff12b99a5238c2c57a6201a1bc778edffbfa67aec2eadfad4fd6dc66907c4715"
+  "checkpoints/072-interaction-performance.patch": "ff12b99a5238c2c57a6201a1bc778edffbfa67aec2eadfad4fd6dc66907c4715",
+  "checkpoints/073a-program-state-ui.patch": "f569daa7a08cdbe890951a7a14be6e2a43c92f6731584397339c317a82a7cc30",
+  "checkpoints/073b-priority-and-selection-ui.patch": "d5bc519dc66adcebf17bb3ceb83c0c5ff029e7054c4612a250fdce0901d323f4"
 }
