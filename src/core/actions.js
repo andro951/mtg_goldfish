@@ -11,6 +11,20 @@ export const actionMethods = {
     const type = action.type;
     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
     if (type === 'CANCEL') {
+      // Cancel just the uncommitted nested mana activation. The outer casting
+      // payment remains open, including mana already produced by other sources.
+      if (this.state.actionDraft?.kind === 'ability' && this.state.pending?.kind === 'draft') {
+        if (this.state.paymentParent) {
+          const parent=this.state.paymentParent; this.state.paymentParent=null;
+          this.state.actionDraft=parent.draft; this.state.pending=parent.pending;
+          this.record('MANA_CHOICE_CANCELLED', {}); return;
+        }
+        if (this.state.effectPaymentParent) {
+          const parent=this.state.effectPaymentParent; this.state.effectPaymentParent=null;
+          this.state.actionDraft=null; this.state.resolving=parent.frame; this.state.pending=parent.pending;
+          this.record('MANA_CHOICE_CANCELLED', {}); return;
+        }
+      }
       requireRule(this.state.pending?.optional || this.state.actionDraft?.kind !== 'trigger', 'A mandatory trigger or effect cannot be cancelled.');
       if (this.state.pending?.optional && ['effect', 'castWindow'].includes(this.state.pending.kind)) return this.acceptChoice([], action);
       if (this.state.pending?.kind === 'optional') return this.acceptChoice('NO', action);

@@ -19,5 +19,5 @@ export function cleanPreferences(value={}){
   if(typeof value.deckText==='string')p.deckText=value.deckText.slice(0,100000);
   return p;
 }
-export function loadPreferences(storage=globalThis.localStorage){try{return cleanPreferences(JSON.parse(storage.getItem(PREF_KEY)||'{}'));}catch{return defaultPreferences();}}
-export function savePreferences(p,storage=globalThis.localStorage){try{storage.setItem(PREF_KEY,JSON.stringify(cleanPreferences(p)));return true;}catch{return false;}}
+export function loadPreferences(storage){try{return cleanPreferences(JSON.parse((storage??globalThis.localStorage).getItem(PREF_KEY)||'{}'));}catch{return defaultPreferences();}}
+export function savePreferences(p,storage){try{(storage??globalThis.localStorage).setItem(PREF_KEY,JSON.stringify(cleanPreferences(p)));return true;}catch{return false;}}

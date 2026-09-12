@@ -12,7 +12,7 @@ export function installInteractions(api){
   function clearHover(){for(const el of document.querySelectorAll('.hover-lift'))el.classList.remove('hover-lift');}
   function hover(p){
     clearHover();if(gesture||api.ui.modal)return;
-    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.view-control'))return;
+    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.opening-prompt,.view-control'))return;
     const surface=getSurface(p);let el;
     if(surface){const card=hit(surface,p);if(card)el=surface.querySelector(`[data-position="${card.id}"]`);}
     else if(top?.closest('.hand')){const id=handHit(p);if(id)el=document.querySelector(`[data-hand-position="${id}"]`);}
@@ -37,7 +37,7 @@ export function installInteractions(api){
     const panel=target.closest('[data-drag-panel]');
     if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:{...api.prefs}};}
     else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f};}
-    else if(target.closest('.floating,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
+    else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
     else{
       const surface=getSurface(p),hand=target.closest('.hand'),rail=target.closest('.rail');
       let picked=surface?hit(surface,p)?.id:hand?handHit(p):rail?target.closest('[data-card]')?.dataset.card:null;

@@ -14,5 +14,6 @@
   "checkpoints/043-tabletop-core.patch": "033ef3515bed4d9da66357a72706d54fc860fb1a3aea709c5d4d9f47d2ae6c47",
   "checkpoints/047-table-interactions.json": "3626f0e6776536664bd49bb336623654fe5ee69fb256c4483f3666b89018410c",
   "checkpoints/044-compact-table-views.json": "6a4c0f8e9cb6743da0b0194bb6ada68c8333e1b0119646cc9ce836122f4c009c",
-  "checkpoints/045-compact-table-styles.json": "4cf68654aac21bf6e95ae39f26cef7022cea01aa99084baa2bfab0844b70238d"
+  "checkpoints/045-compact-table-styles.json": "4cf68654aac21bf6e95ae39f26cef7022cea01aa99084baa2bfab0844b70238d",
+  "checkpoints/048-tabletop-runtime.patch": "7354b49d5579c6d9cf9ecbde591d5672238561fb2f3e7cc05fc3ea07894ec4bc"
 }
