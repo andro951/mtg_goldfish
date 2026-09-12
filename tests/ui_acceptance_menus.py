@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def menus(p):
- menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==9)
+ menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==11)
  click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 160 candidates',p.locator('.registry-card').count()==160)
  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
  p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))

@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def opening(p):
- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.2.1')
+ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.3.0')
  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
@@ -37,7 +37,7 @@ def mana(p):
  shot(p,'02-mana-symbols.png');choose_option(p,'U')
  check('one symbol click taps source and immediately adds blue',obj(p,'Razortide Bridge')['tapped'] and state(p,'state.players[0].mana.U')==1 and pending(p) is None)
  rb=card(p,r['id'],'battlefield').bounding_box();check('tapped card is physically sideways',rb['width']>rb['height'] and abs(rb['width']-b['height'])<.1)
- check('tapped bottom-right preserves upright bottom-left anchor',abs(rb['x']+rb['width']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
+ check('clockwise tapping keeps the physical bottom-right at the upright bottom-left anchor',abs(rb['x']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
  card(p,r['id'],'battlefield').click();check('tapped source cannot open a mana-color choice',pending(p) is None and p.locator('.mana-window').count()==0)
  check('tapped mana ability is disabled in inspector',p.locator('.inspector-window [data-action=ability]').first.is_disabled())
  card(p,r['id'],'battlefield').click();check('second click on inspected card closes inspector',p.locator('.inspector-window').count()==0)

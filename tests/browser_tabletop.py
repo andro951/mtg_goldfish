@@ -10,6 +10,9 @@ from ui_acceptance_persistence import persistence, responsive
 from ui_acceptance_extra import extra_controls
 from ui_acceptance_misc import phase_controls
 from ui_acceptance_inspector import inspector_choices
+from ui_acceptance_programs import grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation
+
+from ui_acceptance_performance import interaction_performance
 
 server=None
 if not args.memory:
@@ -18,7 +21,7 @@ try:
  with sync_playwright() as pw:
   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
-  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls]
+  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance]
   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
   for group in groups:
    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)
@@ -35,13 +38,13 @@ try:
   if not args.memory and not args.groups:
    context=b.new_context();p=context.new_page()
    try:
-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.2.1');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.3.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
    context.close()
   b.close()
 finally:
  if server:server.terminate();server.wait(timeout=5)
-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.2.1','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.3.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
 (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
 raise SystemExit(bool(failures or errors or requests))
