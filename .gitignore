@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.log
+Astra-standalone.html
+dist/
+test-results/screenshots/
+test-results/exported-session.json
+test-results/browser-memory.json
