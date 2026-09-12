@@ -1,0 +1,37 @@
+--- a/src/tabletop/program-controller.js
++++ b/src/tabletop/program-controller.js
+@@ -22,4 +22,8 @@
+     const e={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id};
+     if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new Error('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
++  },afterBoundary(trial,events){
++    const signals=eventSignals(trial,events);
++    if(model.rules.some(r=>signals.some(e=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))&&(r.action!=='hold'||trial.state.stack.length))))
++      throw new Error('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
+   }});}
+   function execute(sequence) {
+@@ -88,5 +92,5 @@
+     pump,beforeResolve,
+     resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed(false);},
+-    stop(){if(running)running.stop=true;else pause('Paused by you.');changed(false);},
++    stop(){if(running){if(running.stop)return;running.stop=true;changed(false);}else if(!model.paused)pause('Paused by you.');},
+     startRecording(name) {
+       if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
+--- a/src/tabletop/programs.js
++++ b/src/tabletop/programs.js
+@@ -109,8 +109,15 @@
+     // One prospective transaction: no intermediate history serialization.
+     trial.transaction={before:clone(trial.state),intents:[],events:[],label:'PREFLIGHT'};
++    let boundarySerial=trial.state.eventSerial;
+     for(const [i,step]of sequence.steps.entries()){
+       requireRule(ACTION_TYPES.includes(step.action?.type),'Sequence contains a non-gameplay command.','SEQUENCE_ACTION');
+       const command=concreteStep(trial,step);if(command.type==='RESOLVE_TOP'&&options.beforeResolve)options.beforeResolve(trial,trial.state.stack.at(-1));commands.push(command);
+-      try{trial.touch();trial.handleAction(command);trial.settle();}catch(error){throw new Error(`Step ${i+1}: ${error.message}`);}
++      try{
++        trial.touch();trial.handleAction(command);trial.settle();
++        if(!trial.state.pending&&!trial.state.actionDraft&&!trial.state.resolving){
++          const events=trial.transaction.events.filter(e=>e.sequence>boundarySerial);boundarySerial=trial.state.eventSerial;
++          if(i<sequence.steps.length-1&&options.afterBoundary)options.afterBoundary(trial,events);
++        }
++      }catch(error){throw new Error(`Step ${i+1}: ${error.message}`);}
+     }
+     requireRule(!trial.state.pending&&!trial.state.actionDraft&&!trial.state.resolving,'The recording ends with an unanswered decision. Record the remaining choices.','SEQUENCE_INCOMPLETE');
