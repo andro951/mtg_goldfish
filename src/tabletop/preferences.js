@@ -1,7 +1,7 @@
 import { clamp } from './geometry.js';
 export const PREF_KEY='astra-table-layout-v2';
 export function defaultPreferences(){return {version:2,sidebarWidth:100,handHeight:155,dockWidth:290,dock:null,
-  cameras:{},popups:{},holdPriority:false,reserveAccess:true,orderTriggers:true,deckText:null};}
+  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,deckText:null};}
 export function cleanPreferences(value={}){
   const p=defaultPreferences(); if(!value||typeof value!=='object')return p;
   p.sidebarWidth=clamp(value.sidebarWidth??p.sidebarWidth,92,260);
@@ -15,6 +15,9 @@ export function cleanPreferences(value={}){
   }
   for(const key of ['inspector','stack','decision']){
     const pos=value.popups?.[key];if(pos&&Number.isFinite(pos.x)&&Number.isFinite(pos.y))p.popups[key]={x:clamp(pos.x,0,10000),y:clamp(pos.y,0,10000)};
+  }
+  if(value.modeDefaults&&typeof value.modeDefaults==='object')for(const [key,choice] of Object.entries(value.modeDefaults).slice(0,500)){
+    if(typeof key==='string'&&key.length<300&&typeof choice==='string'&&choice.length<100)p.modeDefaults[key]=choice;
   }
   if(typeof value.deckText==='string')p.deckText=value.deckText.slice(0,100000);
   return p;
