@@ -1,0 +1,92 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -8,3 +8,3 @@
+ import { dialogs } from './dialogs.js';
+-import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,bounds,overlaps } from './geometry.js';
++import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
+ import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
+@@ -70,3 +70,3 @@
+  const handEl=document.querySelector('.hand');if(handEl){const n=handEl.children.length,w=(hand-8)*63/88;
+-  const step=n>1?Math.max(8,Math.min(w+4,(handEl.clientWidth-8-w)/(n-1))):0;
++  const step=n>1?Math.max(0,Math.min(w+4,(handEl.clientWidth-8-w)/(n-1))):0;
+   for(const [i,el]of [...handEl.children].entries()){el.style.width=w+'px';el.style.height=(hand-8)+'px';el.style.left=(4+i*step)+'px';}
+@@ -75,9 +75,15 @@
+ }
+-function positionPopups(){for(const el of floats.querySelectorAll('[data-floating]')){
+- const name=el.dataset.floating,measurement=el.getBoundingClientRect();let anchor=ui.lastPoint;
+- const saved=ui.popupPositions[name]||prefs.popups[name];
+- if(name==='stack'&&!saved)anchor={x:innerWidth-measurement.width-20,y:document.querySelector('.toolbar').getBoundingClientRect().bottom};
+- const pos=popupPosition(anchor,measurement.width,measurement.height,{width:innerWidth,height:innerHeight},saved);
+- ui.popupPositions[name]=pos;el.style.left=pos.x+'px';el.style.top=pos.y+'px';
+-}}
++function positionPopups(){
++ const occupied=[],viewport={width:innerWidth,height:innerHeight};
++ for(const el of floats.querySelectorAll('[data-floating]')){
++  const name=el.dataset.floating,mini=el.classList.contains('mana-window'),key=mini?'mana':name;
++  const measurement=el.getBoundingClientRect(),explicit=mini?null:prefs.popups[name];let anchor=ui.lastPoint;
++  const cached=mini?null:ui.popupPositions[key],saved=explicit||cached;
++  if(name==='stack'&&!saved)anchor={x:innerWidth-measurement.width-20,y:document.querySelector('.toolbar').getBoundingClientRect().bottom};
++  let pos=popupPosition(anchor,measurement.width,measurement.height,viewport,saved);
++  if(!explicit&&!mini)pos=avoidPopupOverlap(pos,measurement.width,measurement.height,viewport,occupied);
++  ui.popupPositions[key]=pos;el.style.left=pos.x+'px';el.style.top=pos.y+'px';
++  occupied.push({left:pos.x,top:pos.y,right:pos.x+measurement.width,bottom:pos.y+measurement.height});
++ }
++}
+ function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0;overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;restoreFocus(focus);}}
+@@ -97,3 +103,3 @@
+  else if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();return result;}
+-function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision)delete ui.popupPositions.decision;}}
++function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
+ function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
+@@ -126,3 +132,3 @@
+  if(action==='card'&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
+- if(event.clientX||event.clientY)atPoint({x:event.clientX,y:event.clientY});
++ if((event.clientX||event.clientY)&&!el.closest('[data-floating=decision]'))atPoint({x:event.clientX,y:event.clientY});
+  if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();}return;}
+diff --git a/src/tabletop/geometry.js b/src/tabletop/geometry.js
+--- a/src/tabletop/geometry.js
++++ b/src/tabletop/geometry.js
+@@ -73 +73,14 @@
+ }
++
++/** Prefer a nearby free rectangle for automatic popups. Explicitly positioned
++ * windows keep their positions; small screens can still overlap and be moved. */
++export function avoidPopupOverlap(preferred,width,height,viewport,occupied=[]){
++  const clampPos=p=>({x:clamp(p.x,4,Math.max(4,viewport.width-width-4)),y:clamp(p.y,34,Math.max(34,viewport.height-height-4))});
++  const candidates=[clampPos(preferred)];
++  for(const r of occupied){
++    candidates.push(clampPos({x:r.left-width-8,y:preferred.y}),clampPos({x:r.right+8,y:preferred.y}),
++      clampPos({x:preferred.x,y:r.top-height-8}),clampPos({x:preferred.x,y:r.bottom+8}));
++  }
++  const score=p=>occupied.reduce((sum,r)=>sum+Math.max(0,Math.min(p.x+width,r.right)-Math.max(p.x,r.left))*Math.max(0,Math.min(p.y+height,r.bottom)-Math.max(p.y,r.top)),0)*1000+Math.hypot(p.x-preferred.x,p.y-preferred.y);
++  return candidates.sort((a,b)=>score(a)-score(b))[0];
++}
+diff --git a/src/tabletop/styles.css b/src/tabletop/styles.css
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -6 +6,9 @@
+ @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
++
++/* A mana-color choice should be no larger than the choices themselves. */
++.mana-window{width:max-content;min-width:0;max-width:calc(100vw - 8px);height:auto;padding:5px;z-index:1300;border-color:#9c8358;border-radius:24px;overflow:visible;background:#13222bf5}
++.mana-options{display:flex;gap:5px;align-items:center}
++.mana-choice{display:flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:50%;width:36px;height:36px;padding:2px}
++.mana-choice:hover:not(:disabled){background:#d1b17840;transform:scale(1.12)}
++.mana-choice .mana-symbol{width:30px;height:30px;min-width:30px;box-shadow:0 1px 3px #0009}
++.mana-symbol svg{width:75%;height:75%;display:block}
+diff --git a/src/tabletop/views.js b/src/tabletop/views.js
+--- a/src/tabletop/views.js
++++ b/src/tabletop/views.js
+@@ -1 +1,2 @@
++import { isManaColorChoice, manaChoiceHTML, manaGlyph } from './mana-choice.js';
+ import { COLORS, STEPS } from '../core/index.js';
+@@ -19,3 +20,3 @@
+   const adjust=(player,field,label)=>{const value=s.players[player][field],name=player?`Opponent ${player} ${field==='life'?'Life':field}`:label;return `<div class="total-row"><span class="total-label" title="${h(player?'Opponent '+player:label)}">${h(label)}</span>${button('−','resource',`data-player="${player}" data-field="${field}" data-delta="-1" aria-label="Decrease ${h(name)}"`)}<b title="${h(name)}">${value}</b>${button('+','resource',`data-player="${player}" data-field="${field}" data-delta="1" aria-label="Increase ${h(name)}"`)}</div>`;};
+-  return `<aside class="rail" aria-label="Your cards and resources"><div class="library-deck" title="Your library">${top?picture(g,top.id):`<button class="deck-back" data-action="deck" aria-label="Your library" title="Your library"><img src="${h(asset('assets/card-back.jpg'))}" alt="Magic: The Gathering card back" draggable="false"></button>`}<span class="deck-count" title="Active library cards">${s.zones.libraryActive.length}</span><span class="reserve-count ${s.reserveAccess?'enabled':''}" title="${s.zones.libraryReserve.length} reserve cards · access ${s.reserveAccess?'enabled':'isolated'}">+${s.zones.libraryReserve.length}</span></div><div class="library-icons"><span title="Cards in hand" aria-label="${s.zones.hand.length} cards in hand">${icon('hand')}<b>${s.zones.hand.length}</b></span><span title="Land plays" aria-label="Land plays ${s.landPlaysUsed} of ${g.landAllowance()}">${icon('land')}<b>${s.landPlaysUsed}/${g.landAllowance()}</b></span></div><div class="command-slot" title="Command zone"><span class="watermark">COMMAND ZONE</span>${s.zones.command.map(id=>picture(g,id)).join('')}</div><div class="mana-title">Mana pool ${button('×','clear-mana','title="Clear mana pool" aria-label="Clear mana pool"')}</div><div class="mana-rows">${COLORS.map(c=>`<div class="mana-row"><span title="${{W:'White',U:'Blue',B:'Black',R:'Red',G:'Green',C:'Colorless'}[c]}">${symbol(c)}</span>${button('−','mana',`data-color="${c}" data-delta="-1" aria-label="Remove ${c} mana" ${p.mana[c]===0?'disabled':''}`)}<b>${p.mana[c]}</b>${button('+','mana',`data-color="${c}" data-delta="1" aria-label="Add ${c} mana"`)}</div>`).join('')}</div>${p.restrictedMana.length?`<button class="restricted-summary" data-action="dialog" data-dialog="mana" title="Restricted mana: ${h(p.restrictedMana.map(t=>`${t.amount} ${t.color} ${t.restriction}`).join(', '))}">+${p.restrictedMana.reduce((a,t)=>a+t.amount,0)} restricted</button>`:''}<div class="totals">${adjust(0,'life','Life')}${adjust(0,'energy','Energy')}${adjust(0,'poison','Poison')}</div><div class="opponents-totals">${s.players.slice(1).map(p=>adjust(p.id,'life','OP'+p.id)).join('')}</div></aside><div class="resize-line rail-resize" data-resize="sidebar" role="separator" aria-label="Resize left column" aria-orientation="vertical" tabindex="0"></div>`;
++  return `<aside class="rail" aria-label="Your cards and resources"><div class="library-deck" title="Your library">${top?picture(g,top.id):`<button class="deck-back" data-action="deck" aria-label="Your library" title="Your library"><img src="${h(asset('assets/card-back.jpg'))}" alt="Magic: The Gathering card back" draggable="false"></button>`}<span class="deck-count" title="Active library cards">${s.zones.libraryActive.length}</span><span class="reserve-count ${s.reserveAccess?'enabled':''}" title="${s.zones.libraryReserve.length} reserve cards · access ${s.reserveAccess?'enabled':'isolated'}">+${s.zones.libraryReserve.length}</span></div><div class="library-icons"><span title="Cards in hand" aria-label="${s.zones.hand.length} cards in hand">${icon('hand')}<b>${s.zones.hand.length}</b></span><span title="Land plays" aria-label="Land plays ${s.landPlaysUsed} of ${g.landAllowance()}">${icon('land')}<b>${s.landPlaysUsed}/${g.landAllowance()}</b></span></div><div class="command-slot" title="Command zone"><span class="watermark">COMMAND ZONE</span>${s.zones.command.map(id=>picture(g,id)).join('')}</div><div class="mana-title">Mana pool ${button('×','clear-mana','title="Clear mana pool" aria-label="Clear mana pool"')}</div><div class="mana-rows">${COLORS.map(c=>`<div class="mana-row"><span title="${{W:'White',U:'Blue',B:'Black',R:'Red',G:'Green',C:'Colorless'}[c]}">${manaGlyph(c)}</span>${button('−','mana',`data-color="${c}" data-delta="-1" aria-label="Remove ${c} mana" ${p.mana[c]===0?'disabled':''}`)}<b>${p.mana[c]}</b>${button('+','mana',`data-color="${c}" data-delta="1" aria-label="Add ${c} mana"`)}</div>`).join('')}</div>${p.restrictedMana.length?`<button class="restricted-summary" data-action="dialog" data-dialog="mana" title="Restricted mana: ${h(p.restrictedMana.map(t=>`${t.amount} ${t.color} ${t.restriction}`).join(', '))}">+${p.restrictedMana.reduce((a,t)=>a+t.amount,0)} restricted</button>`:''}<div class="totals">${adjust(0,'life','Life')}${adjust(0,'energy','Energy')}${adjust(0,'poison','Poison')}</div><div class="opponents-totals">${s.players.slice(1).map(p=>adjust(p.id,'life','OP'+p.id)).join('')}</div></aside><div class="resize-line rail-resize" data-resize="sidebar" role="separator" aria-label="Resize left column" aria-orientation="vertical" tabindex="0"></div>`;
+ }
+@@ -54,2 +55,3 @@
+   const p=ctx.g.state.pending;if(!p)return '';
++  if(isManaColorChoice(p))return manaChoiceHTML(p);
+   return floating('decision',p.label,decisionHTML(ctx),tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window');
