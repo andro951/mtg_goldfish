@@ -35,8 +35,8 @@ export function installInteractions(api){
     if(e.button!==0||api.ui.modal)return;const target=e.target,p=pointer(e);lastPointer=p;
     const resize=target.closest('[data-resize]');
     const panel=target.closest('[data-drag-panel]');
-    if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:{...api.prefs}};}
-    else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f};}
+    if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:structuredClone(api.prefs)};}
+    else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f,old:structuredClone(api.prefs)};}
     else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
     else{
       const surface=getSurface(p),hand=target.closest('.hand'),rail=target.closest('.rail');
@@ -94,7 +94,15 @@ export function installInteractions(api){
   function finish(e,cancelled=false){
     if(!gesture||gesture.id!==e.pointerId)return;const d=gesture,p=pointer(e);gesture=null;api.ui.gestureActive=false;
     try{document.body.releasePointerCapture(e.pointerId);}catch{}endGhosts();
-    if(cancelled){api.render();return;}
+    if(cancelled){
+      if(d.kind==='resize'||d.kind==='panel'){
+        Object.assign(api.prefs,d.old);
+        if(d.kind==='panel'){delete api.ui.popupPositions[d.key];if(d.old.popups[d.key])api.ui.popupPositions[d.key]={...d.old.popups[d.key]};}
+      }
+      if(d.kind==='pan')api.prefs.cameras[d.zone]={...d.cam};
+      if(d.kind==='box')api.ui.selected=new Set(d.original);
+      api.render();return;
+    }
     if(['resize','panel','pan'].includes(d.kind)){api.savePreferences();api.size();return;}
     if(d.kind==='box'){api.render();return;}
     if(!d.active){if(!d.blocked)api.clickCard(d.primary,p,d.shift);return;}

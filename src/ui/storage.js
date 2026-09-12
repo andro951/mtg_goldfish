@@ -30,11 +30,19 @@ export class SessionStore {
       if (this.mode === 'indexeddb') return new Promise((resolve, reject) => {
         const tx = this.database.transaction('sessions', 'readwrite'), store = tx.objectStore('sessions');
         const previous = store.get('current');
-        previous.onsuccess = () => { if (previous.result) store.put(previous.result, 'previous'); store.put(envelope, 'current'); };
+        previous.onsuccess = () => {
+          // Repeated flushes must not replace the last distinct recovery point.
+          if (previous.result && JSON.stringify(previous.result.session) === JSON.stringify(session)) {
+            envelope.savedAt = previous.result.savedAt; return;
+          }
+          if (previous.result) store.put(previous.result, 'previous');
+          store.put(envelope, 'current');
+        };
         tx.oncomplete = () => resolve(envelope.savedAt); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error || new Error('Autosave transaction was interrupted.'));
       });
       // Preserve a previous good record, even if a quota error rejects the next write.
       const previous = localStorage.getItem('astra-session-current');
+      if (previous && JSON.stringify(JSON.parse(previous).session) === JSON.stringify(session)) return JSON.parse(previous).savedAt;
       if (previous) localStorage.setItem('astra-session-previous', previous);
       localStorage.setItem('astra-session-current', JSON.stringify(envelope));
       return envelope.savedAt;

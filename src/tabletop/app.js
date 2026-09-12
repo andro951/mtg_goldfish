@@ -43,7 +43,7 @@ function makeLayouts(){
   const objects=ids.map(id=>g.object(id)).filter(Boolean),list=cardLayout(objects,zone==='battlefield'?visibleWidth:prefs.dockWidth);
   const existing=list.filter(c=>{const o=g.object(c.id);return o.location||ui.memo[`${zone}/${o.id}:${o.oid}`];});
   for(const c of list){const o=g.object(c.id),key=`${zone}/${o.id}:${o.oid}`;
-   if(o.location){ui.memo[key]={x:c.x,y:c.y};continue;}
+   if(o.location)continue; // Preserve the original implicit position for visual undo.
    if(ui.memo[key]){Object.assign(c,ui.memo[key]);continue;}
    // Preserve existing card positions when another object enters/leaves.
    let trial={...c};for(let step=0;step<300&&existing.some(other=>{
