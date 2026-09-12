@@ -1,0 +1,57 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -44,3 +44,3 @@
+   for(const c of list){const o=g.object(c.id),key=`${zone}/${o.id}:${o.oid}`;
+-   if(o.location){ui.memo[key]={x:c.x,y:c.y};continue;}
++   if(o.location)continue; // Preserve the original implicit position for visual undo.
+    if(ui.memo[key]){Object.assign(c,ui.memo[key]);continue;}
+diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
+--- a/src/tabletop/interactions.js
++++ b/src/tabletop/interactions.js
+@@ -36,6 +36,6 @@
+     const resize=target.closest('[data-resize]');
+     const panel=target.closest('[data-drag-panel]');
+-    if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:{...api.prefs}};}
+-    else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f};}
++    if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:structuredClone(api.prefs)};}
++    else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f,old:structuredClone(api.prefs)};}
+     else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
+     else{
+@@ -95,5 +95,13 @@
+     if(!gesture||gesture.id!==e.pointerId)return;const d=gesture,p=pointer(e);gesture=null;api.ui.gestureActive=false;
+     try{document.body.releasePointerCapture(e.pointerId);}catch{}endGhosts();
+-    if(cancelled){api.render();return;}
++    if(cancelled){
++      if(d.kind==='resize'||d.kind==='panel'){
++        Object.assign(api.prefs,d.old);
++        if(d.kind==='panel'){delete api.ui.popupPositions[d.key];if(d.old.popups[d.key])api.ui.popupPositions[d.key]={...d.old.popups[d.key]};}
++      }
++      if(d.kind==='pan')api.prefs.cameras[d.zone]={...d.cam};
++      if(d.kind==='box')api.ui.selected=new Set(d.original);
++      api.render();return;
++    }
+     if(['resize','panel','pan'].includes(d.kind)){api.savePreferences();api.size();return;}
+     if(d.kind==='box'){api.render();return;}
+diff --git a/src/ui/storage.js b/src/ui/storage.js
+--- a/src/ui/storage.js
++++ b/src/ui/storage.js
+@@ -31,9 +31,17 @@
+         const tx = this.database.transaction('sessions', 'readwrite'), store = tx.objectStore('sessions');
+         const previous = store.get('current');
+-        previous.onsuccess = () => { if (previous.result) store.put(previous.result, 'previous'); store.put(envelope, 'current'); };
++        previous.onsuccess = () => {
++          // Repeated flushes must not replace the last distinct recovery point.
++          if (previous.result && JSON.stringify(previous.result.session) === JSON.stringify(session)) {
++            envelope.savedAt = previous.result.savedAt; return;
++          }
++          if (previous.result) store.put(previous.result, 'previous');
++          store.put(envelope, 'current');
++        };
+         tx.oncomplete = () => resolve(envelope.savedAt); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error || new Error('Autosave transaction was interrupted.'));
+       });
+       // Preserve a previous good record, even if a quota error rejects the next write.
+       const previous = localStorage.getItem('astra-session-current');
++      if (previous && JSON.stringify(JSON.parse(previous).session) === JSON.stringify(session)) return JSON.parse(previous).savedAt;
+       if (previous) localStorage.setItem('astra-session-previous', previous);
+       localStorage.setItem('astra-session-current', JSON.stringify(envelope));
