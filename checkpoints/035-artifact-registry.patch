@@ -1,0 +1,39 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -300,8 +300,9 @@
+       if (definition.validate) definition.validate(this, source, draft.context);
+     }
+-    const consumed = new Set();
++    const consumed = new Set(), tappedForCost = new Set();
+     for (const [index, cost] of this.draftCosts(draft).entries()) {
+       const selected = cost.self ? [source.id] : asArray(draft.context.inputs[costKey(cost, index)]);
+       if (cost.kind === 'tap') for (const id of selected) {
++        requireRule(!tappedForCost.has(id), 'The same permanent cannot pay two tap costs.'); tappedForCost.add(id);
+         const object = this.object(id); requireRule(object?.zone === 'battlefield' && !object.tapped && object.controller === 0, 'Tap costs require untapped permanents you control.', 'TAP_COST');
+         if (cost.self) requireRule(!this.isSick(object), 'This creature has summoning sickness and cannot pay its tap-symbol cost.', 'SUMMONING_SICKNESS');
+diff --git a/src/core/zones.js b/src/core/zones.js
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -274,4 +274,5 @@
+         if (!target || target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature')) { object.attachedTo = null; this.touch(); }
+       }
++      if (c.subtypes.includes('Aura') && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
+       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
+       if (plus && minus) { const n = Math.min(plus, minus); object.counters['+1/+1'] -= n; object.counters['-1/-1'] -= n; this.touch(); }
+diff --git a/src/rules/index.js b/src/rules/index.js
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -9,4 +9,6 @@
+ import { installLibraryEngines } from './library-engines.js';
+ 
++import { installArtifactMechanics } from './artifact-mechanics.js';
++
+ export function createRegistry(definitions) {
+   const registry = new CardRegistry(definitions);
+@@ -17,4 +19,5 @@
+   installTutorsRecursion(registry);
+   installLibraryEngines(registry);
++  installArtifactMechanics(registry);
+   return registry;
+ }
