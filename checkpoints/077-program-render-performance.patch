@@ -21,6 +21,7 @@
 +    model.queue.push(...eventSignals(api.g,events).filter(relevant));
      if(model.queue.length>200){model.queue.length=200;pause('Automation queue limit reached. Review rules, then resume.');}
    }
+   function preflight(sequence){return preflightSequence(api.g,sequence,{beforeResolve(trial,top){
 @@ -49,13 +52,14 @@
            if(model.paused){model.queue.unshift(event);break;}
          }
@@ -37,7 +38,7 @@
        applyRule(rule,event);
        if(model.paused||!cleanBoundary())return false;
      }
-@@ -71,21 +75,22 @@
+@@ -72,20 +76,21 @@
        if(!result.ok)return;
        if(['UNDO','REDO','CANCEL'].includes(action.type)) {
          if(recording){recording=null;api.toast('Recording stopped because the action was undone or cancelled. Re-record the intended line.');}
@@ -61,7 +62,10 @@
 -      recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed();
 +      recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed(false);
      },
-@@ -97,20 +102,20 @@
+     finishRecording(name,saved=false) {
+       if(!recording)throw new Error('No sequence is being recorded.');
+@@ -95,25 +100,25 @@
+       const sequence={id:programId('seq'),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
        model.sequences.push(sequence);recording=null;changed();return sequence;
      },
 -    cancelRecording(){recording=null;model.queue=[];changed();},
@@ -80,9 +84,13 @@
 -          job.completed++;changed();
 +          job.completed++;changed(false);
            // Process configured holds between iterations, never during a payment.
-@@ -118,5 +123,5 @@
+           running=null;pump();running=job;
+           if(model.paused)break;
+           await new Promise(resolve=>setTimeout(resolve,0));
          }
          return {completed:job.completed,requested:count,reason:model.pauseReason||(job.stop?'Stopped by you.':'')};
 -      } finally {if(running===job)running=null;changed();}
 +      } finally {if(running===job)running=null;changed(false);}
      },
+     preflight(id){return preflight(model.sequences.find(s=>s.id===id));},
+     saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new Error('Invalid rule.');
