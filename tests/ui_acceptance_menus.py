@@ -1,0 +1,35 @@
+from ui_acceptance_support import *
+
+def menus(p):
+ menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==9)
+ click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 160 candidates',p.locator('.registry-card').count()==160)
+ p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
+ p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))
+ shot(p,'07-card-registry.png');close(p);menu(p,'deck');click(p,'validate-deck','.modal');check('original deck validates and preserves duplicates',p.evaluate('astra.ui.deckReport.accepted') and 'DUPLICATE' in p.locator('.modal-body').inner_text())
+ p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel');click(p,'validate-deck','.modal');check('unsupported deck names are reported explicitly',not p.evaluate('astra.ui.deckReport.accepted') and 'MISSING' in p.locator('.modal-body').inner_text())
+ if not args.memory:
+  with p.expect_download() as d:click(p,'export-report','.modal')
+  d.value.save_as(OUT/'missing-test.json');check('missing card report downloads as JSON',json.loads((OUT/'missing-test.json').read_text())['missing'])
+ click(p,'restore-pool','.modal');click(p,'validate-deck','.modal');check('restore candidate pool recovers valid deck',p.evaluate('astra.ui.deckReport.accepted'));close(p)
+ for name in ['guide','settings','log','notes','save']:
+  menu(p,name);check(f'{name} hidden menu opens and closes',p.locator('.modal').is_visible());close(p)
+ menu(p,'settings');check('card-size slider removed; geometry controls replace it',p.locator('#card-size,input[type=range]').count()==0)
+ p.locator('#setting-orderTriggers').uncheck();check('trigger order setting changes engine',not state(p,'state.settings.orderTriggers'));p.locator('#setting-orderTriggers').check()
+ p.locator('#setting-firstMulliganFree').uncheck();check('mulligan policy control changes engine',not state(p,'state.settings.firstMulliganFree'));p.locator('#setting-firstMulliganFree').check()
+ p.locator('#reserve-access').uncheck();check('reserve isolation can still be chosen explicitly',not state(p,'state.reserveAccess'));p.locator('#reserve-access').check()
+ p.locator('[data-player-field=abstractCreatures][data-player="1"]').fill('3');p.locator('[data-player-field=abstractCreatures][data-player="1"]').press('Tab');check('opponent creature count applies',state(p,'state.players[1].abstractCreatures')==3)
+ p.locator('[data-player-field=abstractHand][data-player="2"]').fill('5');p.locator('[data-player-field=abstractHand][data-player="2"]').press('Tab');check('opponent hand count applies',state(p,'state.players[2].abstractHand')==5)
+ p.locator('#setting-debug').check();check('developer controls require opt-in',p.locator('[data-action=debug-spawn]').count()==1);p.locator('#setting-debug').uncheck();check('disabling developer mode hides overrides',p.locator('[data-action=debug-spawn]').count()==0);close(p)
+ for field in ['life','energy','poison']:
+  before=state(p,f'state.players[0].{field}');p.locator(f'.totals [data-field={field}][data-delta="1"]').click();p.locator(f'.totals [data-field={field}][data-delta="-1"]').click();check(f'{field} compact plus/minus works',state(p,f'state.players[0].{field}')==before)
+ for color in 'WUBRGC':
+  p.locator(f'[data-action=mana][data-color={color}][data-delta="1"]').click();p.locator(f'[data-action=mana][data-color={color}][data-delta="-1"]').click()
+ check('all six mana plus/minus controls work',state(p,'state.players[0].mana')==dict.fromkeys('WUBRGC',0))
+ for i in [1,2,3]:
+  p.locator(f'[data-action=resource][data-player="{i}"][data-delta="1"]').click();p.locator(f'[data-action=resource][data-player="{i}"][data-delta="-1"]').click()
+ check('all compact opponent life controls work',all(state(p,f'state.players[{i}].life')==40 for i in [1,2,3]))
+ menu(p,'notes');start=state(p,'state.notes.length');p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Backspace');check('Backspace edits text without undoing game',p.locator('#note-text').input_value()=='Line tested <b>literal</b');click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
+ menu(p,'log');p.locator('.log-entry summary').first.click();check('action-log entry expands to events',p.locator('.log-entry[open] pre').is_visible());close(p)
+ menu(p);click(p,'undo','.modal');check('Menu Undo is operational',state(p,'state.notes.length')==start);click(p,'redo','.modal');check('Menu Redo is operational',state(p,'state.notes.length')==start+1);close(p)
+ menu(p,'guide');p.keyboard.press('Escape');check('Escape closes modal and restores table interaction',p.locator('.modal').count()==0 and not p.evaluate('document.getElementById("app").inert'))
+
