@@ -14,6 +14,7 @@ export const actionMethods = {
       requireRule(this.state.pending?.optional || this.state.actionDraft?.kind !== 'trigger', 'A mandatory trigger or effect cannot be cancelled.');
       if (this.state.pending?.optional && ['effect', 'castWindow'].includes(this.state.pending.kind)) return this.acceptChoice([], action);
       if (this.state.pending?.kind === 'optional') return this.acceptChoice('NO', action);
+      if (this.state.pending?.kind === 'miracleReveal') return this.acceptChoice('decline', action);
       if (this.state.pending?.kind === 'effectPayment') return this.acceptChoice('decline', action);
       requireRule(this.transaction, 'No action is in progress.');
       const before = clone(this.transaction.before); this.transaction = null; this.state = before; this.touch(); return;
@@ -413,6 +414,21 @@ export const actionMethods = {
   acceptChoice(value, action = {}) {
     const pending = this.state.pending; requireRule(pending, 'No choice is pending.');
     this.record('CHOICE_MADE', { kind: pending.kind, key: pending.key || null, value: clone(value) });
+    if (pending.kind === 'miracleReveal') {
+      const option = asArray(value)[0]; requireRule(['reveal', 'decline'].includes(option), 'Reveal the card or decline miracle.');
+      const card = this.object(pending.object), continuation = this.state.drawContinuation;
+      this.state.pending = null; this.state.drawContinuation = null;
+      if (option === 'reveal' && card?.zone === 'hand') {
+        card.flags.revealed = true;
+        this.record('MIRACLE_REVEALED', { object: ref(card), cost: pending.cost });
+        this.queueTrigger({ source: ref(card), sourceCardId: card.cardId, controller: card.owner, abilityId: 'miracle', label: `${this.definition(card).name} — miracle`,
+          context: this.context(card), program: [{ op: 'castChoice', ids: [ref(card)], method: 'alternate', cost: pending.cost, label: `Cast for miracle ${pending.cost}?` }] });
+      }
+      const drawn = continuation ? this.drawCards(continuation.remaining, continuation.player, continuation.cause) : [];
+      if (continuation?.resultKey && this.state.resolving) this.state.resolving.context.vars[continuation.resultKey] = [...continuation.accumulated, ...drawn];
+      if (this.state.resolving && !this.state.pending) this.runEffects();
+      return;
+    }
     if (pending.kind === 'triggerOrder') return this.acceptTriggerOrder(value);
     if (pending.kind === 'replacement') return this.resumeReplacement(asArray(value)[0]);
     if (pending.kind === 'draft') {

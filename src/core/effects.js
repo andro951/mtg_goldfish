@@ -81,7 +81,9 @@ export const effectMethods = {
       case 'choose': return this.effectChoose(command, context);
       case 'draw': {
         const ids = this.drawCards(integer(cmd.count ?? 1, 0, 1000000), player);
-        if (command.key) context.vars[command.key] = ids; return;
+        if (command.key) context.vars[command.key] = ids;
+        if (this.state.drawContinuation) this.state.drawContinuation.resultKey = command.key || null;
+        return;
       }
       case 'takeTop': {
         const ids = this.activeLibrary(player).slice(0, integer(cmd.count ?? 1, 0, 1000000));

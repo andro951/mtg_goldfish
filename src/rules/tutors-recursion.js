@@ -89,7 +89,7 @@ export function installTutorsRecursion(registry) {
     effect: (g, ctx) => [move(eligibleThisTurn(g, ctx.controller, sunriseTypes), 'battlefield', { cause: 'this-turn-return', tapped: true })] }] });
   register(registry, 'Open the Vaults', { spell: { effect: () => [{ op: 'move', selector: { zones: ['graveyard'], type: ['Artifact', 'Enchantment'], token: false }, to: 'battlefield', cause: 'reanimate' }] } });
   register(registry, 'Redress Fate', { miracle: '{3}{W}', spell: { effect: () => graveReturn({ type: ['Artifact', 'Enchantment'], token: false }) } });
-  register(registry, 'Lumra, Bellow of the Woods', { characteristics: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; },
+  register(registry, 'Lumra, Bellow of the Woods', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; },
     triggers: [etb('lands-return', 'Mill four; return all your graveyard lands tapped', () => [{ op: 'mill', count: 4 }, ...graveReturn({ land: true }, true)])] });
   register(registry, 'Aftermath Analyst', { triggers: [etb('mill', 'Mill three cards', () => [{ op: 'mill', count: 3 }])],
     activated: [{ id: 'return-lands', label: 'Sacrifice Analyst: return all graveyard lands tapped', cost: '{3}{G}', costs: [selfSacrifice], effect: () => graveReturn({ land: true }, true) }] });

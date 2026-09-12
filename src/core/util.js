@@ -28,8 +28,8 @@ export function hashText(text) {
   return (h >>> 0).toString(16).padStart(8, '0');
 }
 export function stableJSON(value) {
-  if (Array.isArray(value)) return '[' + value.map(stableJSON).join(',') + ']';
-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableJSON(value[k])).join(',') + '}';
+  if (Array.isArray(value)) return '[' + value.map(v => v === undefined ? 'null' : stableJSON(v)).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).filter(k => value[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + stableJSON(value[k])).join(',') + '}';
   return JSON.stringify(value);
 }
 export const stateHash = state => hashText(stableJSON(state));

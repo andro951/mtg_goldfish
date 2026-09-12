@@ -183,7 +183,16 @@ export const zoneMethods = {
       if (changes?.length) {
         const card = this.object(object.id), key = `draw:${player}:${this.state.turnSerial}:${this.state.activePlayer}`;
         this.state.turnCounts[key] = (this.state.turnCounts[key] || 0) + 1;
-        this.emit('DRAW', { player, card: ref(card), first: this.state.turnCounts[key] === 1, amount: 1 }); result.push(card.id);
+        const first = this.state.turnCounts[key] === 1;
+        this.emit('DRAW', { player, card: ref(card), first, amount: 1 }); result.push(card.id);
+        if (first && player === 0 && this.module(card).miracle) {
+          // Reveal during this particular draw, before the next card is drawn.
+          // The resulting triggered ability still waits for the whole effect.
+          this.state.drawContinuation = { remaining: count - index - 1, player, cause, accumulated: [...result] };
+          this.state.pending = { kind: 'miracleReveal', key: 'miracle-reveal', label: `Reveal ${this.definition(card).name} for miracle?`, object: ref(card), cost: this.module(card).miracle,
+            optional: true, options: [{ value: 'reveal', label: 'Reveal for miracle' }, { value: 'decline', label: 'Do not reveal' }] };
+          break;
+        }
       }
     }
     return result;

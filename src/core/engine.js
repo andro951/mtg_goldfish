@@ -56,15 +56,6 @@ export class Engine {
       toughness: Number(definition.toughness) || 0, manaValue: Number(definition.manaValue) || 0 };
     if (object.zone === 'stackCards') base.manaValue += (object.flags.castX || 0) * (definition.manaCost.match(/\{X\}/g) || []).length;
     if (object.flags.prototype) Object.assign(base, clone(object.flags.prototype));
-    if (this.module(object).reconfigure && object.attachedTo) base.types = base.types.filter(t => t !== 'Creature');
-    for (const modification of object.modifications || []) {
-      if (modification.types) base.types = [...modification.types];
-      if (modification.addTypes) base.types = unique([...base.types, ...modification.addTypes]);
-      if (modification.addSubtypes) base.subtypes = unique([...base.subtypes, ...modification.addSubtypes]);
-      if (modification.keywords) base.keywords = unique([...base.keywords, ...modification.keywords]);
-      if (modification.basePower != null) base.power = modification.basePower;
-      if (modification.baseToughness != null) base.toughness = modification.baseToughness;
-    }
     return base;
   }
   characteristics(objectOrId) {
@@ -77,39 +68,46 @@ export class Engine {
       try {
         const sources = this.objects('battlefield');
         const statics = sources.flatMap(source => (this.module(source).statics || []).map(rule => ({ source, rule })));
-        for (const layer of [4, 6, 7]) {
-          for (const { source, rule } of statics.filter(x => (x.rule.layer || 7) === layer))
-            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
-          for (const effect of this.state.effects.filter(e => e.kind === 'modify' && (e.layer || 7) === layer)) {
-            for (const target of all) if ((effect.targets ? effect.targets.some(r => sameRef(r, target)) : matches(this, target, effect.selector || {}, { controller: effect.controller }))) this.applyCharacteristicModification(view[target.id], effect.modification);
-          }
-          if (layer === 7) {
-            for (const target of all) {
-              const own = this.module(target).characteristics;
-              if (own) own(this, target, view[target.id]);
-            }
-          }
+        // Supported continuous effects are evaluated in type, ability, and P/T
+        // sublayers. A base-setting animation must not erase counters or buffs.
+        const modifications = all.flatMap(target => (target.modifications || []).map(modification => ({ target, modification })));
+        for (const effect of this.state.effects.filter(e => e.kind === 'modify')) {
+          for (const target of all) if (effect.targets ? effect.targets.some(r => sameRef(r, target)) : matches(this, target, effect.selector || {}, { controller: effect.controller }))
+            modifications.push({ target, modification: effect.modification });
         }
-        for (const target of all) {
-          const c = view[target.id];
-          for (const modification of target.modifications || []) { c.power += modification.power || 0; c.toughness += modification.toughness || 0; }
-          c.power += (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
-          c.toughness += (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
-          c.keywords = unique(c.keywords); c.types = unique(c.types); c.subtypes = unique(c.subtypes);
+        for (const layer of [4, 6, 7.1, 7.2, 7.3, 7.4]) {
+          if (layer === 4) for (const target of all) {
+            if (this.module(target).reconfigure && target.attachedTo) view[target.id].types = view[target.id].types.filter(t => t !== 'Creature');
+          }
+          if (layer === 7.1) for (const target of all) this.module(target).cda?.(this, target, view[target.id]);
+          for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
+            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
+          for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
+          if (layer === 7.3) for (const target of all) this.module(target).characteristics?.(this, target, view[target.id]);
+          if (layer === 7.4) for (const target of all) {
+            const c = view[target.id], counters = (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
+            c.power += counters; c.toughness += counters;
+            c.keywords = unique(c.keywords); c.types = unique(c.types); c.subtypes = unique(c.subtypes);
+          }
         }
         this._cache = view;
       } finally { this._deriving = null; }
     }
     return this._cache[object.id] || this.baseCharacteristics(object);
   }
-  applyCharacteristicModification(c, modification) {
-    if (modification.types) c.types = [...modification.types];
-    if (modification.addTypes) c.types = unique([...c.types, ...modification.addTypes]);
-    if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
-    if (modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
-    if (modification.basePower != null) c.power = modification.basePower;
-    if (modification.baseToughness != null) c.toughness = modification.baseToughness;
-    c.power += modification.power || 0; c.toughness += modification.toughness || 0;
+  applyCharacteristicModification(c, modification, layer) {
+    if (layer === 4) {
+      if (modification.types) c.types = [...modification.types];
+      if (modification.addTypes) c.types = unique([...c.types, ...modification.addTypes]);
+      if (modification.removeTypes) c.types = c.types.filter(t => !modification.removeTypes.includes(t));
+      if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
+    }
+    if (layer === 6 && modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
+    if (layer === 7.2) {
+      if (modification.basePower != null) c.power = modification.basePower;
+      if (modification.baseToughness != null) c.toughness = modification.baseToughness;
+    }
+    if (layer === 7.3) { c.power += modification.power || 0; c.toughness += modification.toughness || 0; }
   }
   isSick(object) {
     // Control must be continuous since the beginning of THAT controller's

@@ -36,7 +36,7 @@ export function restrictionAllows(tag, context = {}) {
 
 /** Suggest a pool allocation only. This never taps or activates a permanent. */
 export function suggestPayment(cost, player, context = {}) {
-  const buckets = COLORS.map(color => ({ color, available: player.mana[color] || 0, id: null }));
+  const buckets = ['C', 'W', 'U', 'B', 'R', 'G'].map(color => ({ color, available: player.mana[color] || 0, id: null }));
   for (const tag of player.restrictedMana || []) if (restrictionAllows(tag, context)) buckets.unshift({ color: tag.color, available: tag.amount, id: tag.id });
   const normal = emptyMana(), tagged = [];
   const use = bucket => {

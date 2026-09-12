@@ -5,7 +5,7 @@ export function installManaEngines(registry) {
   for (const card of registry.list().filter(c => !c.candidate)) register(registry, card.id, {});
   register(registry, 'Treasure', { activated: [{ id: 'mana', label: 'Sacrifice: add any color', tap: true, mana: true, inputs: [colorInput()], costs: [selfSacrifice], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
   register(registry, 'Food', { activated: [{ id: 'eat', label: 'Sacrifice Food: gain 3 life', cost: '{2}', tap: true, costs: [selfSacrifice], effect: () => [{ op: 'life', amount: 3 }] }] });
-  register(registry, 'Construct', { characteristics: (g, o, c) => { if (o.zone === 'battlefield') { c.power = countType(g, 'Artifact', o.controller); c.toughness = c.power; } } });
+  register(registry, 'Construct', { characteristics: (g, o, c) => { if (o.zone === 'battlefield') { const n = countType(g, 'Artifact', o.controller); c.power += n; c.toughness += n; } } });
   register(registry, 'Pilot', { crewBonus: 2 });
   register(registry, 'Grim Monolith', { noNaturalUntap: true, activated: [mana({ C: 3 }), { id: 'untap', label: 'Untap Grim Monolith', cost: '{4}', effect: () => [{ op: 'untap', ids: '$source' }] }] });
   register(registry, 'Mana Vault', { noNaturalUntap: true, activated: [mana({ C: 3 })], triggers: [
