@@ -1,0 +1,138 @@
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.2.1",
++  "version": "1.3.0",
+   "private": true,
+   "type": "module",
+   "description": "Offline rules-aware 160-card MTG goldfish laboratory",
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -10,6 +10,9 @@
+ from ui_acceptance_extra import extra_controls
+ from ui_acceptance_misc import phase_controls
+ from ui_acceptance_inspector import inspector_choices
++from ui_acceptance_programs import grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation
++
++from ui_acceptance_performance import interaction_performance
+ 
+ server=None
+ if not args.memory:
+@@ -18,7 +21,7 @@
+  with sync_playwright() as pw:
+   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls]
++  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+   for group in groups:
+    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)
+@@ -35,13 +38,13 @@
+   if not args.memory and not args.groups:
+    context=b.new_context();p=context.new_page()
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.2.1');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.3.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+    context.close()
+   b.close()
+ finally:
+  if server:server.terminate();server.wait(timeout=5)
+-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.2.1','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.3.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+ print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
+ raise SystemExit(bool(failures or errors or requests))
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -16,3 +16,26 @@
+ 
+ save('inspector-actions',{battlefield:['Krark-Clan Ironworks','Ancient Den','Scene of the Crime','Walking Atlas']},{mana:{C:2}});
+ save('raft-modes',{battlefield:['Elven Raft-Steerer','Walking Atlas','Azusa, Lost but Seeking',{name:'Krang, Master Mind',owner:1,controller:1}],hand:['Ancient Den','Tree of Tales']});
++
++save('programs',{battlefield:['Urza, Lord High Artificer','Grinding Station','Clock of Omens','Ancient Den'],hand:['Mox Amber','Walking Atlas','Tree of Tales']},{mana:{C:4}});
++save('program-repeat',{battlefield:['Grim Monolith']},{mana:{C:10}});
++save('player-defaults',{battlefield:['Codex Shredder','Grinding Station','Ancient Den'],hand:['Mox Amber']});
++save('grid-entries',{battlefield:['Krark-Clan Ironworks','Mana Vault','Mox Opal'],graveyard:['Scroll Rack','Ancient Den','Mox Amber'],exile:['Tree of Tales','Great Furnace']});
++{
++ const g=fixture({battlefield:Array.from({length:29},()=>({name:'Grinding Station',tapped:true})),hand:['Mox Amber']},{orderTriggers:true});
++ g.state.settings.debug=false;g.state.settings.holdPriority=true;g.state.initialDeck.scenario='UI acceptance: order-many';g.initialState=structuredClone(g.state);
++ g.act({type:'CAST_SPELL',id:Object.values(g.state.instances).find(o=>o.zone==='hand').id,payment:'auto'});g.act({type:'RESOLVE_TOP'});
++ fs.writeFileSync(new URL('order-many.json',out),JSON.stringify(g.exportSession()));
++}
++{
++ const g=fixture({battlefield:['Urza, Lord High Artificer',{name:'Grinding Station',tapped:true},'Fateful Discovery'],hand:['Mox Amber']},{orderTriggers:true});
++ g.state.settings.debug=false;g.state.settings.holdPriority=true;g.state.initialDeck.scenario='UI acceptance: priority-stack';g.initialState=structuredClone(g.state);
++ g.act({type:'CAST_SPELL',id:Object.values(g.state.instances).find(o=>o.zone==='hand').id,payment:'auto'});g.act({type:'RESOLVE_TOP'});
++ const options=g.state.pending.triggers;const order=[...options].sort((a,b)=>Number(b.abilityId==='untap')-Number(a.abilityId==='untap')).map(t=>t.id);
++ g.act({type:'CHOOSE',value:order});
++ fs.writeFileSync(new URL('priority-stack.json',out),JSON.stringify(g.exportSession()));
++}
++save('raft-hooks',{battlefield:['Urza, Lord High Artificer','Walking Atlas','Elven Raft-Steerer','Azusa, Lost but Seeking','Traveling Chocobo'],hand:['Ancient Den','Tree of Tales']},{orderTriggers:true});
++save('target-many',{battlefield:['Krark-Clan Ironworks',...Array(48).fill('Ancient Den')]});
++save('program-stop',{battlefield:['Grim Monolith']},{mana:{C:1000}});
++save('multi-cost',{battlefield:['Kuldotha Forgemaster','Ancient Den','Tree of Tales','Great Furnace']});
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -30,7 +30,7 @@
+         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
+         page.goto(destination.as_uri())
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.2.1')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.3.0')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+         check('all 175 card images and the real Magic back are embedded', count == 176)
+         image_report = page.evaluate('''async () => {
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -1,7 +1,7 @@
+ from ui_acceptance_support import *
+ 
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.2.1')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.3.0')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
+  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
+@@ -37,7 +37,7 @@
+  shot(p,'02-mana-symbols.png');choose_option(p,'U')
+  check('one symbol click taps source and immediately adds blue',obj(p,'Razortide Bridge')['tapped'] and state(p,'state.players[0].mana.U')==1 and pending(p) is None)
+  rb=card(p,r['id'],'battlefield').bounding_box();check('tapped card is physically sideways',rb['width']>rb['height'] and abs(rb['width']-b['height'])<.1)
+- check('tapped bottom-right preserves upright bottom-left anchor',abs(rb['x']+rb['width']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
++ check('clockwise tapping keeps the physical bottom-right at the upright bottom-left anchor',abs(rb['x']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
+  card(p,r['id'],'battlefield').click();check('tapped source cannot open a mana-color choice',pending(p) is None and p.locator('.mana-window').count()==0)
+  check('tapped mana ability is disabled in inspector',p.locator('.inspector-window [data-action=ability]').first.is_disabled())
+  card(p,r['id'],'battlefield').click();check('second click on inspected card closes inspector',p.locator('.inspector-window').count()==0)
+--- a/tests/ui_acceptance_menus.py
++++ b/tests/ui_acceptance_menus.py
+@@ -1,7 +1,7 @@
+ from ui_acceptance_support import *
+ 
+ def menus(p):
+- menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==9)
++ menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==11)
+  click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 160 candidates',p.locator('.registry-card').count()==160)
+  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
+  p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -65,14 +65,14 @@
+     require(len(matches) == 1, f'Missing or ambiguous test total: {label}')
+     return int(matches[0])
+ engine_tests = total('tests')
+-require(engine_tests >= 430 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 489 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+     require(total(label) == 0, f'Engine test {label} must be zero.')
+ browser = browser_report('test-results/browser.json')
+ portable = browser_report('test-results/portable.json')
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.2.1', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 180, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.3.0', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 300, 'Browser regression suite is incomplete.')
+ 
+ builds = []
+ for name, report_path, arguments in (
