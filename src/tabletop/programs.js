@@ -108,10 +108,17 @@ export function preflightSequence(g,sequence,options={}){
     const trial=new Engine(g.registry,g.state),commands=[];
     // One prospective transaction: no intermediate history serialization.
     trial.transaction={before:clone(trial.state),intents:[],events:[],label:'PREFLIGHT'};
+    let boundarySerial=trial.state.eventSerial;
     for(const [i,step]of sequence.steps.entries()){
       requireRule(ACTION_TYPES.includes(step.action?.type),'Sequence contains a non-gameplay command.','SEQUENCE_ACTION');
       const command=concreteStep(trial,step);if(command.type==='RESOLVE_TOP'&&options.beforeResolve)options.beforeResolve(trial,trial.state.stack.at(-1));commands.push(command);
-      try{trial.touch();trial.handleAction(command);trial.settle();}catch(error){throw new Error(`Step ${i+1}: ${error.message}`);}
+      try{
+        trial.touch();trial.handleAction(command);trial.settle();
+        if(!trial.state.pending&&!trial.state.actionDraft&&!trial.state.resolving){
+          const events=trial.transaction.events.filter(e=>e.sequence>boundarySerial);boundarySerial=trial.state.eventSerial;
+          if(i<sequence.steps.length-1&&options.afterBoundary)options.afterBoundary(trial,events);
+        }
+      }catch(error){throw new Error(`Step ${i+1}: ${error.message}`);}
     }
     requireRule(!trial.state.pending&&!trial.state.actionDraft&&!trial.state.resolving,'The recording ends with an unanswered decision. Record the remaining choices.','SEQUENCE_INCOMPLETE');
     return {ok:true,commands,before:stateHash(g.state),after:stateHash(trial.state)};

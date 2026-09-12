@@ -21,6 +21,10 @@ export function createProgramController(api) {
     if(!top)return;
     const e={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id};
     if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new Error('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
+  },afterBoundary(trial,events){
+    const signals=eventSignals(trial,events);
+    if(model.rules.some(r=>signals.some(e=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))&&(r.action!=='hold'||trial.state.stack.length))))
+      throw new Error('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
   }});}
   function execute(sequence) {
     const check=preflight(sequence);
@@ -87,7 +91,7 @@ export function createProgramController(api) {
     },
     pump,beforeResolve,
     resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed(false);},
-    stop(){if(running)running.stop=true;else pause('Paused by you.');changed(false);},
+    stop(){if(running){if(running.stop)return;running.stop=true;changed(false);}else if(!model.paused)pause('Paused by you.');},
     startRecording(name) {
       if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
       recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed(false);
