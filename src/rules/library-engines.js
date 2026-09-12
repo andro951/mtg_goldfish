@@ -68,7 +68,7 @@ export function installLibraryEngines(registry) {
     return [{ op: 'choose', key: 'sixLand', label: 'You may take one of the milled lands', ids, min: 0, max: 1 }, move('$var.sixLand', 'hand')];
   });
   register(registry, 'Jhoira, Weatherlight Captain', { triggers: [spellCast('historic-draw', 'Draw for a historic spell', (g, s, e) => historic(e.characteristics), () => [draw()])] });
-  register(registry, 'Quicksmith Genius', { triggers: [artifactEntry('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }])] });
+  register(registry, 'Quicksmith Genius', { triggers: [artifactEntry('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }], { optional: true })] });
   register(registry, 'Rook Turret', { triggers: [artifactEntry('loot', 'You may draw, then discard', loot, { optional: true, test: (g, s, e) => typeEntered('Artifact')(g, s, e) && !sameRef(s, e.change.afterRef) })] });
   register(registry, 'Transplant Theorist', { triggers: [artifactEntry('loot', 'You may draw, then discard', loot, { optional: true })], activated: [{ id: 'bottom', label: 'Put a card from your graveyard on the bottom', cost: '{2}', inputs: [target(GY)], effect: () => [{ op: 'library', ids: '$input.target', position: 'bottom' }] }] });
   register(registry, 'Sarinth Steelseeker', { triggers: [artifactEntry('look', 'Look at top; take a land or optionally mill it', () => [{ op: 'look', count: 1, key: 'steelseekerLook' }, { op: 'call', handler: 'library.steelseeker' }])] });

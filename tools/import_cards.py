@@ -187,7 +187,10 @@ def main() -> None:
     write_json(data_dir / 'assets-manifest.json', assets)
     write_json(data_dir / 'import-report.json', {
         'version': '1.0.0', 'source': 'Scryfall REST API; pinned Oracle IDs and printings',
-        'importedAt': datetime.now(timezone.utc).isoformat(), 'candidateCards': len(names),
+        # Stable when verification does not change the pinned metadata.
+        'importedAt': max((c['oracleSnapshotAt'] for c in cards), default='unknown'),
+        'contentSha256': hashlib.sha256(json.dumps([cards, records, assets], sort_keys=True).encode()).hexdigest(),
+        'candidateCards': len(names),
         'definitionsIncludingDerived': len(cards), 'localImages': len(assets),
         'runtimeNetworkRequired': False, 'missing': [],
         'mainCopies': sum(r['quantity'] for r in records if r['pool'] == 'main'),

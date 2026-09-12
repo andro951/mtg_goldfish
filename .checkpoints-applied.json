@@ -9,5 +9,6 @@
   "checkpoints/038-ui-controls.patch": "b737f6a5d6806d7c603445a40e1b5865a9e23cd3de644a52df6aa9f3e63e9b29",
   "checkpoints/039-layout-polish.patch": "54c9eabb4e973229eea74b4cf46c1145a37b3db43ad8760818a6626a26b6b215",
   "checkpoints/040-transaction-integrity.patch": "0ebd0e29702b11464dfbbd89860abc6b9fecdecd59f849de2d886288f300067a",
-  "checkpoints/041-offline-image-cache.patch": "22e7021da1446671ad2430f305bae1f370c2a2d918f4e0eb904a88ded9000751"
+  "checkpoints/041-offline-image-cache.patch": "22e7021da1446671ad2430f305bae1f370c2a2d918f4e0eb904a88ded9000751",
+  "checkpoints/042-policy-and-import.patch": "a2e172f0f928441a93073003684935ff5bd8e2593d906d23ae5d532e2f5f2d19"
 }

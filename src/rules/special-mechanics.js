@@ -27,7 +27,7 @@ export function installSpecialMechanics(registry) {
     characteristics: (g, o, c) => { if (o.zone === 'battlefield' && (o.counters.charge || 0) >= 12) c.power += countType(g, 'Artifact', o.controller); },
     triggers: [spellCast('research', 'Draw a card and add a charge counter', (g, s, e) => (s.counters.charge || 0) >= 3 && artifactSpell(g, s, e), () => [draw(), { op: 'counter', type: 'charge', amount: 1 }])],
   });
-  register(registry, 'Rydia, Summoner of Mist', { triggers: [landfall('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }])], activated: [{
+  register(registry, 'Rydia, Summoner of Mist', { triggers: [landfall('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }], { optional: true })], activated: [{
     id: 'summon', label: 'Return a Saga of mana value X with finality and haste', cost: '{X}', tap: true, sorcery: true,
     inputs: (g, s, ctx) => [xInput, target({ ...GY, subtype: 'Saga', manaValue: ctx.inputs.x ?? 0 })],
     effect: () => [move('$input.target', 'battlefield', { counters: { finality: 1 }, modifications: [{ keywords: ['Haste'], expires: 'endOfTurn' }] })],

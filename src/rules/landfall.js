@@ -62,7 +62,7 @@ export function installLandfall(registry) {
       ...(ctx.inputs.mode === 'graveyard' ? [target({ ...GY, land: true })] : [])],
     effect: (g, ctx) => ctx.inputs.mode === 'graveyard' ? [move('$input.target', 'battlefield', { tapped: true })] : handLand(true),
   }] });
-  register(registry, 'Cultivator Colossus', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }])] });
+  register(registry, 'Cultivator Colossus', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }], { optional: true })] });
   registry.registerHandler('landfall.colossus', (g, ctx) => {
     if (!g.select({ ...HAND, land: true }, ctx).length || g.state.optionalPreferences[`${ctx.sourceCardId}/colossus`] === 'NO') return [];
     return [choose('colossusLand', 'Put a land onto the battlefield tapped; choose none to finish', { ...HAND, land: true }, 0, 1),
