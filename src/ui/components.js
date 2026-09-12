@@ -1,6 +1,7 @@
 import { COLORS } from '../core/index.js';
 import { escapeHTML } from '../core/util.js';
 export const h = escapeHTML;
+export const asset = path => globalThis.ASTRA_IMAGES?.[path] || path;
 export const STEP_NAMES = {setup:'Opening hand',untap:'Untap',upkeep:'Upkeep',draw:'Draw',main1:'Main 1',beginCombat:'Combat',attackers:'Attack',damage:'Damage',endCombat:'End combat',main2:'Main 2',end:'End',cleanup:'Cleanup'};
 export const ZONE_NAMES = {battlefield:'Battlefield',graveyard:'Graveyard',exile:'Exile',workspace:'Look',outside:'Outside the game',hand:'Hand',command:'Command zone',libraryActive:'Library',libraryReserve:'Reserve',stackCards:'Stack'};
 export const logo = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 44 41H4L24 5ZM13 26h24M19 16h17" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
@@ -18,7 +19,7 @@ export function cardHTML(engine, id, options = {}) {
   if (object.damage) badges.push(`${object.damage} damage`);
   const style = positioned ? `left:${object.location.x}px;top:${object.location.y}px;position:absolute` : '';
   return `<article class="card ${object.tapped?'is-tapped':''} ${selected?'is-selected':''} ${legal?'is-legal':''} ${options.small?'small-card':''}" data-card="${h(id)}" data-zone="${h(object.zone)}" style="${style}" aria-label="${h(card.name)}${object.tapped?', tapped':''}">
-    <button class="card-face" data-action="card" data-id="${h(id)}" aria-label="${h(card.name)}${object.tapped?', tapped':''}" title="${h(card.name)} — ${h(object.zone==='battlefield'?'Click for a mana ability; use the name to inspect':'Inspect and choose an action')}"><img src="${h(object.face && card.backImage ? card.backImage : card.image)}" alt="${h(card.name)}" loading="lazy" draggable="false"><span class="card-fallback">${h(card.name)}</span>${object.tapped?'<span class="tap-badge">Tapped</span>':''}${c.types.includes('Creature')?`<span class="pt-badge">${h(c.power)}/${h(c.toughness)}</span>`:''}</button>
+    <button class="card-face" data-action="card" data-id="${h(id)}" aria-label="${h(card.name)}${object.tapped?', tapped':''}" title="${h(card.name)} — ${h(object.zone==='battlefield'?'Click for a mana ability; use the name to inspect':'Inspect and choose an action')}"><img src="${h(asset(object.face && card.backImage ? card.backImage : card.image))}" alt="${h(card.name)}" loading="lazy" draggable="false"><span class="card-fallback">${h(card.name)}</span>${object.tapped?'<span class="tap-badge">Tapped</span>':''}${c.types.includes('Creature')?`<span class="pt-badge">${h(c.power)}/${h(c.toughness)}</span>`:''}</button>
     ${button(h(card.name),'inspect',`data-id="${h(id)}" title="Inspect ${h(card.name)}"`,'card-name')}
     ${badges.length?`<div class="card-badges">${badges.map(b=>`<span>${h(b)}</span>`).join('')}</div>`:''}
   </article>`;
