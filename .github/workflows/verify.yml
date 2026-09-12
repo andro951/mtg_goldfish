@@ -54,12 +54,17 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run real-browser acceptance tests
         run: python tests/browser_test.py
+      - name: Test isolated portable edition with networking disabled
+        run: python tests/portable_test.py
       - name: Verify release contents and create archive
         run: |
           if [ -f tools/package.py ]; then python tools/package.py; fi
       - name: Preserve tested application and acceptance reports
         run: |
-          git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/engine.tap
+          git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap
+          for report in test-results/release.json test-results/package-verification.json; do
+            if [ -f "$report" ]; then git add "$report"; fi
+          done
           if ! git diff --cached --quiet; then
             git commit -m 'release: preserve browser-tested offline build and verification reports'
             git pull --rebase origin main
