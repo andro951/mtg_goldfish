@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "source": "Scryfall REST API; pinned Oracle IDs and printings",
+  "importedAt": "2026-09-12T05:33:04.344741+00:00",
+  "candidateCards": 160,
+  "definitionsIncludingDerived": 170,
+  "localImages": 170,
+  "runtimeNetworkRequired": false,
+  "missing": [],
+  "mainCopies": 119,
+  "mainLands": 34,
+  "warnings": [
+    "Scroll Rack: 2 copies in source pool"
+  ]
+}
