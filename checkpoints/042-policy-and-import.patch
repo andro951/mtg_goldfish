@@ -1,0 +1,37 @@
+--- a/src/rules/special-mechanics.js
++++ b/src/rules/special-mechanics.js
+@@ -29,3 +29,3 @@
+   });
+-  register(registry, 'Rydia, Summoner of Mist', { triggers: [landfall('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }])], activated: [{
++  register(registry, 'Rydia, Summoner of Mist', { triggers: [landfall('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }], { optional: true })], activated: [{
+     id: 'summon', label: 'Return a Saga of mana value X with finality and haste', cost: '{X}', tap: true, sorcery: true,
+--- a/src/rules/library-engines.js
++++ b/src/rules/library-engines.js
+@@ -70,3 +70,3 @@
+   register(registry, 'Jhoira, Weatherlight Captain', { triggers: [spellCast('historic-draw', 'Draw for a historic spell', (g, s, e) => historic(e.characteristics), () => [draw()])] });
+-  register(registry, 'Quicksmith Genius', { triggers: [artifactEntry('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }])] });
++  register(registry, 'Quicksmith Genius', { triggers: [artifactEntry('rummage', 'You may discard a card, then draw', () => [{ op: 'call', handler: 'common.rummage' }], { optional: true })] });
+   register(registry, 'Rook Turret', { triggers: [artifactEntry('loot', 'You may draw, then discard', loot, { optional: true, test: (g, s, e) => typeEntered('Artifact')(g, s, e) && !sameRef(s, e.change.afterRef) })] });
+--- a/src/rules/landfall.js
++++ b/src/rules/landfall.js
+@@ -64,3 +64,3 @@
+   }] });
+-  register(registry, 'Cultivator Colossus', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }])] });
++  register(registry, 'Cultivator Colossus', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }], { optional: true })] });
+   registry.registerHandler('landfall.colossus', (g, ctx) => {
+--- a/tools/import_cards.py
++++ b/tools/import_cards.py
+@@ -189,3 +189,6 @@
+         'version': '1.0.0', 'source': 'Scryfall REST API; pinned Oracle IDs and printings',
+-        'importedAt': datetime.now(timezone.utc).isoformat(), 'candidateCards': len(names),
++        # Stable when verification does not change the pinned metadata.
++        'importedAt': max((c['oracleSnapshotAt'] for c in cards), default='unknown'),
++        'contentSha256': hashlib.sha256(json.dumps([cards, records, assets], sort_keys=True).encode()).hexdigest(),
++        'candidateCards': len(names),
+         'definitionsIncludingDerived': len(cards), 'localImages': len(assets),
+--- a/src/ui/dialogs.js
++++ b/src/ui/dialogs.js
+@@ -44,2 +44,3 @@
+   }
++  if(ui.modal==='settings' && Object.keys(s.optionalPreferences).length) body+=`<hr class="divider"><h3>Remembered decisions</h3><p class="muted">Set a saved choice back to ASK to receive its prompt again. YES still asks you to select cards where required.</p>${Object.entries(s.optionalPreferences).map(([key,value])=>{const [cardId,ability]=key.split('/');const opts=key.endsWith('/token-kind')?['ASK','Treasure','Food']:['ASK','YES','NO'];return `<div class="setting-row"><label class="grow"><strong>${h(registry.has(cardId)?registry.get(cardId).name:cardId)}</strong><small>${h(ability)}</small></label><select data-policy="${h(key)}" aria-label="Preference for ${h(ability)}">${opts.map(v=>`<option ${v===value?'selected':''}>${v}</option>`).join('')}</select></div>`;}).join('')}`;
+   return `<div class="modal-backdrop" data-action="backdrop"><section class="modal ${narrow?'narrow':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-header"><div><h2 id="modal-title">${h(title)}</h2><p>${h(subtitle)}</p></div>${button('×','close-dialog','aria-label="Close dialog"','quiet')}</div><div class="modal-body" data-scroll="modal">${body}</div>${footer?`<div class="modal-footer">${footer}</div>`:''}</section></div>`;
