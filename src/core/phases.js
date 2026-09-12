@@ -9,14 +9,15 @@ export const phaseMethods = {
     }
     const player = integer(action.player ?? this.state.activePlayer, 0, 3), step = action.step;
     requireRule(STEPS.includes(step), 'Unknown step.');
-    this.state.advanceTarget = { player, step };
+    requireRule(!this.state.players[player].lost, 'Cannot advance to a player who has left the game.');
+    this.state.advanceTarget = { player, step, minTurnSerial: action.nextTurn ? this.state.turnSerial + 1 : this.state.turnSerial };
     this.continueAdvance();
   },
   continueAdvance() {
     const target = this.state.advanceTarget; if (!target) return;
     for (let guard = 0; guard < 100; guard++) {
       if (this.state.pending || this.state.resolving || this.state.stack.length || this.state.pendingTriggers.length) return;
-      if (this.state.activePlayer === target.player && this.state.step === target.step) { this.state.advanceTarget = null; return; }
+      if (this.state.activePlayer === target.player && this.state.step === target.step && this.state.turnSerial >= (target.minTurnSerial || 0)) { this.state.advanceTarget = null; return; }
       this.advanceOneStep();
     }
     throw new Error('Phase navigation exceeded its safety limit.');
