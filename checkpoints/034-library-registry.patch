@@ -1,0 +1,12 @@
+diff --git a/src/rules/index.js b/src/rules/index.js
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -7,2 +7,4 @@
+ import { installTutorsRecursion } from './tutors-recursion.js';
+ 
++import { installLibraryEngines } from './library-engines.js';
++
+@@ -15,2 +17,3 @@
+   installTutorsRecursion(registry);
++  installLibraryEngines(registry);
+   return registry;
