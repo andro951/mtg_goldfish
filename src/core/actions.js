@@ -9,6 +9,7 @@ const costKey = (cost, index) => cost.key || `cost-${index}`;
 export const actionMethods = {
   handleAction(action) {
     const type = action.type;
+    if (type === 'RUN_SEQUENCE')return this.runSequence(action);
     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
     if (type === 'CANCEL') {
       // Cancel just the uncommitted nested mana activation. The outer casting
@@ -433,15 +434,14 @@ export const actionMethods = {
     }
     const stackObject = { id: `s${this.state.nextStackId++}`, kind: draft.kind === 'spell' ? 'spell' : 'ability', source: draft.source, sourceCardId: draft.sourceCardId,
       abilityId: draft.abilityId || null, label, controller: 0, context: clone(draft.context), targets: clone(draft.targets), paid, permission: clone(draft.permission || null) };
-    if(draft.kind==='ability')this.record('ABILITY_ACTIVATED',{source:draft.source,abilityId:draft.abilityId});
     if (definition.mana && draft.kind === 'ability') {
-      this.record('MANA_ABILITY_RESOLVED', { source: draft.source, label });
+      this.record('MANA_ABILITY_RESOLVED', { source: draft.source, abilityId:draft.abilityId, label });
       const commands = definition.effect ? definition.effect(this, draft.context) : [];
       this.state.resolving = { object: stackObject, context: clone(draft.context), commands: asArray(commands), pc: 0, manaAbility: true };
       this.runEffects();
     } else {
       this.state.stack.push(stackObject);
-      this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, targets: stackObject.targets, paid });
+      this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
       if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id });
     }
     if (this.state.castParent) {

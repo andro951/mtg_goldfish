@@ -1,10 +1,11 @@
+import { sequenceMethods } from './sequences.js';
 import { Engine } from './engine.js';
 import { actionMethods } from './actions.js';
 import { zoneMethods } from './zones.js';
 import { effectMethods } from './effects.js';
 import { eventMethods } from './events.js';
 import { phaseMethods } from './phases.js';
-Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods);
+Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods);
 export { Engine };
 export { CardRegistry } from './registry.js';
 export { parseDeck, createGameState, validateState, makeInstance } from './deck.js';

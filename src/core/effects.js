@@ -38,7 +38,7 @@ export const effectMethods = {
       const frame = this.state.resolving;
       if (!frame || this.state.pending || this.state.actionDraft) return;
       if (frame.pc >= frame.commands.length) {
-        this.record('RESOLUTION_FINISHED', { stackId: frame.object.id, label: frame.object.label });
+        this.record('RESOLUTION_FINISHED', { stackId: frame.object.id, label: frame.object.label, cardId:frame.object.sourceCardId, abilityId:frame.object.abilityId||null, source:frame.object.source });
         this.state.resolving = null; this.state.lookWorkspace = null;
         if (this.state.effectPaymentParent) {
           const parent = this.state.effectPaymentParent; this.state.effectPaymentParent = null;
