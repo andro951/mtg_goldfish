@@ -38,9 +38,10 @@ def browser_report(path: str) -> dict:
 
 cards = read_json('data/cards.json')
 assets = read_json('data/assets-manifest.json')
+ui_assets = read_json('data/ui-assets.json')
 require(sum(bool(c.get('candidate')) for c in cards) == 160, 'Expected exactly 160 candidates.')
 require(len(cards) == 175 and len(assets) == 175, 'Expected 175 local definitions and images.')
-for name, entry in assets.items():
+for name, entry in {**assets, **ui_assets}.items():
     contents = safe_file(name).read_bytes()
     require(len(contents) == entry['bytes'] and digest(contents) == entry['sha256'], f'Asset mismatch: {name}')
 for card in cards:
@@ -70,7 +71,8 @@ for label in ('fail', 'cancelled', 'skipped', 'todo'):
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser['checksPassed'] >= 77, 'Browser regression suite is incomplete.')
+require(browser.get('uiVersion') == '1.1.0', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser['checksPassed'] >= 180, 'Browser regression suite is incomplete.')
 
 builds = []
 for name, report_path, arguments in (
@@ -89,7 +91,7 @@ report = {
     'status': 'passed', 'version': read_json('package.json')['version'],
     'engineTestsPassed': engine_tests, 'browserChecksPassed': browser['checksPassed'],
     'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0,
-    'candidateCards': 160, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets),
+    'candidateCards': 160, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets),
     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
     'scope': 'supplied-pool goldfish; abstract opponents and user-assisted blocking/combat damage',
 }

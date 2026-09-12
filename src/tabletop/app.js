@@ -90,6 +90,7 @@ function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,sc
 function render(){if(!g||rendering)return;rendering=true;try{
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
+ if(prefs.dock==='workspace'&&!g.state.lookWorkspace?.ids?.length)prefs.dock=null;
  prepareChoice();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
@@ -100,7 +101,7 @@ function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')
 function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
 function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
- else if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();return result;}
+ else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();}return result;}
 function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
 function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
 function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;

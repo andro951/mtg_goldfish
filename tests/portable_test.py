@@ -30,9 +30,9 @@ try:
         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
         page.goto(destination.as_uri())
         page.wait_for_function('() => window.astra?.engine')
-        check('single file starts while browser is offline', page.locator('.brand').is_visible())
+        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.1.0')
         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
-        check('all 175 local images are embedded', count == 175)
+        check('all 175 card images and the real Magic back are embedded', count == 176)
         image_report = page.evaluate('''async () => {
             const values = Object.values(window.ASTRA_IMAGES);
             const results = await Promise.all(values.map(src => new Promise(resolve => {
@@ -42,6 +42,7 @@ try:
             return results.every(Boolean);
         }''')
         check('every embedded image decodes successfully', image_report)
+        page.locator('[data-action="menu"]').click()
         page.locator('[data-dialog="labs"]').click()
         page.locator('[data-lab="breakfast"]').click()
         page.wait_for_function('() => astra.engine.state.seed === "lab-breakfast"')

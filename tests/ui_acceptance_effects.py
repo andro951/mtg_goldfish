@@ -25,6 +25,7 @@ def libraries(p):
  p.locator('[data-action=zone][data-zone=workspace]').click();check('Look workspace opens beside rather than instead of battlefield',p.locator('[data-surface=battlefield]').count()==1 and p.locator('[data-surface=workspace]').count()==1)
  p.locator('[data-action=order][data-index="0"][data-direction="1"]').click();click(p,'confirm-choice','[data-floating=decision]');settle(p)
  check('Top keeps hand size and applies top-first order',state(p,'state.zones.hand.length')==hand and state(p,'state.zones.libraryActive[0]')==old[1])
+ check('completed Look workspace closes and returns space to battlefield',p.locator('[data-surface=workspace]').count()==0 and p.locator('[data-zone=workspace]').count()==0)
  activate(p,'Scroll Rack','rack');pay(p);click(p,'resolve','.stack-window');choose_cards(p,[obj(p,'Ancient Den','hand')['id']]);settle(p)
  check('Scroll Rack makes linked exchange without extra hand-size change',state(p,'state.zones.hand.length')==hand and obj(p,'Ancient Den','libraryActive'))
  lab(p,'library');click(p,'clear-mana');top=state(p,'top().id');p.locator(f'.library-deck [data-card="{top}"] .face').click();click(p,'cast','.inspector-window');q=pending(p)
