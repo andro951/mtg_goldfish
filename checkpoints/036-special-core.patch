@@ -1,0 +1,110 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -199,5 +199,5 @@ export const actionMethods = {
+     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
+       if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
+-      specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true });
++      specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
+     }
+     return specs;
+diff --git a/src/core/effects.js b/src/core/effects.js
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -104,5 +104,5 @@ export const effectMethods = {
+         const ids = command.selector ? this.select(cmd.selector, context) : this.effectIds(command.ids, context);
+         const destination = cmd.to || 'graveyard', cause = command.op === 'move' ? cmd.cause || 'effect' : command.op;
+-        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, attachedTo: cmd.attachedTo })), context);
++        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, attachedTo: cmd.attachedTo })), context);
+         if (command.key) context.vars[command.key] = clone(changes || []); return;
+       }
+diff --git a/src/core/engine.js b/src/core/engine.js
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -130,4 +130,9 @@ export class Engine {
+     return { ...clone(object), characteristics: clone(this.characteristics(object)), definition: clone(this.definition(object)) };
+   }
++  lastKnownFor(reference, fallback = null) {
++    const current = this.object(reference);
++    if (current) return this.lastKnown(current);
++    return [...this.state.provenance].reverse().find(c => sameRef(c.beforeRef, reference))?.lki || fallback;
++  }
+   randomShuffle(ids, reason = 'shuffle') {
+     const start = this.state.rng.count, result = shuffled(ids, this.state.rng);
+diff --git a/src/core/events.js b/src/core/events.js
+--- a/src/core/events.js
++++ b/src/core/events.js
+@@ -39,5 +39,5 @@ export const eventMethods = {
+   },
+   triggerDefinition(stackObject) {
+-    if (stackObject.program) return { id: stackObject.abilityId, effect: () => clone(stackObject.program), inputs: [] };
++    if (stackObject.program) return { id: stackObject.abilityId, effect: () => clone(stackObject.program), inputs: stackObject.inputSpecs || [] };
+     return (this.registry.module(stackObject.sourceCardId).triggers || []).find(t => t.id === stackObject.abilityId);
+   },
+diff --git a/src/core/phases.js b/src/core/phases.js
+--- a/src/core/phases.js
++++ b/src/core/phases.js
+@@ -96,5 +96,5 @@ export const phaseMethods = {
+       this.emit('COMBAT_BEGAN', { player, extra: this.state.extraCombatActive });
+       for (const emblem of this.state.emblems.filter(e => e.trigger === 'combat' && e.controller === player)) this.queueTrigger({ controller: player, source: null, sourceCardId: emblem.sourceCardId, abilityId: emblem.abilityId,
+-        label: emblem.label, program: clone(emblem.program), context: { controller: player, source: null, sourceCardId: emblem.sourceCardId, vars: {}, inputs: {}, event: { player, step, turnSerial: this.state.turnSerial } } });
++        label: emblem.label, program: clone(emblem.program), inputSpecs: clone(emblem.inputs || []), context: { controller: player, source: null, sourceCardId: emblem.sourceCardId, vars: {}, inputs: {}, event: { player, step, turnSerial: this.state.turnSerial } } });
+     } else if (step === 'end') {
+       this.emit('END_STEP', { player });
+diff --git a/src/core/zones.js b/src/core/zones.js
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -65,4 +65,5 @@ export const zoneMethods = {
+         if (prototype) object.flags.prototype = prototype;
+         if (object.token) object.flags.hasBeenOnBattlefield = true;
++        if (proposal.copy) object.copy = clone(proposal.copy);
+         const module = this.module(object), definition = this.definition(object);
+         if (definition.types.includes('Planeswalker')) object.counters.loyalty = Number(definition.loyalty) || 0;
+@@ -82,15 +83,19 @@ export const zoneMethods = {
+       changes.push(change);
+       if (meldParts && from === 'battlefield') {
+-        object.flags.meldParts = meldParts;
+-        // The merged object represents two physical cards. Both leave together.
++        // A merged permanent leaves once, but both physical cards get zone
++        // histories so later this-turn recursion can find either front face.
+         for (const partId of meldParts.filter(id => id !== object.id)) {
+           const part = this.state.instances[partId];
+-          if (part && part.zone === 'exile') {
+-            this.state.zones.exile.splice(this.state.zones.exile.indexOf(partId), 1);
++          if (part && part.zone === 'workspace' && part.flags.meldedInto === object.id) {
++            const beforeRef = ref(part);
++            this.state.zones.workspace.splice(this.state.zones.workspace.indexOf(partId), 1);
+             part.zone = to; part.oid++; part.tapped = false; part.counters = {}; part.flags = {}; part.copy = null;
++            part.lastMove = { from: 'battlefield', to, cause: proposal.cause, turnSerial: this.state.turnSerial, batchId, oid: part.oid };
+             this.state.zones[to].push(part.id);
++            const component = { id: part.id, from: 'battlefield', to, cause: proposal.cause, batchId, beforeRef, afterRef: ref(part), lki: clone(lki), componentOnly: true };
++            this.state.provenance.push({ ...clone(component), turnSerial: this.state.turnSerial }); changes.push(component);
+           }
+         }
+-        object.copy = null; delete object.flags.meldParts;
++        object.copy = null;
+       }
+     }
+@@ -100,5 +105,5 @@ export const zoneMethods = {
+     for (const change of changes) {
+       this.emit('ZONE_CHANGE', { batchId, change }, beforeSources);
+-      if (change.from === 'battlefield') {
++      if (change.from === 'battlefield' && !change.componentOnly) {
+         this.emit('LEAVE', { batchId, change }, beforeSources);
+         if (change.cause === 'sacrifice') this.emit('SACRIFICED', { batchId, change }, beforeSources);
+diff --git a/src/rules/index.js b/src/rules/index.js
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -11,4 +11,6 @@ import { installLibraryEngines } from './library-engines.js';
+ import { installArtifactMechanics } from './artifact-mechanics.js';
+ 
++import { installSpecialMechanics } from './special-mechanics.js';
++
+ export function createRegistry(definitions) {
+   const registry = new CardRegistry(definitions);
+@@ -20,4 +22,5 @@ export function createRegistry(definitions) {
+   installLibraryEngines(registry);
+   installArtifactMechanics(registry);
++  installSpecialMechanics(registry);
+   return registry;
+ }
