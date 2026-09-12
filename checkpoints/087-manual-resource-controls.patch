@@ -1,32 +1,37 @@
 --- a/src/core/actions.js
 +++ b/src/core/actions.js
-@@ -42,2 +42,2 @@
+@@ -42,3 +42,3 @@
      if (type === 'SET_SETTING') {
 -      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree'].includes(action.key), 'Unknown setting.');
 +      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
+       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
 --- a/src/core/deck.js
 +++ b/src/core/deck.js
-@@ -74,2 +74,2 @@
+@@ -73,3 +73,3 @@
+     extraCombats: [], extraCombatActive: false, scheduledStep: null, advanceTarget: null,
 -    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, debug: false, firstMulliganFree: true },
 +    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true },
      mulligans: 0, notes: [], diagnostics: [], manualAssistance: [], status: 'playing',
 --- a/src/tabletop/app.js
 +++ b/src/tabletop/app.js
-@@ -43,2 +43,2 @@
+@@ -43,3 +43,3 @@
  function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 -function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
 +function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
+ function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 @@ -174,2 +174,3 @@
  function run(action,user=true){
 + if(user&&['ADJUST_MANA','ADJUST_PLAYER','MANUAL_DAMAGE'].includes(action.type)&&!g.state.settings.manualControls){toast('Enable Manual controls in Settings to adjust resources.',true);return {ok:false,error:{code:'MANUAL_CONTROLS_OFF',message:'Manual controls are disabled.'}};}
   clearTimeout(autoTimer);if(user)programs.userAction();
-@@ -392,2 +393,2 @@
+@@ -392,3 +393,3 @@
   if(el.id==='sequence-future'){ui.sequenceFuture=el.checked;return;}
 - if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
 + if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
+  if(el.dataset.autoAccept!==undefined){prefs.autoAccept=el.checked;savePreferences();}
 --- a/src/tabletop/dialogs.js
 +++ b/src/tabletop/dialogs.js
-@@ -75,1 +75,5 @@
+@@ -74,2 +74,6 @@
+   if(ui.modal==='settings')body+=`<label class="setting-row"><input type="checkbox" data-auto-accept ${prefs.autoAccept?'checked':''}> Auto-accept completed selections <small>Single targets accept on click; multi-select accepts at its required maximum or sufficient crew power.</small></label>`;
 +  if(ui.modal==='settings'){
 +    body=`<label class="setting-row"><input type="checkbox" data-setting="manualControls" ${s.settings.manualControls?'checked':''}><span><strong>Manual controls</strong><small>Off by default. Show manual mana, life, energy, poison and opponent adjustments. Rules-generated changes remain automatic.</small></span></label>`+body;
 +    if(!s.settings.manualControls)body=body.replace(/<input([^>]*data-player-field[^>]*)>/g,'<input disabled$1>');
@@ -34,17 +39,19 @@
    const extraClass=ui.modal==='deck'?'deck-editor-modal':'';
 --- a/src/tabletop/preferences.js
 +++ b/src/tabletop/preferences.js
-@@ -4,2 +4,2 @@
+@@ -4,3 +4,3 @@
  export function defaultPreferences(){return {version:2,sidebarWidth:100,handHeight:155,dockWidth:290,dock:null,
 -  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
 +  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,manualControls:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
-@@ -11,2 +11,2 @@
+ export function cleanPreferences(value={}){
+@@ -11,3 +11,3 @@
    p.dock=['graveyard','exile','workspace','outside'].includes(value.dock)?value.dock:null;
 -  for(const key of ['holdPriority','reserveAccess','orderTriggers','autoAccept'])if(typeof value[key]==='boolean')p[key]=value[key];
 +  for(const key of ['holdPriority','reserveAccess','orderTriggers','autoAccept','manualControls'])if(typeof value[key]==='boolean')p[key]=value[key];
+   for(const zone of ['battlefield','graveyard','exile','workspace','outside']){
 --- a/src/tabletop/styles.css
 +++ b/src/tabletop/styles.css
-@@ -65,1 +65,5 @@
+@@ -65 +65,5 @@
  .ordering-window .choice-row>.ordinal{flex:0 0 24px}.ordering-window .choice-row>.order-label{flex:1;text-align:left}
 +
 +/* Read-only resource totals reserve no invisible space for manual controls. */
@@ -52,15 +59,17 @@
 +.mana-row.read-only>b,.total-row.read-only>b{min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
 --- a/src/tabletop/views.js
 +++ b/src/tabletop/views.js
-@@ -10,2 +10,2 @@
+@@ -9,3 +9,3 @@
+ export function programControls({programs}){return `${button(icon('loop'),'dialog','data-dialog="sequences" title="Sequences and loops" aria-label="Sequences and loops"','icon-button')}${button(icon('auto'),'dialog','data-dialog="automation" title="Player automations" aria-label="Player automations"','icon-button')}${programs?.recording?button('● '+programs.recording.steps.length,'dialog','data-dialog="sequences" title="Stop and save recording"','record-indicator'):''}${programs?.running?button('■ '+programs.running.completed+'/'+programs.running.count,'program-stop','title="Stop sequence"'):''}${programs?.model.paused?button('▶','program-resume',`title="${h(programs.model.pauseReason)} Resume" aria-label="Resume automation"`,'active'):''}`;}
 -export function toolbar({g,ui,prefs,programs}){
 +function fullToolbar({g,ui,prefs,programs}){
    const s=g.state;
-@@ -19,2 +19,2 @@
+@@ -18,3 +18,3 @@
+ }
 -export function sidebar({g,ui,prefs}){
 +function editableSidebar({g,ui,prefs}){
    const s=g.state,p=s.players[0],top=g.canSeeTop()?g.top():null;
-@@ -95,1 +95,12 @@
+@@ -95 +95,12 @@
  }
 +
 +// Read-only totals are the normal view; manual overrides are explicitly opt-in.
