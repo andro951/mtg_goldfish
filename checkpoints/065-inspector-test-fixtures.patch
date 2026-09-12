@@ -1,0 +1,24 @@
+diff --git a/tests/make_ui_fixtures.mjs b/tests/make_ui_fixtures.mjs
+index 89c746b..1f7e084 100644
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -13,3 +13,6 @@ save('layers',{battlefield:['Ancient Den','Tree of Tales','Great Furnace','Seat
+ save('payments',{battlefield:['The Wandering Minstrel','Mox Amber','Mox Opal','Ancient Den','Razortide Bridge','Mana Vault',"Mishra's Workshop"],hand:['The One Ring','Walking Atlas'],graveyard:['Scroll Rack']});
+ save('damaged-source',{battlefield:['Krark-Clan Ironworks','Ancient Den'],graveyard:['Mox Amber']});
+ save('plot',{hand:['Pitiless Carnage'],battlefield:['Ancient Den']},{mana:{B:2,C:1}});
++
++save('inspector-actions',{battlefield:['Krark-Clan Ironworks','Ancient Den','Scene of the Crime','Walking Atlas']},{mana:{C:2}});
++save('raft-modes',{battlefield:['Elven Raft-Steerer','Walking Atlas','Azusa, Lost but Seeking',{name:'Krang, Master Mind',owner:1,controller:1}],hand:['Ancient Den','Tree of Tales']});
+diff --git a/tests/tabletop.test.js b/tests/tabletop.test.js
+index 3b6275c..9380fec 100644
+--- a/tests/tabletop.test.js
++++ b/tests/tabletop.test.js
+@@ -43,7 +43,7 @@ test('new tabletop defaults do not hold priority and enable reserve access',()=><
+ });
+ test('layout preferences validate geometry and survive round-trip storage',()=>{
+  let text='';const storage={getItem:()=>text,setItem:(k,v)=>{text=v;}};
+- const p=cleanPreferences({handHeight:230,sidebarWidth:115,dock:'graveyard',cameras:{battlefield:{zoom:.7,x:-100,y:50}},popups:{inspector:{x:60,y:70}}});
++ const p=cleanPreferences({handHeight:230,sidebarWidth:115,dock:'graveyard',cameras:{battlefield:{zoom:.7,x:-100,y:50}},popups:{inspector:{x:60,y:70}},modeDefaults:{'card/steer/mode':'untap'}});
+  assert.equal(savePreferences(p,storage),true);assert.deepEqual(loadPreferences(storage),p);
+  const hostile=cleanPreferences({handHeight:1e12,cameras:{battlefield:{x:Infinity,y:0,zoom:0}},dock:'invalid'});assert.equal(hostile.handHeight,400);assert.equal(hostile.dock,null);assert.equal(hostile.cameras.battlefield,undefined);
+ });
