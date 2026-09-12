@@ -2,2581 +2,2581 @@ TAP version 13
 # Subtest: Clock taps exactly two artifacts as cost, allows sick artifacts, and untaps its legal target
 ok 1 - Clock taps exactly two artifacts as cost, allows sick artifacts, and untaps its legal target
   ---
-  duration_ms: 80.653723
+  duration_ms: 109.464416
   type: 'test'
   ...
 # Subtest: Scaretiller becomes tapped by Clock and puts a land without using a play
 ok 2 - Scaretiller becomes tapped by Clock and puts a land without using a play
   ---
-  duration_ms: 114.423866
+  duration_ms: 100.658425
   type: 'test'
   ...
 # Subtest: Kitten only triggers on noncreature spells, and excludes all lands from its target selector
 ok 3 - Kitten only triggers on noncreature spells, and excludes all lands from its target selector
   ---
-  duration_ms: 110.27262
+  duration_ms: 104.904563
   type: 'test'
   ...
 # Subtest: Kitten blink of Ring resets burden but does not grant cast-only protection
 ok 4 - Kitten blink of Ring resets burden but does not grant cast-only protection
   ---
-  duration_ms: 108.004537
+  duration_ms: 111.656077
   type: 'test'
   ...
 # Subtest: Kitten Top Skull loop executes through normal stack and casting permissions
 ok 5 - Kitten Top Skull loop executes through normal stack and casting permissions
   ---
-  duration_ms: 224.744698
+  duration_ms: 217.927109
   type: 'test'
   ...
 # Subtest: Duplicator uses captured copiable values after a sacrificed source has left and waits for end step
 ok 6 - Duplicator uses captured copiable values after a sacrificed source has left and waits for end step
   ---
-  duration_ms: 93.409298
+  duration_ms: 121.900303
   type: 'test'
   ...
 # Subtest: Duplicator triggers for its own sacrifice and the new copy is a distinct object
 ok 7 - Duplicator triggers for its own sacrifice and the new copy is a distinct object
   ---
-  duration_ms: 133.423435
+  duration_ms: 169.296724
   type: 'test'
   ...
 # Subtest: Ultron copies artifact lands as 2/2 Robot Villains but the animation is not itself copiable
 ok 8 - Ultron copies artifact lands as 2/2 Robot Villains but the animation is not itself copiable
   ---
-  duration_ms: 73.481933
+  duration_ms: 52.538579
   type: 'test'
   ...
 # Subtest: Ultron copies an artifact creature without replacing its base power/toughness
 ok 9 - Ultron copies an artifact creature without replacing its base power/toughness
   ---
-  duration_ms: 88.69039
+  duration_ms: 91.890011
   type: 'test'
   ...
 # Subtest: Urza Prince copy has copiable 1/1 Soldier exception and receives the separate anthem
 ok 10 - Urza Prince copy has copiable 1/1 Soldier exception and receives the separate anthem
   ---
-  duration_ms: 52.935042
+  duration_ms: 56.593775
   type: 'test'
   ...
 # Subtest: Battlesphere creates four Myr and taps them on attack-trigger resolution for power and damage
 ok 11 - Battlesphere creates four Myr and taps them on attack-trigger resolution for power and damage
   ---
-  duration_ms: 171.732101
+  duration_ms: 177.24485
   type: 'test'
   ...
 # Subtest: Turbine can tap five newly-created Myr as cost and search a Myr creature
 ok 12 - Turbine can tap five newly-created Myr as cost and search a Myr creature
   ---
-  duration_ms: 127.474883
+  duration_ms: 162.578744
   type: 'test'
   ...
 # Subtest: Tap-symbol plus tap-creatures costs cannot tap the same object twice
 ok 13 - Tap-symbol plus tap-creatures costs cannot tap the same object twice
   ---
-  duration_ms: 4.717868
+  duration_ms: 10.588842
   type: 'test'
   ...
 # Subtest: Zealot sacrifices another creature or artifact before surveil and cannot sacrifice itself
 ok 14 - Zealot sacrifices another creature or artifact before surveil and cannot sacrifice itself
   ---
-  duration_ms: 51.474669
+  duration_ms: 63.946307
   type: 'test'
   ...
 # Subtest: Phantom Train animates through end of turn but keeps its added counter afterward
 ok 15 - Phantom Train animates through end of turn but keeps its added counter afterward
   ---
-  duration_ms: 66.442936
+  duration_ms: 65.290177
   type: 'test'
   ...
 # Subtest: Grinding Station sacrifices before mill and its own entrance can untap it
 ok 16 - Grinding Station sacrifices before mill and its own entrance can untap it
   ---
-  duration_ms: 112.857479
+  duration_ms: 125.057224
   type: 'test'
   ...
 # Subtest: Salvaging Station returns artifact lands but not artifact creatures, then untaps for a death
 ok 17 - Salvaging Station returns artifact lands but not artifact creatures, then untaps for a death
   ---
-  duration_ms: 97.641035
+  duration_ms: 101.453359
   type: 'test'
   ...
 # Subtest: Scourglass can activate only in your upkeep and preserves artifacts and lands
 ok 18 - Scourglass can activate only in your upkeep and preserves artifacts and lands
   ---
-  duration_ms: 72.087659
+  duration_ms: 84.477187
   type: 'test'
   ...
 # Subtest: Spine destroys a target permanent then returns itself after a battlefield-to-graveyard move
 ok 19 - Spine destroys a target permanent then returns itself after a battlefield-to-graveyard move
   ---
-  duration_ms: 90.815054
+  duration_ms: 139.8061
   type: 'test'
   ...
 # Subtest: Trade Routes return and discard are distinct operations and can cycle the returned land
 ok 20 - Trade Routes return and discard are distinct operations and can cycle the returned land
   ---
-  duration_ms: 37.735261
+  duration_ms: 62.81794
   type: 'test'
   ...
 # Subtest: Greaves grants haste and shroud; moving it removes both from the old creature
 ok 21 - Greaves grants haste and shroud; moving it removes both from the old creature
   ---
-  duration_ms: 42.699989
+  duration_ms: 77.063582
   type: 'test'
   ...
 # Subtest: Boar death produces 1 Food tokens before the dead token ceases to exist
 ok 22 - Boar death produces 1 Food tokens before the dead token ceases to exist
   ---
-  duration_ms: 112.413701
+  duration_ms: 182.603872
   type: 'test'
   ...
 # Subtest: Smaug death produces 14 Treasure tokens before the dead token ceases to exist
 ok 23 - Smaug death produces 14 Treasure tokens before the dead token ceases to exist
   ---
-  duration_ms: 2840.19679
+  duration_ms: 3349.625817
   type: 'test'
   ...
 # Subtest: Goblin Shaman attack creates Treasure
 ok 24 - Goblin Shaman attack creates Treasure
   ---
-  duration_ms: 219.462944
+  duration_ms: 217.745871
   type: 'test'
   ...
 # Subtest: Smoke Blessing sees its enchanted creature die and then goes to graveyard itself
 ok 25 - Smoke Blessing sees its enchanted creature die and then goes to graveyard itself
   ---
-  duration_ms: 234.082002
+  duration_ms: 369.551129
   type: 'test'
   ...
 # Subtest: card acceptance: Aesi, Tyrant of Gyre Strait — metadata and legal entry
 ok 26 - card acceptance: Aesi, Tyrant of Gyre Strait — metadata and legal entry
   ---
-  duration_ms: 215.709884
+  duration_ms: 160.354537
   type: 'test'
   ...
 # Subtest: card acceptance: Aetherworks Marvel — metadata and legal entry
 ok 27 - card acceptance: Aetherworks Marvel — metadata and legal entry
   ---
-  duration_ms: 80.098174
+  duration_ms: 119.440208
   type: 'test'
   ...
 # Subtest: ability acceptance: Aetherworks Marvel / marvel
 ok 28 - ability acceptance: Aetherworks Marvel / marvel
   ---
-  duration_ms: 60.896887
+  duration_ms: 98.212881
   type: 'test'
   ...
 # Subtest: card acceptance: Aftermath Analyst — metadata and legal entry
 ok 29 - card acceptance: Aftermath Analyst — metadata and legal entry
   ---
-  duration_ms: 97.038773
+  duration_ms: 151.268145
   type: 'test'
   ...
 # Subtest: ability acceptance: Aftermath Analyst / return-lands
 ok 30 - ability acceptance: Aftermath Analyst / return-lands
   ---
-  duration_ms: 79.587914
+  duration_ms: 103.34584
   type: 'test'
   ...
 # Subtest: card acceptance: Ancient Den — metadata and legal entry
 ok 31 - card acceptance: Ancient Den — metadata and legal entry
   ---
-  duration_ms: 50.473382
+  duration_ms: 44.169104
   type: 'test'
   ...
 # Subtest: ability acceptance: Ancient Den / mana
 ok 32 - ability acceptance: Ancient Den / mana
   ---
-  duration_ms: 49.21998
+  duration_ms: 49.254028
   type: 'test'
   ...
 # Subtest: card acceptance: Ancient Greenwarden — metadata and legal entry
 ok 33 - card acceptance: Ancient Greenwarden — metadata and legal entry
   ---
-  duration_ms: 110.621263
+  duration_ms: 95.797631
   type: 'test'
   ...
 # Subtest: card acceptance: Arcum Dagsson — metadata and legal entry
 ok 34 - card acceptance: Arcum Dagsson — metadata and legal entry
   ---
-  duration_ms: 94.086453
+  duration_ms: 94.714962
   type: 'test'
   ...
 # Subtest: ability acceptance: Arcum Dagsson / transmute
 ok 35 - ability acceptance: Arcum Dagsson / transmute
   ---
-  duration_ms: 64.402019
+  duration_ms: 90.297615
   type: 'test'
   ...
 # Subtest: card acceptance: Azorius Chancery — metadata and legal entry
 ok 36 - card acceptance: Azorius Chancery — metadata and legal entry
   ---
-  duration_ms: 62.707854
+  duration_ms: 77.142769
   type: 'test'
   ...
 # Subtest: ability acceptance: Azorius Chancery / mana
 ok 37 - ability acceptance: Azorius Chancery / mana
   ---
-  duration_ms: 39.280978
+  duration_ms: 39.611631
   type: 'test'
   ...
 # Subtest: card acceptance: Azusa, Lost but Seeking — metadata and legal entry
 ok 38 - card acceptance: Azusa, Lost but Seeking — metadata and legal entry
   ---
-  duration_ms: 49.06902
+  duration_ms: 69.880537
   type: 'test'
   ...
 # Subtest: card acceptance: Birthing Pod — metadata and legal entry
 ok 39 - card acceptance: Birthing Pod — metadata and legal entry
   ---
-  duration_ms: 58.108278
+  duration_ms: 89.925446
   type: 'test'
   ...
 # Subtest: ability acceptance: Birthing Pod / ladder
 ok 40 - ability acceptance: Birthing Pod / ladder
   ---
-  duration_ms: 80.516161
+  duration_ms: 112.20634
   type: 'test'
   ...
 # Subtest: card acceptance: Bolas's Citadel — metadata and legal entry
 ok 41 - card acceptance: Bolas's Citadel — metadata and legal entry
   ---
-  duration_ms: 90.488519
+  duration_ms: 99.958466
   type: 'test'
   ...
 # Subtest: ability acceptance: Bolas's Citadel / drain
 ok 42 - ability acceptance: Bolas's Citadel / drain
   ---
-  duration_ms: 208.178783
+  duration_ms: 218.283761
   type: 'test'
   ...
 # Subtest: card acceptance: Bringer of the White Dawn — metadata and legal entry
 ok 43 - card acceptance: Bringer of the White Dawn — metadata and legal entry
   ---
-  duration_ms: 62.687559
+  duration_ms: 90.164625
   type: 'test'
   ...
 # Subtest: card acceptance: Buried Ruin — metadata and legal entry
 ok 44 - card acceptance: Buried Ruin — metadata and legal entry
   ---
-  duration_ms: 28.883933
+  duration_ms: 48.867111
   type: 'test'
   ...
 # Subtest: ability acceptance: Buried Ruin / mana
 ok 45 - ability acceptance: Buried Ruin / mana
   ---
-  duration_ms: 27.184781
+  duration_ms: 46.36558
   type: 'test'
   ...
 # Subtest: ability acceptance: Buried Ruin / recover
 ok 46 - ability acceptance: Buried Ruin / recover
   ---
-  duration_ms: 54.246985
+  duration_ms: 89.59138
   type: 'test'
   ...
 # Subtest: card acceptance: Chromatic Orrery — metadata and legal entry
 ok 47 - card acceptance: Chromatic Orrery — metadata and legal entry
   ---
-  duration_ms: 47.422396
+  duration_ms: 82.854174
   type: 'test'
   ...
 # Subtest: ability acceptance: Chromatic Orrery / mana
 ok 48 - ability acceptance: Chromatic Orrery / mana
   ---
-  duration_ms: 26.310445
+  duration_ms: 44.355479
   type: 'test'
   ...
 # Subtest: ability acceptance: Chromatic Orrery / draw
 ok 49 - ability acceptance: Chromatic Orrery / draw
   ---
-  duration_ms: 60.756466
+  duration_ms: 83.716661
   type: 'test'
   ...
 # Subtest: card acceptance: Chulane, Teller of Tales — metadata and legal entry
 ok 50 - card acceptance: Chulane, Teller of Tales — metadata and legal entry
   ---
-  duration_ms: 86.161596
+  duration_ms: 87.618389
   type: 'test'
   ...
 # Subtest: ability acceptance: Chulane, Teller of Tales / return-creature
 ok 51 - ability acceptance: Chulane, Teller of Tales / return-creature
   ---
-  duration_ms: 90.766855
+  duration_ms: 92.485453
   type: 'test'
   ...
 # Subtest: card acceptance: Clock of Omens — metadata and legal entry
 ok 52 - card acceptance: Clock of Omens — metadata and legal entry
   ---
-  duration_ms: 81.424842
+  duration_ms: 81.986024
   type: 'test'
   ...
 # Subtest: ability acceptance: Clock of Omens / untap
 ok 53 - ability acceptance: Clock of Omens / untap
   ---
-  duration_ms: 82.616219
+  duration_ms: 83.537033
   type: 'test'
   ...
 # Subtest: card acceptance: Codex Shredder — metadata and legal entry
 ok 54 - card acceptance: Codex Shredder — metadata and legal entry
   ---
-  duration_ms: 82.235431
+  duration_ms: 85.392632
   type: 'test'
   ...
 # Subtest: ability acceptance: Codex Shredder / mill
 ok 55 - ability acceptance: Codex Shredder / mill
   ---
-  duration_ms: 80.711615
+  duration_ms: 82.568474
   type: 'test'
   ...
 # Subtest: ability acceptance: Codex Shredder / recover
 ok 56 - ability acceptance: Codex Shredder / recover
   ---
-  duration_ms: 94.184123
+  duration_ms: 97.751657
   type: 'test'
   ...
 # Subtest: card acceptance: Combustible Gearhulk — metadata and legal entry
 ok 57 - card acceptance: Combustible Gearhulk — metadata and legal entry
   ---
-  duration_ms: 165.646652
+  duration_ms: 164.802623
   type: 'test'
   ...
 # Subtest: card acceptance: Crucible of Worlds — metadata and legal entry
 ok 58 - card acceptance: Crucible of Worlds — metadata and legal entry
   ---
-  duration_ms: 88.922753
+  duration_ms: 84.631502
   type: 'test'
   ...
 # Subtest: card acceptance: Crystal Skull, Isu Spyglass — metadata and legal entry
 ok 59 - card acceptance: Crystal Skull, Isu Spyglass — metadata and legal entry
   ---
-  duration_ms: 97.802878
+  duration_ms: 100.652738
   type: 'test'
   ...
 # Subtest: ability acceptance: Crystal Skull, Isu Spyglass / mana
 ok 60 - ability acceptance: Crystal Skull, Isu Spyglass / mana
   ---
-  duration_ms: 45.524024
+  duration_ms: 46.738761
   type: 'test'
   ...
 # Subtest: card acceptance: Cultivator Colossus — metadata and legal entry
 ok 61 - card acceptance: Cultivator Colossus — metadata and legal entry
   ---
-  duration_ms: 132.907751
+  duration_ms: 144.742912
   type: 'test'
   ...
 # Subtest: card acceptance: Darkmoss Bridge — metadata and legal entry
 ok 62 - card acceptance: Darkmoss Bridge — metadata and legal entry
   ---
-  duration_ms: 27.567754
+  duration_ms: 58.320391
   type: 'test'
   ...
 # Subtest: ability acceptance: Darkmoss Bridge / mana
 ok 63 - ability acceptance: Darkmoss Bridge / mana
   ---
-  duration_ms: 33.727683
+  duration_ms: 55.606091
   type: 'test'
   ...
 # Subtest: card acceptance: Darksteel Citadel — metadata and legal entry
 ok 64 - card acceptance: Darksteel Citadel — metadata and legal entry
   ---
-  duration_ms: 38.973247
+  duration_ms: 50.858958
   type: 'test'
   ...
 # Subtest: ability acceptance: Darksteel Citadel / mana
 ok 65 - ability acceptance: Darksteel Citadel / mana
   ---
-  duration_ms: 29.068376
+  duration_ms: 46.208117
   type: 'test'
   ...
 # Subtest: card acceptance: Dimir Aqueduct — metadata and legal entry
 ok 66 - card acceptance: Dimir Aqueduct — metadata and legal entry
   ---
-  duration_ms: 80.718698
+  duration_ms: 97.781024
   type: 'test'
   ...
 # Subtest: ability acceptance: Dimir Aqueduct / mana
 ok 67 - ability acceptance: Dimir Aqueduct / mana
   ---
-  duration_ms: 26.057554
+  duration_ms: 47.017775
   type: 'test'
   ...
 # Subtest: card acceptance: Displacer Kitten — metadata and legal entry
 ok 68 - card acceptance: Displacer Kitten — metadata and legal entry
   ---
-  duration_ms: 50.849761
+  duration_ms: 89.216191
   type: 'test'
   ...
 # Subtest: card acceptance: Drossforge Bridge — metadata and legal entry
 ok 69 - card acceptance: Drossforge Bridge — metadata and legal entry
   ---
-  duration_ms: 41.250011
+  duration_ms: 65.60547
   type: 'test'
   ...
 # Subtest: ability acceptance: Drossforge Bridge / mana
 ok 70 - ability acceptance: Drossforge Bridge / mana
   ---
-  duration_ms: 53.830359
+  duration_ms: 57.717996
   type: 'test'
   ...
 # Subtest: card acceptance: Eldritch Evolution — metadata and legal entry
 ok 71 - card acceptance: Eldritch Evolution — metadata and legal entry
   ---
-  duration_ms: 134.971344
+  duration_ms: 132.560959
   type: 'test'
   ...
 # Subtest: card acceptance: Elven Raft-Steerer — metadata and legal entry
 ok 72 - card acceptance: Elven Raft-Steerer — metadata and legal entry
   ---
-  duration_ms: 92.651932
+  duration_ms: 95.612196
   type: 'test'
   ...
 # Subtest: card acceptance: Elvish Reclaimer — metadata and legal entry
 ok 73 - card acceptance: Elvish Reclaimer — metadata and legal entry
   ---
-  duration_ms: 88.650466
+  duration_ms: 99.920386
   type: 'test'
   ...
 # Subtest: ability acceptance: Elvish Reclaimer / reclaim
 ok 74 - ability acceptance: Elvish Reclaimer / reclaim
   ---
-  duration_ms: 56.967176
+  duration_ms: 108.196927
   type: 'test'
   ...
 # Subtest: card acceptance: Empowered Autogenerator — metadata and legal entry
 ok 75 - card acceptance: Empowered Autogenerator — metadata and legal entry
   ---
-  duration_ms: 88.115253
+  duration_ms: 91.533323
   type: 'test'
   ...
 # Subtest: ability acceptance: Empowered Autogenerator / mana
 ok 76 - ability acceptance: Empowered Autogenerator / mana
   ---
-  duration_ms: 50.317513
+  duration_ms: 54.590797
   type: 'test'
   ...
 # Subtest: card acceptance: Emry, Lurker of the Loch — metadata and legal entry
 ok 77 - card acceptance: Emry, Lurker of the Loch — metadata and legal entry
   ---
-  duration_ms: 155.125373
+  duration_ms: 167.426464
   type: 'test'
   ...
 # Subtest: ability acceptance: Emry, Lurker of the Loch / cast-artifact
 ok 78 - ability acceptance: Emry, Lurker of the Loch / cast-artifact
   ---
-  duration_ms: 79.137155
+  duration_ms: 82.777056
   type: 'test'
   ...
 # Subtest: card acceptance: Esoteric Duplicator — metadata and legal entry
 ok 79 - card acceptance: Esoteric Duplicator — metadata and legal entry
   ---
-  duration_ms: 92.977378
+  duration_ms: 133.011784
   type: 'test'
   ...
 # Subtest: ability acceptance: Esoteric Duplicator / draw
 ok 80 - ability acceptance: Esoteric Duplicator / draw
   ---
-  duration_ms: 145.537423
+  duration_ms: 160.604263
   type: 'test'
   ...
 # Subtest: card acceptance: Expedition Map — metadata and legal entry
 ok 81 - card acceptance: Expedition Map — metadata and legal entry
   ---
-  duration_ms: 78.942113
+  duration_ms: 93.882343
   type: 'test'
   ...
 # Subtest: ability acceptance: Expedition Map / map
 ok 82 - ability acceptance: Expedition Map / map
   ---
-  duration_ms: 84.126068
+  duration_ms: 93.830726
   type: 'test'
   ...
 # Subtest: card acceptance: Faith's Reward — metadata and legal entry
 ok 83 - card acceptance: Faith's Reward — metadata and legal entry
   ---
-  duration_ms: 86.404117
+  duration_ms: 98.464456
   type: 'test'
   ...
 # Subtest: card acceptance: Fateful Discovery — metadata and legal entry
 ok 84 - card acceptance: Fateful Discovery — metadata and legal entry
   ---
-  duration_ms: 88.070598
+  duration_ms: 103.389518
   type: 'test'
   ...
 # Subtest: card acceptance: Field of the Dead — metadata and legal entry
 ok 85 - card acceptance: Field of the Dead — metadata and legal entry
   ---
-  duration_ms: 65.139441
+  duration_ms: 58.2824
   type: 'test'
   ...
 # Subtest: ability acceptance: Field of the Dead / mana
 ok 86 - ability acceptance: Field of the Dead / mana
   ---
-  duration_ms: 51.650863
+  duration_ms: 52.628197
   type: 'test'
   ...
 # Subtest: card acceptance: Fomori Vault — metadata and legal entry
 ok 87 - card acceptance: Fomori Vault — metadata and legal entry
   ---
-  duration_ms: 48.597903
+  duration_ms: 52.368951
   type: 'test'
   ...
 # Subtest: ability acceptance: Fomori Vault / mana
 ok 88 - ability acceptance: Fomori Vault / mana
   ---
-  duration_ms: 45.775401
+  duration_ms: 45.91639
   type: 'test'
   ...
 # Subtest: ability acceptance: Fomori Vault / vault
 ok 89 - ability acceptance: Fomori Vault / vault
   ---
-  duration_ms: 97.552811
+  duration_ms: 112.653475
   type: 'test'
   ...
 # Subtest: card acceptance: Gandalf, Shadow's Foe — metadata and legal entry
 ok 90 - card acceptance: Gandalf, Shadow's Foe — metadata and legal entry
   ---
-  duration_ms: 129.97702
+  duration_ms: 199.079004
   type: 'test'
   ...
 # Subtest: card acceptance: Gerrard's Hourglass Pendant — metadata and legal entry
 ok 91 - card acceptance: Gerrard's Hourglass Pendant — metadata and legal entry
   ---
-  duration_ms: 94.359319
+  duration_ms: 109.771816
   type: 'test'
   ...
 # Subtest: ability acceptance: Gerrard's Hourglass Pendant / return-this-turn
 ok 92 - ability acceptance: Gerrard's Hourglass Pendant / return-this-turn
   ---
-  duration_ms: 94.801369
+  duration_ms: 100.999169
   type: 'test'
   ...
 # Subtest: card acceptance: Goblin Engineer — metadata and legal entry
 ok 93 - card acceptance: Goblin Engineer — metadata and legal entry
   ---
-  duration_ms: 131.621678
+  duration_ms: 137.725684
   type: 'test'
   ...
 # Subtest: ability acceptance: Goblin Engineer / exchange
 ok 94 - ability acceptance: Goblin Engineer / exchange
   ---
-  duration_ms: 117.005377
+  duration_ms: 129.385503
   type: 'test'
   ...
 # Subtest: card acceptance: Goblin Welder — metadata and legal entry
 ok 95 - card acceptance: Goblin Welder — metadata and legal entry
   ---
-  duration_ms: 89.589414
+  duration_ms: 94.059054
   type: 'test'
   ...
 # Subtest: ability acceptance: Goblin Welder / exchange
 ok 96 - ability acceptance: Goblin Welder / exchange
   ---
-  duration_ms: 66.523166
+  duration_ms: 110.766968
   type: 'test'
   ...
 # Subtest: card acceptance: Golbez, Crystal Collector — metadata and legal entry
 ok 97 - card acceptance: Golbez, Crystal Collector — metadata and legal entry
   ---
-  duration_ms: 97.234158
+  duration_ms: 92.455065
   type: 'test'
   ...
 # Subtest: card acceptance: Goldmire Bridge — metadata and legal entry
 ok 98 - card acceptance: Goldmire Bridge — metadata and legal entry
   ---
-  duration_ms: 48.48323
+  duration_ms: 49.390024
   type: 'test'
   ...
 # Subtest: ability acceptance: Goldmire Bridge / mana
 ok 99 - ability acceptance: Goldmire Bridge / mana
   ---
-  duration_ms: 31.470655
+  duration_ms: 48.855231
   type: 'test'
   ...
 # Subtest: card acceptance: Golgari Rot Farm — metadata and legal entry
 ok 100 - card acceptance: Golgari Rot Farm — metadata and legal entry
   ---
-  duration_ms: 76.687829
+  duration_ms: 103.307127
   type: 'test'
   ...
 # Subtest: ability acceptance: Golgari Rot Farm / mana
 ok 101 - ability acceptance: Golgari Rot Farm / mana
   ---
-  duration_ms: 27.415871
+  duration_ms: 48.8657
   type: 'test'
   ...
 # Subtest: card acceptance: Great Furnace — metadata and legal entry
 ok 102 - card acceptance: Great Furnace — metadata and legal entry
   ---
-  duration_ms: 29.269079
+  duration_ms: 47.6013
   type: 'test'
   ...
 # Subtest: ability acceptance: Great Furnace / mana
 ok 103 - ability acceptance: Great Furnace / mana
   ---
-  duration_ms: 26.2864
+  duration_ms: 45.339968
   type: 'test'
   ...
 # Subtest: card acceptance: Grim Monolith — metadata and legal entry
 ok 104 - card acceptance: Grim Monolith — metadata and legal entry
   ---
-  duration_ms: 53.302657
+  duration_ms: 81.46757
   type: 'test'
   ...
 # Subtest: ability acceptance: Grim Monolith / mana
 ok 105 - ability acceptance: Grim Monolith / mana
   ---
-  duration_ms: 29.470274
+  duration_ms: 45.707919
   type: 'test'
   ...
 # Subtest: ability acceptance: Grim Monolith / untap
 ok 106 - ability acceptance: Grim Monolith / untap
   ---
-  duration_ms: 38.397224
+  duration_ms: 65.402624
   type: 'test'
   ...
 # Subtest: card acceptance: Grinding Station — metadata and legal entry
 ok 107 - card acceptance: Grinding Station — metadata and legal entry
   ---
-  duration_ms: 70.734561
+  duration_ms: 114.025979
   type: 'test'
   ...
 # Subtest: ability acceptance: Grinding Station / mill
 ok 108 - ability acceptance: Grinding Station / mill
   ---
-  duration_ms: 100.038526
+  duration_ms: 85.495865
   type: 'test'
   ...
 # Subtest: card acceptance: Gruul Turf — metadata and legal entry
 ok 109 - card acceptance: Gruul Turf — metadata and legal entry
   ---
-  duration_ms: 95.699272
+  duration_ms: 100.175576
   type: 'test'
   ...
 # Subtest: ability acceptance: Gruul Turf / mana
 ok 110 - ability acceptance: Gruul Turf / mana
   ---
-  duration_ms: 26.997152
+  duration_ms: 29.829699
   type: 'test'
   ...
 # Subtest: card acceptance: H.E.R.B.I.E. Scout Unit — metadata and legal entry
 ok 111 - card acceptance: H.E.R.B.I.E. Scout Unit — metadata and legal entry
   ---
-  duration_ms: 87.305284
+  duration_ms: 87.520474
   type: 'test'
   ...
 # Subtest: card acceptance: Icetill Explorer — metadata and legal entry
 ok 112 - card acceptance: Icetill Explorer — metadata and legal entry
   ---
-  duration_ms: 52.212308
+  duration_ms: 66.40828
   type: 'test'
   ...
 # Subtest: card acceptance: Inventors' Fair — metadata and legal entry
 ok 113 - card acceptance: Inventors' Fair — metadata and legal entry
   ---
-  duration_ms: 29.389624
+  duration_ms: 51.631217
   type: 'test'
   ...
 # Subtest: ability acceptance: Inventors' Fair / mana
 ok 114 - ability acceptance: Inventors' Fair / mana
   ---
-  duration_ms: 26.49058
+  duration_ms: 46.062283
   type: 'test'
   ...
 # Subtest: ability acceptance: Inventors' Fair / tutor
 ok 115 - ability acceptance: Inventors' Fair / tutor
   ---
-  duration_ms: 76.335963
+  duration_ms: 95.34716
   type: 'test'
   ...
 # Subtest: card acceptance: Izzet Boilerworks — metadata and legal entry
 ok 116 - card acceptance: Izzet Boilerworks — metadata and legal entry
   ---
-  duration_ms: 65.917819
+  duration_ms: 83.691882
   type: 'test'
   ...
 # Subtest: ability acceptance: Izzet Boilerworks / mana
 ok 117 - ability acceptance: Izzet Boilerworks / mana
   ---
-  duration_ms: 26.985401
+  duration_ms: 46.868455
   type: 'test'
   ...
 # Subtest: card acceptance: Jhoira, Weatherlight Captain — metadata and legal entry
 ok 118 - card acceptance: Jhoira, Weatherlight Captain — metadata and legal entry
   ---
-  duration_ms: 50.698582
+  duration_ms: 86.791144
   type: 'test'
   ...
 # Subtest: card acceptance: Kodama of the East Tree — metadata and legal entry
 ok 119 - card acceptance: Kodama of the East Tree — metadata and legal entry
   ---
-  duration_ms: 81.538053
+  duration_ms: 98.390076
   type: 'test'
   ...
 # Subtest: card acceptance: Krang, Master Mind — metadata and legal entry
 ok 120 - card acceptance: Krang, Master Mind — metadata and legal entry
   ---
-  duration_ms: 140.190724
+  duration_ms: 142.526618
   type: 'test'
   ...
 # Subtest: card acceptance: Krang, Utrom Warlord — metadata and legal entry
 ok 121 - card acceptance: Krang, Utrom Warlord — metadata and legal entry
   ---
-  duration_ms: 85.703924
+  duration_ms: 85.827647
   type: 'test'
   ...
 # Subtest: card acceptance: Krark-Clan Ironworks — metadata and legal entry
 ok 122 - card acceptance: Krark-Clan Ironworks — metadata and legal entry
   ---
-  duration_ms: 72.727208
+  duration_ms: 86.273694
   type: 'test'
   ...
 # Subtest: ability acceptance: Krark-Clan Ironworks / sacrifice
 ok 123 - ability acceptance: Krark-Clan Ironworks / sacrifice
   ---
-  duration_ms: 60.091468
+  duration_ms: 61.462813
   type: 'test'
   ...
 # Subtest: card acceptance: Kuldotha Forgemaster — metadata and legal entry
 ok 124 - card acceptance: Kuldotha Forgemaster — metadata and legal entry
   ---
-  duration_ms: 85.388891
+  duration_ms: 56.271569
   type: 'test'
   ...
 # Subtest: ability acceptance: Kuldotha Forgemaster / forge
 ok 125 - ability acceptance: Kuldotha Forgemaster / forge
   ---
-  duration_ms: 71.415558
+  duration_ms: 67.883487
   type: 'test'
   ...
 # Subtest: card acceptance: Lightning Greaves — metadata and legal entry
 ok 126 - card acceptance: Lightning Greaves — metadata and legal entry
   ---
-  duration_ms: 66.445044
+  duration_ms: 50.728484
   type: 'test'
   ...
 # Subtest: ability acceptance: Lightning Greaves / equip
 ok 127 - ability acceptance: Lightning Greaves / equip
   ---
-  duration_ms: 48.264654
+  duration_ms: 40.904109
   type: 'test'
   ...
 # Subtest: card acceptance: Llanowar Scout — metadata and legal entry
 ok 128 - card acceptance: Llanowar Scout — metadata and legal entry
   ---
-  duration_ms: 49.54535
+  duration_ms: 46.85551
   type: 'test'
   ...
 # Subtest: ability acceptance: Llanowar Scout / put-land
 ok 129 - ability acceptance: Llanowar Scout / put-land
   ---
-  duration_ms: 46.861471
+  duration_ms: 39.911748
   type: 'test'
   ...
 # Subtest: card acceptance: Lotus Cobra — metadata and legal entry
 ok 130 - card acceptance: Lotus Cobra — metadata and legal entry
   ---
-  duration_ms: 60.883987
+  duration_ms: 53.278481
   type: 'test'
   ...
 # Subtest: card acceptance: Lumra, Bellow of the Woods — metadata and legal entry
 ok 131 - card acceptance: Lumra, Bellow of the Woods — metadata and legal entry
   ---
-  duration_ms: 102.17691
+  duration_ms: 93.169786
   type: 'test'
   ...
 # Subtest: card acceptance: Mana Vault — metadata and legal entry
 ok 132 - card acceptance: Mana Vault — metadata and legal entry
   ---
-  duration_ms: 54.775277
+  duration_ms: 47.085622
   type: 'test'
   ...
 # Subtest: ability acceptance: Mana Vault / mana
 ok 133 - ability acceptance: Mana Vault / mana
   ---
-  duration_ms: 25.16968
+  duration_ms: 24.567092
   type: 'test'
   ...
 # Subtest: card acceptance: Manabond — metadata and legal entry
 ok 134 - card acceptance: Manabond — metadata and legal entry
   ---
-  duration_ms: 48.236223
+  duration_ms: 46.245587
   type: 'test'
   ...
 # Subtest: card acceptance: Master Transmuter — metadata and legal entry
 ok 135 - card acceptance: Master Transmuter — metadata and legal entry
   ---
-  duration_ms: 60.989948
+  duration_ms: 46.792002
   type: 'test'
   ...
 # Subtest: ability acceptance: Master Transmuter / transmute
 ok 136 - ability acceptance: Master Transmuter / transmute
   ---
-  duration_ms: 57.466631
+  duration_ms: 55.889673
   type: 'test'
   ...
 # Subtest: card acceptance: Memory Jar — metadata and legal entry
 ok 137 - card acceptance: Memory Jar — metadata and legal entry
   ---
-  duration_ms: 52.366359
+  duration_ms: 46.793535
   type: 'test'
   ...
 # Subtest: ability acceptance: Memory Jar / jar
 ok 138 - ability acceptance: Memory Jar / jar
   ---
-  duration_ms: 116.539501
+  duration_ms: 100.483772
   type: 'test'
   ...
 # Subtest: card acceptance: Metalwork Colossus — metadata and legal entry
 ok 139 - card acceptance: Metalwork Colossus — metadata and legal entry
   ---
-  duration_ms: 51.864782
+  duration_ms: 52.418052
   type: 'test'
   ...
 # Subtest: ability acceptance: Metalwork Colossus / recover
 ok 140 - ability acceptance: Metalwork Colossus / recover
   ---
-  duration_ms: 53.963475
+  duration_ms: 53.470917
   type: 'test'
   ...
 # Subtest: card acceptance: Metalworker — metadata and legal entry
 ok 141 - card acceptance: Metalworker — metadata and legal entry
   ---
-  duration_ms: 47.661433
+  duration_ms: 46.055
   type: 'test'
   ...
 # Subtest: ability acceptance: Metalworker / reveal-mana
 ok 142 - ability acceptance: Metalworker / reveal-mana
   ---
-  duration_ms: 27.04928
+  duration_ms: 26.826459
   type: 'test'
   ...
 # Subtest: card acceptance: Mishra's Workshop — metadata and legal entry
 ok 143 - card acceptance: Mishra's Workshop — metadata and legal entry
   ---
-  duration_ms: 28.378412
+  duration_ms: 27.434409
   type: 'test'
   ...
 # Subtest: ability acceptance: Mishra's Workshop / mana
 ok 144 - ability acceptance: Mishra's Workshop / mana
   ---
-  duration_ms: 35.079992
+  duration_ms: 29.976029
   type: 'test'
   ...
 # Subtest: card acceptance: Mistvault Bridge — metadata and legal entry
 ok 145 - card acceptance: Mistvault Bridge — metadata and legal entry
   ---
-  duration_ms: 27.305175
+  duration_ms: 26.632245
   type: 'test'
   ...
 # Subtest: ability acceptance: Mistvault Bridge / mana
 ok 146 - ability acceptance: Mistvault Bridge / mana
   ---
-  duration_ms: 26.563404
+  duration_ms: 26.391965
   type: 'test'
   ...
 # Subtest: card acceptance: Molderhulk — metadata and legal entry
 ok 147 - card acceptance: Molderhulk — metadata and legal entry
   ---
-  duration_ms: 81.305523
+  duration_ms: 85.127644
   type: 'test'
   ...
 # Subtest: card acceptance: Moonsilver Key — metadata and legal entry
 ok 148 - card acceptance: Moonsilver Key — metadata and legal entry
   ---
-  duration_ms: 47.152705
+  duration_ms: 46.713365
   type: 'test'
   ...
 # Subtest: ability acceptance: Moonsilver Key / key
 ok 149 - ability acceptance: Moonsilver Key / key
   ---
-  duration_ms: 54.337333
+  duration_ms: 47.88406
   type: 'test'
   ...
 # Subtest: card acceptance: Moraug, Fury of Akoum — metadata and legal entry
 ok 150 - card acceptance: Moraug, Fury of Akoum — metadata and legal entry
   ---
-  duration_ms: 53.064845
+  duration_ms: 52.500467
   type: 'test'
   ...
 # Subtest: card acceptance: Mox Amber — metadata and legal entry
 ok 151 - card acceptance: Mox Amber — metadata and legal entry
   ---
-  duration_ms: 46.772998
+  duration_ms: 46.612655
   type: 'test'
   ...
 # Subtest: ability acceptance: Mox Amber / mana
 ok 152 - ability acceptance: Mox Amber / mana
   ---
-  duration_ms: 26.903388
+  duration_ms: 26.811151
   type: 'test'
   ...
 # Subtest: card acceptance: Mox Opal — metadata and legal entry
 ok 153 - card acceptance: Mox Opal — metadata and legal entry
   ---
-  duration_ms: 48.479894
+  duration_ms: 47.885281
   type: 'test'
   ...
 # Subtest: ability acceptance: Mox Opal / mana
 ok 154 - ability acceptance: Mox Opal / mana
   ---
-  duration_ms: 28.368515
+  duration_ms: 34.216127
   type: 'test'
   ...
 # Subtest: card acceptance: Myr Battlesphere — metadata and legal entry
 ok 155 - card acceptance: Myr Battlesphere — metadata and legal entry
   ---
-  duration_ms: 99.610749
+  duration_ms: 98.760803
   type: 'test'
   ...
 # Subtest: card acceptance: Myr Turbine — metadata and legal entry
 ok 156 - card acceptance: Myr Turbine — metadata and legal entry
   ---
-  duration_ms: 49.226964
+  duration_ms: 49.406274
   type: 'test'
   ...
 # Subtest: ability acceptance: Myr Turbine / myr
 ok 157 - ability acceptance: Myr Turbine / myr
   ---
-  duration_ms: 44.772466
+  duration_ms: 44.900555
   type: 'test'
   ...
 # Subtest: ability acceptance: Myr Turbine / search
 ok 158 - ability acceptance: Myr Turbine / search
   ---
-  duration_ms: 56.949613
+  duration_ms: 53.935287
   type: 'test'
   ...
 # Subtest: card acceptance: Nahiri's Lithoforming — metadata and legal entry
 ok 159 - card acceptance: Nahiri's Lithoforming — metadata and legal entry
   ---
-  duration_ms: 51.413455
+  duration_ms: 51.757864
   type: 'test'
   ...
 # Subtest: card acceptance: Neoform — metadata and legal entry
 ok 160 - card acceptance: Neoform — metadata and legal entry
   ---
-  duration_ms: 71.230455
+  duration_ms: 70.223423
   type: 'test'
   ...
 # Subtest: card acceptance: Nissa, Resurgent Animist — metadata and legal entry
 ok 161 - card acceptance: Nissa, Resurgent Animist — metadata and legal entry
   ---
-  duration_ms: 68.087144
+  duration_ms: 53.992736
   type: 'test'
   ...
 # Subtest: card acceptance: Oboro, Palace in the Clouds — metadata and legal entry
 ok 162 - card acceptance: Oboro, Palace in the Clouds — metadata and legal entry
   ---
-  duration_ms: 29.180655
+  duration_ms: 26.453359
   type: 'test'
   ...
 # Subtest: ability acceptance: Oboro, Palace in the Clouds / mana
 ok 163 - ability acceptance: Oboro, Palace in the Clouds / mana
   ---
-  duration_ms: 24.132743
+  duration_ms: 24.686887
   type: 'test'
   ...
 # Subtest: ability acceptance: Oboro, Palace in the Clouds / return
 ok 164 - ability acceptance: Oboro, Palace in the Clouds / return
   ---
-  duration_ms: 48.907091
+  duration_ms: 40.331766
   type: 'test'
   ...
 # Subtest: card acceptance: Open the Vaults — metadata and legal entry
 ok 165 - card acceptance: Open the Vaults — metadata and legal entry
   ---
-  duration_ms: 127.083258
+  duration_ms: 100.560045
   type: 'test'
   ...
 # Subtest: card acceptance: Oswald Fiddlebender — metadata and legal entry
 ok 166 - card acceptance: Oswald Fiddlebender — metadata and legal entry
   ---
-  duration_ms: 59.189552
+  duration_ms: 49.497736
   type: 'test'
   ...
 # Subtest: ability acceptance: Oswald Fiddlebender / ladder
 ok 167 - ability acceptance: Oswald Fiddlebender / ladder
   ---
-  duration_ms: 53.767381
+  duration_ms: 54.078657
   type: 'test'
   ...
 # Subtest: card acceptance: Panther Robot — metadata and legal entry
 ok 168 - card acceptance: Panther Robot — metadata and legal entry
   ---
-  duration_ms: 62.269632
+  duration_ms: 51.630065
   type: 'test'
   ...
 # Subtest: card acceptance: Phantom Train — metadata and legal entry
 ok 169 - card acceptance: Phantom Train — metadata and legal entry
   ---
-  duration_ms: 57.370777
+  duration_ms: 46.883583
   type: 'test'
   ...
 # Subtest: ability acceptance: Phantom Train / animate
 ok 170 - ability acceptance: Phantom Train / animate
   ---
-  duration_ms: 70.34562
+  duration_ms: 50.287316
   type: 'test'
   ...
 # Subtest: card acceptance: Pitiless Carnage — metadata and legal entry
 ok 171 - card acceptance: Pitiless Carnage — metadata and legal entry
   ---
-  duration_ms: 65.442626
+  duration_ms: 56.523331
   type: 'test'
   ...
 # Subtest: card acceptance: Portal to Phyrexia — metadata and legal entry
 ok 172 - card acceptance: Portal to Phyrexia — metadata and legal entry
   ---
-  duration_ms: 78.174716
+  duration_ms: 63.670454
   type: 'test'
   ...
 # Subtest: card acceptance: Power Depot — metadata and legal entry
 ok 173 - card acceptance: Power Depot — metadata and legal entry
   ---
-  duration_ms: 33.609431
+  duration_ms: 28.376746
   type: 'test'
   ...
 # Subtest: ability acceptance: Power Depot / mana
 ok 174 - ability acceptance: Power Depot / mana
   ---
-  duration_ms: 25.31934
+  duration_ms: 24.607077
   type: 'test'
   ...
 # Subtest: ability acceptance: Power Depot / restricted-color
 ok 175 - ability acceptance: Power Depot / restricted-color
   ---
-  duration_ms: 27.000509
+  duration_ms: 26.333494
   type: 'test'
   ...
 # Subtest: card acceptance: Priest of Yawgmoth — metadata and legal entry
 ok 176 - card acceptance: Priest of Yawgmoth — metadata and legal entry
   ---
-  duration_ms: 46.599365
+  duration_ms: 46.221833
   type: 'test'
   ...
 # Subtest: ability acceptance: Priest of Yawgmoth / sacrifice
 ok 177 - ability acceptance: Priest of Yawgmoth / sacrifice
   ---
-  duration_ms: 34.392312
+  duration_ms: 34.698002
   type: 'test'
   ...
 # Subtest: card acceptance: PuPu UFO — metadata and legal entry
 ok 178 - card acceptance: PuPu UFO — metadata and legal entry
   ---
-  duration_ms: 47.482759
+  duration_ms: 47.763954
   type: 'test'
   ...
 # Subtest: ability acceptance: PuPu UFO / put-land
 ok 179 - ability acceptance: PuPu UFO / put-land
   ---
-  duration_ms: 39.644134
+  duration_ms: 42.684163
   type: 'test'
   ...
 # Subtest: ability acceptance: PuPu UFO / town-power
 ok 180 - ability acceptance: PuPu UFO / town-power
   ---
-  duration_ms: 38.54039
+  duration_ms: 38.638661
   type: 'test'
   ...
 # Subtest: card acceptance: Quicksmith Genius — metadata and legal entry
 ok 181 - card acceptance: Quicksmith Genius — metadata and legal entry
   ---
-  duration_ms: 47.219018
+  duration_ms: 46.616935
   type: 'test'
   ...
 # Subtest: card acceptance: Radiant Lotus — metadata and legal entry
 ok 182 - card acceptance: Radiant Lotus — metadata and legal entry
   ---
-  duration_ms: 64.452744
+  duration_ms: 46.191356
   type: 'test'
   ...
 # Subtest: ability acceptance: Radiant Lotus / lotus
 ok 183 - ability acceptance: Radiant Lotus / lotus
   ---
-  duration_ms: 50.494683
+  duration_ms: 51.199174
   type: 'test'
   ...
 # Subtest: card acceptance: Razortide Bridge — metadata and legal entry
 ok 184 - card acceptance: Razortide Bridge — metadata and legal entry
   ---
-  duration_ms: 27.510637
+  duration_ms: 26.679148
   type: 'test'
   ...
 # Subtest: ability acceptance: Razortide Bridge / mana
 ok 185 - ability acceptance: Razortide Bridge / mana
   ---
-  duration_ms: 26.315544
+  duration_ms: 26.714394
   type: 'test'
   ...
 # Subtest: card acceptance: Redress Fate — metadata and legal entry
 ok 186 - card acceptance: Redress Fate — metadata and legal entry
   ---
-  duration_ms: 100.273957
+  duration_ms: 100.918371
   type: 'test'
   ...
 # Subtest: card acceptance: Repurposing Bay — metadata and legal entry
 ok 187 - card acceptance: Repurposing Bay — metadata and legal entry
   ---
-  duration_ms: 51.429884
+  duration_ms: 47.593507
   type: 'test'
   ...
 # Subtest: ability acceptance: Repurposing Bay / ladder
 ok 188 - ability acceptance: Repurposing Bay / ladder
   ---
-  duration_ms: 61.072002
+  duration_ms: 50.171416
   type: 'test'
   ...
 # Subtest: card acceptance: Retreat to Coralhelm — metadata and legal entry
 ok 189 - card acceptance: Retreat to Coralhelm — metadata and legal entry
   ---
-  duration_ms: 50.446697
+  duration_ms: 50.202253
   type: 'test'
   ...
 # Subtest: card acceptance: Roil Cartographer — metadata and legal entry
 ok 190 - card acceptance: Roil Cartographer — metadata and legal entry
   ---
-  duration_ms: 61.559932
+  duration_ms: 62.056006
   type: 'test'
   ...
 # Subtest: ability acceptance: Roil Cartographer / draw-three
 ok 191 - ability acceptance: Roil Cartographer / draw-three
   ---
-  duration_ms: 59.059369
+  duration_ms: 60.185469
   type: 'test'
   ...
 # Subtest: card acceptance: Rook Turret — metadata and legal entry
 ok 192 - card acceptance: Rook Turret — metadata and legal entry
   ---
-  duration_ms: 47.003708
+  duration_ms: 48.089798
   type: 'test'
   ...
 # Subtest: card acceptance: Rustvale Bridge — metadata and legal entry
 ok 193 - card acceptance: Rustvale Bridge — metadata and legal entry
   ---
-  duration_ms: 27.164774
+  duration_ms: 26.89369
   type: 'test'
   ...
 # Subtest: ability acceptance: Rustvale Bridge / mana
 ok 194 - ability acceptance: Rustvale Bridge / mana
   ---
-  duration_ms: 26.276391
+  duration_ms: 26.661024
   type: 'test'
   ...
 # Subtest: card acceptance: Rydia, Summoner of Mist — metadata and legal entry
 ok 195 - card acceptance: Rydia, Summoner of Mist — metadata and legal entry
   ---
-  duration_ms: 52.31494
+  duration_ms: 52.201054
   type: 'test'
   ...
 # Subtest: ability acceptance: Rydia, Summoner of Mist / summon
 ok 196 - ability acceptance: Rydia, Summoner of Mist / summon
   ---
-  duration_ms: 91.535093
+  duration_ms: 89.560428
   type: 'test'
   ...
 # Subtest: card acceptance: Sakura-Tribe Scout — metadata and legal entry
 ok 197 - card acceptance: Sakura-Tribe Scout — metadata and legal entry
   ---
-  duration_ms: 45.695954
+  duration_ms: 46.538427
   type: 'test'
   ...
 # Subtest: ability acceptance: Sakura-Tribe Scout / put-land
 ok 198 - ability acceptance: Sakura-Tribe Scout / put-land
   ---
-  duration_ms: 38.802628
+  duration_ms: 39.52738
   type: 'test'
   ...
 # Subtest: card acceptance: Salvage Titan — metadata and legal entry
 ok 199 - card acceptance: Salvage Titan — metadata and legal entry
   ---
-  duration_ms: 53.409777
+  duration_ms: 52.254655
   type: 'test'
   ...
 # Subtest: ability acceptance: Salvage Titan / recover
 ok 200 - ability acceptance: Salvage Titan / recover
   ---
-  duration_ms: 63.608486
+  duration_ms: 64.33228
   type: 'test'
   ...
 # Subtest: card acceptance: Salvaging Station — metadata and legal entry
 ok 201 - card acceptance: Salvaging Station — metadata and legal entry
   ---
-  duration_ms: 45.318562
+  duration_ms: 50.666906
   type: 'test'
   ...
 # Subtest: ability acceptance: Salvaging Station / return
 ok 202 - ability acceptance: Salvaging Station / return
   ---
-  duration_ms: 64.148267
+  duration_ms: 54.207439
   type: 'test'
   ...
 # Subtest: card acceptance: Sarinth Steelseeker — metadata and legal entry
 ok 203 - card acceptance: Sarinth Steelseeker — metadata and legal entry
   ---
-  duration_ms: 47.704962
+  duration_ms: 48.242145
   type: 'test'
   ...
 # Subtest: card acceptance: Scaled Herbalist — metadata and legal entry
 ok 204 - card acceptance: Scaled Herbalist — metadata and legal entry
   ---
-  duration_ms: 45.495702
+  duration_ms: 46.659364
   type: 'test'
   ...
 # Subtest: ability acceptance: Scaled Herbalist / put-land
 ok 205 - ability acceptance: Scaled Herbalist / put-land
   ---
-  duration_ms: 38.978255
+  duration_ms: 39.152376
   type: 'test'
   ...
 # Subtest: card acceptance: Scapeshift — metadata and legal entry
 ok 206 - card acceptance: Scapeshift — metadata and legal entry
   ---
-  duration_ms: 50.044265
+  duration_ms: 51.429336
   type: 'test'
   ...
 # Subtest: card acceptance: Scaretiller — metadata and legal entry
 ok 207 - card acceptance: Scaretiller — metadata and legal entry
   ---
-  duration_ms: 46.94053
+  duration_ms: 47.709094
   type: 'test'
   ...
 # Subtest: card acceptance: Scene of the Crime — metadata and legal entry
 ok 208 - card acceptance: Scene of the Crime — metadata and legal entry
   ---
-  duration_ms: 27.39388
+  duration_ms: 27.978195
   type: 'test'
   ...
 # Subtest: ability acceptance: Scene of the Crime / mana
 ok 209 - ability acceptance: Scene of the Crime / mana
   ---
-  duration_ms: 24.40008
+  duration_ms: 24.414758
   type: 'test'
   ...
 # Subtest: ability acceptance: Scene of the Crime / filter
 ok 210 - ability acceptance: Scene of the Crime / filter
   ---
-  duration_ms: 31.163795
+  duration_ms: 30.818045
   type: 'test'
   ...
 # Subtest: ability acceptance: Scene of the Crime / clue
 ok 211 - ability acceptance: Scene of the Crime / clue
   ---
-  duration_ms: 46.068017
+  duration_ms: 46.045512
   type: 'test'
   ...
 # Subtest: card acceptance: Scourglass — metadata and legal entry
 ok 212 - card acceptance: Scourglass — metadata and legal entry
   ---
-  duration_ms: 47.862806
+  duration_ms: 49.704699
   type: 'test'
   ...
 # Subtest: ability acceptance: Scourglass / destroy
 ok 213 - ability acceptance: Scourglass / destroy
   ---
-  duration_ms: 54.625539
+  duration_ms: 54.232376
   type: 'test'
   ...
 # Subtest: card acceptance: Scrabbling Claws — metadata and legal entry
 ok 214 - card acceptance: Scrabbling Claws — metadata and legal entry
   ---
-  duration_ms: 46.164827
+  duration_ms: 45.917762
   type: 'test'
   ...
 # Subtest: ability acceptance: Scrabbling Claws / exile-choice
 ok 215 - ability acceptance: Scrabbling Claws / exile-choice
   ---
-  duration_ms: 51.528547
+  duration_ms: 45.917562
   type: 'test'
   ...
 # Subtest: ability acceptance: Scrabbling Claws / exile-draw
 ok 216 - ability acceptance: Scrabbling Claws / exile-draw
   ---
-  duration_ms: 54.87278
+  duration_ms: 54.905389
   type: 'test'
   ...
 # Subtest: card acceptance: Scrap Trawler — metadata and legal entry
 ok 217 - card acceptance: Scrap Trawler — metadata and legal entry
   ---
-  duration_ms: 49.414603
+  duration_ms: 48.973717
   type: 'test'
   ...
 # Subtest: card acceptance: Scroll Rack — metadata and legal entry
 ok 218 - card acceptance: Scroll Rack — metadata and legal entry
   ---
-  duration_ms: 44.678631
+  duration_ms: 45.326963
   type: 'test'
   ...
 # Subtest: ability acceptance: Scroll Rack / rack
 ok 219 - ability acceptance: Scroll Rack / rack
   ---
-  duration_ms: 39.254038
+  duration_ms: 38.652688
   type: 'test'
   ...
 # Subtest: card acceptance: Seat of the Synod — metadata and legal entry
 ok 220 - card acceptance: Seat of the Synod — metadata and legal entry
   ---
-  duration_ms: 29.209719
+  duration_ms: 27.323988
   type: 'test'
   ...
 # Subtest: ability acceptance: Seat of the Synod / mana
 ok 221 - ability acceptance: Seat of the Synod / mana
   ---
-  duration_ms: 24.087538
+  duration_ms: 24.633188
   type: 'test'
   ...
 # Subtest: card acceptance: Second Sunrise — metadata and legal entry
 ok 222 - card acceptance: Second Sunrise — metadata and legal entry
   ---
-  duration_ms: 46.35638
+  duration_ms: 45.570101
   type: 'test'
   ...
 # Subtest: card acceptance: Seedborn Muse — metadata and legal entry
 ok 223 - card acceptance: Seedborn Muse — metadata and legal entry
   ---
-  duration_ms: 47.050685
+  duration_ms: 47.592445
   type: 'test'
   ...
 # Subtest: card acceptance: Selesnya Sanctuary — metadata and legal entry
 ok 224 - card acceptance: Selesnya Sanctuary — metadata and legal entry
   ---
-  duration_ms: 50.867557
+  duration_ms: 50.343207
   type: 'test'
   ...
 # Subtest: ability acceptance: Selesnya Sanctuary / mana
 ok 225 - ability acceptance: Selesnya Sanctuary / mana
   ---
-  duration_ms: 24.379521
+  duration_ms: 25.033599
   type: 'test'
   ...
 # Subtest: card acceptance: Sensei's Divining Top — metadata and legal entry
 ok 226 - card acceptance: Sensei's Divining Top — metadata and legal entry
   ---
-  duration_ms: 46.248134
+  duration_ms: 46.786553
   type: 'test'
   ...
 # Subtest: ability acceptance: Sensei's Divining Top / look
 ok 227 - ability acceptance: Sensei's Divining Top / look
   ---
-  duration_ms: 39.450975
+  duration_ms: 40.083704
   type: 'test'
   ...
 # Subtest: ability acceptance: Sensei's Divining Top / draw
 ok 228 - ability acceptance: Sensei's Divining Top / draw
   ---
-  duration_ms: 47.445821
+  duration_ms: 49.6947
   type: 'test'
   ...
 # Subtest: card acceptance: Shimmer Dragon — metadata and legal entry
 ok 229 - card acceptance: Shimmer Dragon — metadata and legal entry
   ---
-  duration_ms: 46.754785
+  duration_ms: 46.349343
   type: 'test'
   ...
 # Subtest: ability acceptance: Shimmer Dragon / draw
 ok 230 - ability acceptance: Shimmer Dragon / draw
   ---
-  duration_ms: 45.950325
+  duration_ms: 47.316387
   type: 'test'
   ...
 # Subtest: card acceptance: Shorikai, Genesis Engine — metadata and legal entry
 ok 231 - card acceptance: Shorikai, Genesis Engine — metadata and legal entry
   ---
-  duration_ms: 47.61786
+  duration_ms: 52.336048
   type: 'test'
   ...
 # Subtest: ability acceptance: Shorikai, Genesis Engine / draw
 ok 232 - ability acceptance: Shorikai, Genesis Engine / draw
   ---
-  duration_ms: 61.563448
+  duration_ms: 69.028668
   type: 'test'
   ...
 # Subtest: ability acceptance: Shorikai, Genesis Engine / crew
 ok 233 - ability acceptance: Shorikai, Genesis Engine / crew
   ---
-  duration_ms: 42.71575
+  duration_ms: 43.041054
   type: 'test'
   ...
 # Subtest: card acceptance: Silverbluff Bridge — metadata and legal entry
 ok 234 - card acceptance: Silverbluff Bridge — metadata and legal entry
   ---
-  duration_ms: 27.103991
+  duration_ms: 27.024696
   type: 'test'
   ...
 # Subtest: ability acceptance: Silverbluff Bridge / mana
 ok 235 - ability acceptance: Silverbluff Bridge / mana
   ---
-  duration_ms: 26.991612
+  duration_ms: 26.321787
   type: 'test'
   ...
 # Subtest: card acceptance: Simic Growth Chamber — metadata and legal entry
 ok 236 - card acceptance: Simic Growth Chamber — metadata and legal entry
   ---
-  duration_ms: 52.011545
+  duration_ms: 50.780929
   type: 'test'
   ...
 # Subtest: ability acceptance: Simic Growth Chamber / mana
 ok 237 - ability acceptance: Simic Growth Chamber / mana
   ---
-  duration_ms: 25.321845
+  duration_ms: 24.775526
   type: 'test'
   ...
 # Subtest: card acceptance: Six — metadata and legal entry
 ok 238 - card acceptance: Six — metadata and legal entry
   ---
-  duration_ms: 48.450579
+  duration_ms: 48.036509
   type: 'test'
   ...
 # Subtest: card acceptance: Slagwoods Bridge — metadata and legal entry
 ok 239 - card acceptance: Slagwoods Bridge — metadata and legal entry
   ---
-  duration_ms: 26.938173
+  duration_ms: 26.695318
   type: 'test'
   ...
 # Subtest: ability acceptance: Slagwoods Bridge / mana
 ok 240 - ability acceptance: Slagwoods Bridge / mana
   ---
-  duration_ms: 27.059939
+  duration_ms: 27.146959
   type: 'test'
   ...
 # Subtest: card acceptance: Smelting Vat — metadata and legal entry
 ok 241 - card acceptance: Smelting Vat — metadata and legal entry
   ---
-  duration_ms: 45.909963
+  duration_ms: 45.639049
   type: 'test'
   ...
 # Subtest: ability acceptance: Smelting Vat / smelt
 ok 242 - ability acceptance: Smelting Vat / smelt
   ---
-  duration_ms: 52.556068
+  duration_ms: 59.599251
   type: 'test'
   ...
 # Subtest: card acceptance: Spine of Ish Sah — metadata and legal entry
 ok 243 - card acceptance: Spine of Ish Sah — metadata and legal entry
   ---
-  duration_ms: 76.068497
+  duration_ms: 76.121304
   type: 'test'
   ...
 # Subtest: card acceptance: Squandered Resources — metadata and legal entry
 ok 244 - card acceptance: Squandered Resources — metadata and legal entry
   ---
-  duration_ms: 45.965055
+  duration_ms: 46.058491
   type: 'test'
   ...
 # Subtest: ability acceptance: Squandered Resources / land-mana
 ok 245 - ability acceptance: Squandered Resources / land-mana
   ---
-  duration_ms: 34.012097
+  duration_ms: 32.570404
   type: 'test'
   ...
 # Subtest: card acceptance: Summon: Bahamut — metadata and legal entry
 ok 246 - card acceptance: Summon: Bahamut — metadata and legal entry
   ---
-  duration_ms: 82.85683
+  duration_ms: 93.292165
   type: 'test'
   ...
 # Subtest: card acceptance: Tanglepool Bridge — metadata and legal entry
 ok 247 - card acceptance: Tanglepool Bridge — metadata and legal entry
   ---
-  duration_ms: 27.712042
+  duration_ms: 27.215535
   type: 'test'
   ...
 # Subtest: ability acceptance: Tanglepool Bridge / mana
 ok 248 - ability acceptance: Tanglepool Bridge / mana
   ---
-  duration_ms: 27.111996
+  duration_ms: 27.423174
   type: 'test'
   ...
 # Subtest: card acceptance: Tatyova, Benthic Druid — metadata and legal entry
 ok 249 - card acceptance: Tatyova, Benthic Druid — metadata and legal entry
   ---
-  duration_ms: 49.809326
+  duration_ms: 50.342243
   type: 'test'
   ...
 # Subtest: card acceptance: Tezzeret the Seeker — metadata and legal entry
 ok 250 - card acceptance: Tezzeret the Seeker — metadata and legal entry
   ---
-  duration_ms: 51.889218
+  duration_ms: 51.67117
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret the Seeker / untap
 ok 251 - ability acceptance: Tezzeret the Seeker / untap
   ---
-  duration_ms: 42.213244
+  duration_ms: 42.125246
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret the Seeker / search
 ok 252 - ability acceptance: Tezzeret the Seeker / search
   ---
-  duration_ms: 44.685193
+  duration_ms: 52.539029
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret the Seeker / animate
 ok 253 - ability acceptance: Tezzeret the Seeker / animate
   ---
-  duration_ms: 41.547936
+  duration_ms: 63.503816
   type: 'test'
   ...
 # Subtest: card acceptance: Tezzeret, Cruel Captain — metadata and legal entry
 ok 254 - card acceptance: Tezzeret, Cruel Captain — metadata and legal entry
   ---
-  duration_ms: 54.155635
+  duration_ms: 72.475602
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret, Cruel Captain / untap
 ok 255 - ability acceptance: Tezzeret, Cruel Captain / untap
   ---
-  duration_ms: 50.151614
+  duration_ms: 44.245163
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret, Cruel Captain / search
 ok 256 - ability acceptance: Tezzeret, Cruel Captain / search
   ---
-  duration_ms: 42.922544
+  duration_ms: 42.321584
   type: 'test'
   ...
 # Subtest: ability acceptance: Tezzeret, Cruel Captain / emblem
 ok 257 - ability acceptance: Tezzeret, Cruel Captain / emblem
   ---
-  duration_ms: 41.438655
+  duration_ms: 39.255159
   type: 'test'
   ...
 # Subtest: card acceptance: The Cauldron of Eternity — metadata and legal entry
 ok 258 - card acceptance: The Cauldron of Eternity — metadata and legal entry
   ---
-  duration_ms: 47.905215
+  duration_ms: 47.041694
   type: 'test'
   ...
 # Subtest: ability acceptance: The Cauldron of Eternity / reanimate
 ok 259 - ability acceptance: The Cauldron of Eternity / reanimate
   ---
-  duration_ms: 47.008585
+  duration_ms: 46.321811
   type: 'test'
   ...
 # Subtest: card acceptance: The Gitrog Monster — metadata and legal entry
 ok 260 - card acceptance: The Gitrog Monster — metadata and legal entry
   ---
-  duration_ms: 56.320032
+  duration_ms: 50.134005
   type: 'test'
   ...
 # Subtest: card acceptance: The Great Henge — metadata and legal entry
 ok 261 - card acceptance: The Great Henge — metadata and legal entry
   ---
-  duration_ms: 51.210856
+  duration_ms: 50.743097
   type: 'test'
   ...
 # Subtest: ability acceptance: The Great Henge / mana
 ok 262 - ability acceptance: The Great Henge / mana
   ---
-  duration_ms: 25.062432
+  duration_ms: 26.434699
   type: 'test'
   ...
 # Subtest: card acceptance: The Mightstone and Weakstone — metadata and legal entry
 ok 263 - card acceptance: The Mightstone and Weakstone — metadata and legal entry
   ---
-  duration_ms: 101.238058
+  duration_ms: 103.616484
   type: 'test'
   ...
 # Subtest: ability acceptance: The Mightstone and Weakstone / mana
 ok 264 - ability acceptance: The Mightstone and Weakstone / mana
   ---
-  duration_ms: 26.482735
+  duration_ms: 27.626315
   type: 'test'
   ...
 # Subtest: card acceptance: The Mycosynth Gardens — metadata and legal entry
 ok 265 - card acceptance: The Mycosynth Gardens — metadata and legal entry
   ---
-  duration_ms: 27.730457
+  duration_ms: 28.394908
   type: 'test'
   ...
 # Subtest: ability acceptance: The Mycosynth Gardens / mana
 ok 266 - ability acceptance: The Mycosynth Gardens / mana
   ---
-  duration_ms: 25.808441
+  duration_ms: 25.682508
   type: 'test'
   ...
 # Subtest: ability acceptance: The Mycosynth Gardens / filter
 ok 267 - ability acceptance: The Mycosynth Gardens / filter
   ---
-  duration_ms: 27.387245
+  duration_ms: 27.285626
   type: 'test'
   ...
 # Subtest: ability acceptance: The Mycosynth Gardens / copy
 ok 268 - ability acceptance: The Mycosynth Gardens / copy
   ---
-  duration_ms: 43.836435
+  duration_ms: 45.78827
   type: 'test'
   ...
 # Subtest: card acceptance: The One Ring — metadata and legal entry
 ok 269 - card acceptance: The One Ring — metadata and legal entry
   ---
-  duration_ms: 73.018702
+  duration_ms: 76.679403
   type: 'test'
   ...
 # Subtest: ability acceptance: The One Ring / draw
 ok 270 - ability acceptance: The One Ring / draw
   ---
-  duration_ms: 49.732215
+  duration_ms: 51.348064
   type: 'test'
   ...
 # Subtest: card acceptance: The Reality Chip — metadata and legal entry
 ok 271 - card acceptance: The Reality Chip — metadata and legal entry
   ---
-  duration_ms: 61.017112
+  duration_ms: 65.459932
   type: 'test'
   ...
 # Subtest: ability acceptance: The Reality Chip / reconfigure
 ok 272 - ability acceptance: The Reality Chip / reconfigure
   ---
-  duration_ms: 45.599018
+  duration_ms: 46.902423
   type: 'test'
   ...
 # Subtest: card acceptance: The Seriema — metadata and legal entry
 ok 273 - card acceptance: The Seriema — metadata and legal entry
   ---
-  duration_ms: 73.204977
+  duration_ms: 68.488139
   type: 'test'
   ...
 # Subtest: ability acceptance: The Seriema / station
 ok 274 - ability acceptance: The Seriema / station
   ---
-  duration_ms: 52.914936
+  duration_ms: 50.002578
   type: 'test'
   ...
 # Subtest: card acceptance: The Wandering Minstrel — metadata and legal entry
 ok 275 - card acceptance: The Wandering Minstrel — metadata and legal entry
   ---
-  duration_ms: 55.590113
+  duration_ms: 53.134567
   type: 'test'
   ...
 # Subtest: ability acceptance: The Wandering Minstrel / ballad-buff
 ok 276 - ability acceptance: The Wandering Minstrel / ballad-buff
   ---
-  duration_ms: 38.583361
+  duration_ms: 39.066915
   type: 'test'
   ...
 # Subtest: card acceptance: Thornglint Bridge — metadata and legal entry
 ok 277 - card acceptance: Thornglint Bridge — metadata and legal entry
   ---
-  duration_ms: 26.645127
+  duration_ms: 27.96969
   type: 'test'
   ...
 # Subtest: ability acceptance: Thornglint Bridge / mana
 ok 278 - ability acceptance: Thornglint Bridge / mana
   ---
-  duration_ms: 26.115071
+  duration_ms: 26.805775
   type: 'test'
   ...
 # Subtest: card acceptance: Thought Monitor — metadata and legal entry
 ok 279 - card acceptance: Thought Monitor — metadata and legal entry
   ---
-  duration_ms: 82.749929
+  duration_ms: 75.032411
   type: 'test'
   ...
 # Subtest: card acceptance: Tideforce Elemental — metadata and legal entry
 ok 280 - card acceptance: Tideforce Elemental — metadata and legal entry
   ---
-  duration_ms: 52.359813
+  duration_ms: 51.387447
   type: 'test'
   ...
 # Subtest: ability acceptance: Tideforce Elemental / tideforce
 ok 281 - ability acceptance: Tideforce Elemental / tideforce
   ---
-  duration_ms: 43.234755
+  duration_ms: 43.857726
   type: 'test'
   ...
 # Subtest: card acceptance: Tireless Provisioner — metadata and legal entry
 ok 282 - card acceptance: Tireless Provisioner — metadata and legal entry
   ---
-  duration_ms: 60.132465
+  duration_ms: 53.09547
   type: 'test'
   ...
 # Subtest: card acceptance: Trade Routes — metadata and legal entry
 ok 283 - card acceptance: Trade Routes — metadata and legal entry
   ---
-  duration_ms: 48.09604
+  duration_ms: 47.929608
   type: 'test'
   ...
 # Subtest: ability acceptance: Trade Routes / return
 ok 284 - ability acceptance: Trade Routes / return
   ---
-  duration_ms: 46.449394
+  duration_ms: 44.222356
   type: 'test'
   ...
 # Subtest: ability acceptance: Trade Routes / draw
 ok 285 - ability acceptance: Trade Routes / draw
   ---
-  duration_ms: 50.792549
+  duration_ms: 47.981787
   type: 'test'
   ...
 # Subtest: card acceptance: Transplant Theorist — metadata and legal entry
 ok 286 - card acceptance: Transplant Theorist — metadata and legal entry
   ---
-  duration_ms: 74.053187
+  duration_ms: 64.289439
   type: 'test'
   ...
 # Subtest: ability acceptance: Transplant Theorist / bottom
 ok 287 - ability acceptance: Transplant Theorist / bottom
   ---
-  duration_ms: 43.403895
+  duration_ms: 43.941208
   type: 'test'
   ...
 # Subtest: card acceptance: Traveling Chocobo — metadata and legal entry
 ok 288 - card acceptance: Traveling Chocobo — metadata and legal entry
   ---
-  duration_ms: 65.426599
+  duration_ms: 62.456051
   type: 'test'
   ...
 # Subtest: card acceptance: Treasure Vault — metadata and legal entry
 ok 289 - card acceptance: Treasure Vault — metadata and legal entry
   ---
-  duration_ms: 28.897677
+  duration_ms: 29.403614
   type: 'test'
   ...
 # Subtest: ability acceptance: Treasure Vault / mana
 ok 290 - ability acceptance: Treasure Vault / mana
   ---
-  duration_ms: 31.303313
+  duration_ms: 25.645075
   type: 'test'
   ...
 # Subtest: ability acceptance: Treasure Vault / treasures
 ok 291 - ability acceptance: Treasure Vault / treasures
   ---
-  duration_ms: 47.08379
+  duration_ms: 47.218334
   type: 'test'
   ...
 # Subtest: card acceptance: Tree of Tales — metadata and legal entry
 ok 292 - card acceptance: Tree of Tales — metadata and legal entry
   ---
-  duration_ms: 27.651108
+  duration_ms: 26.825178
   type: 'test'
   ...
 # Subtest: ability acceptance: Tree of Tales / mana
 ok 293 - ability acceptance: Tree of Tales / mana
   ---
-  duration_ms: 24.884239
+  duration_ms: 24.941766
   type: 'test'
   ...
 # Subtest: card acceptance: Ultron, Artificial Malevolence — metadata and legal entry
 ok 294 - card acceptance: Ultron, Artificial Malevolence — metadata and legal entry
   ---
-  duration_ms: 59.74771
+  duration_ms: 49.814065
   type: 'test'
   ...
 # Subtest: card acceptance: Umbral Collar Zealot — metadata and legal entry
 ok 295 - card acceptance: Umbral Collar Zealot — metadata and legal entry
   ---
-  duration_ms: 53.418761
+  duration_ms: 45.259168
   type: 'test'
   ...
 # Subtest: ability acceptance: Umbral Collar Zealot / surveil
 ok 296 - ability acceptance: Umbral Collar Zealot / surveil
   ---
-  duration_ms: 53.94115
+  duration_ms: 58.361022
   type: 'test'
   ...
 # Subtest: card acceptance: Unwinding Clock — metadata and legal entry
 ok 297 - card acceptance: Unwinding Clock — metadata and legal entry
   ---
-  duration_ms: 56.402869
+  duration_ms: 47.272997
   type: 'test'
   ...
 # Subtest: card acceptance: Urza's Saga — metadata and legal entry
 ok 298 - card acceptance: Urza's Saga — metadata and legal entry
   ---
-  duration_ms: 46.042519
+  duration_ms: 44.412522
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza's Saga / mana
 ok 299 - ability acceptance: Urza's Saga / mana
   ---
-  duration_ms: 30.710027
+  duration_ms: 25.474215
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza's Saga / construct
 ok 300 - ability acceptance: Urza's Saga / construct
   ---
-  duration_ms: 62.99162
+  duration_ms: 45.7762
   type: 'test'
   ...
 # Subtest: card acceptance: Urza, Lord High Artificer — metadata and legal entry
 ok 301 - card acceptance: Urza, Lord High Artificer — metadata and legal entry
   ---
-  duration_ms: 93.90339
+  duration_ms: 88.499734
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza, Lord High Artificer / artifact-mana
 ok 302 - ability acceptance: Urza, Lord High Artificer / artifact-mana
   ---
-  duration_ms: 30.829013
+  duration_ms: 28.218001
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza, Lord High Artificer / exile-top
 ok 303 - ability acceptance: Urza, Lord High Artificer / exile-top
   ---
-  duration_ms: 44.038045
+  duration_ms: 43.473301
   type: 'test'
   ...
 # Subtest: card acceptance: Urza, Lord Protector — metadata and legal entry
 ok 304 - card acceptance: Urza, Lord Protector — metadata and legal entry
   ---
-  duration_ms: 61.375622
+  duration_ms: 62.067423
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza, Lord Protector / meld
 ok 305 - ability acceptance: Urza, Lord Protector / meld
   ---
-  duration_ms: 39.200847
+  duration_ms: 40.365432
   type: 'test'
   ...
 # Subtest: card acceptance: Urza, Prince of Kroog — metadata and legal entry
 ok 306 - card acceptance: Urza, Prince of Kroog — metadata and legal entry
   ---
-  duration_ms: 51.860032
+  duration_ms: 51.930431
   type: 'test'
   ...
 # Subtest: ability acceptance: Urza, Prince of Kroog / copy
 ok 307 - ability acceptance: Urza, Prince of Kroog / copy
   ---
-  duration_ms: 52.06289
+  duration_ms: 60.327069
   type: 'test'
   ...
 # Subtest: card acceptance: Uthros Research Craft — metadata and legal entry
 ok 308 - card acceptance: Uthros Research Craft — metadata and legal entry
   ---
-  duration_ms: 49.796341
+  duration_ms: 49.797511
   type: 'test'
   ...
 # Subtest: ability acceptance: Uthros Research Craft / station
 ok 309 - ability acceptance: Uthros Research Craft / station
   ---
-  duration_ms: 42.455566
+  duration_ms: 43.088161
   type: 'test'
   ...
 # Subtest: card acceptance: Valakut Exploration — metadata and legal entry
 ok 310 - card acceptance: Valakut Exploration — metadata and legal entry
   ---
-  duration_ms: 58.190096
+  duration_ms: 55.855453
   type: 'test'
   ...
 # Subtest: card acceptance: Vault of Whispers — metadata and legal entry
 ok 311 - card acceptance: Vault of Whispers — metadata and legal entry
   ---
-  duration_ms: 27.660713
+  duration_ms: 27.767836
   type: 'test'
   ...
 # Subtest: ability acceptance: Vault of Whispers / mana
 ok 312 - ability acceptance: Vault of Whispers / mana
   ---
-  duration_ms: 24.486353
+  duration_ms: 25.162911
   type: 'test'
   ...
 # Subtest: card acceptance: Wake the Past — metadata and legal entry
 ok 313 - card acceptance: Wake the Past — metadata and legal entry
   ---
-  duration_ms: 74.793125
+  duration_ms: 63.600448
   type: 'test'
   ...
 # Subtest: card acceptance: Walking Atlas — metadata and legal entry
 ok 314 - card acceptance: Walking Atlas — metadata and legal entry
   ---
-  duration_ms: 47.933701
+  duration_ms: 50.470424
   type: 'test'
   ...
 # Subtest: ability acceptance: Walking Atlas / put-land
 ok 315 - ability acceptance: Walking Atlas / put-land
   ---
-  duration_ms: 39.248315
+  duration_ms: 38.699918
   type: 'test'
   ...
 # Subtest: candidate pool: 34 lands, 65 active nonlands, 20 reserve, deterministic ordering
 ok 316 - candidate pool: 34 lands, 65 active nonlands, 20 reserve, deterministic ordering
   ---
-  duration_ms: 10.466613
+  duration_ms: 7.326613
   type: 'test'
   ...
 # Subtest: duplicate source copies are preserved and reported
 ok 317 - duplicate source copies are preserved and reported
   ---
-  duration_ms: 0.953807
+  duration_ms: 0.951154
   type: 'test'
   ...
 # Subtest: base land allowance is one; Azusa updates it without undoing past plays
 ok 318 - base land allowance is one; Azusa updates it without undoing past plays
   ---
-  duration_ms: 140.206916
+  duration_ms: 136.497214
   type: 'test'
   ...
 # Subtest: Minstrel replaces tapped entry while a bounce trigger still waits on stack
 ok 319 - Minstrel replaces tapped entry while a bounce trigger still waits on stack
   ---
-  duration_ms: 70.913138
+  duration_ms: 75.269745
   type: 'test'
   ...
 # Subtest: Minstrel cannot modify its own simultaneous arrival batch
 ok 320 - Minstrel cannot modify its own simultaneous arrival batch
   ---
-  duration_ms: 25.930668
+  duration_ms: 32.153852
   type: 'test'
   ...
 # Subtest: normal hand drag casts a spell and cannot bypass mana payment
 ok 321 - normal hand drag casts a spell and cannot bypass mana payment
   ---
-  duration_ms: 7.716548
+  duration_ms: 5.646512
   type: 'test'
   ...
 # Subtest: KCI is an immediate mana ability; costs are sacrificed before mana
 ok 322 - KCI is an immediate mana ability; costs are sacrificed before mana
   ---
-  duration_ms: 39.822235
+  duration_ms: 27.173162
   type: 'test'
   ...
 # Subtest: Gitrog counts simultaneous mill as one event batch but separate KCI activations separately
 ok 323 - Gitrog counts simultaneous mill as one event batch but separate KCI activations separately
   ---
-  duration_ms: 233.4262
+  duration_ms: 163.207694
   type: 'test'
   ...
 # Subtest: summoning sickness persists across opponent turns until your next turn
 ok 324 - summoning sickness persists across opponent turns until your next turn
   ---
-  duration_ms: 72.473497
+  duration_ms: 61.159247
   type: 'test'
   ...
 # Subtest: Seedborn untaps Mana Vault on opponents untaps, not on its own natural untap
 ok 325 - Seedborn untaps Mana Vault on opponents untaps, not on its own natural untap
   ---
-  duration_ms: 37.893656
+  duration_ms: 24.679183
   type: 'test'
   ...
 # Subtest: restricted mana: Workshop is artifact spells only, Depot permits artifact abilities
 ok 326 - restricted mana: Workshop is artifact spells only, Depot permits artifact abilities
   ---
-  duration_ms: 0.485614
+  duration_ms: 0.457829
   type: 'test'
   ...
 # Subtest: additional-trigger effects add one apiece: two effects produce three triggers
 ok 327 - additional-trigger effects add one apiece: two effects produce three triggers
   ---
-  duration_ms: 114.524508
+  duration_ms: 80.176989
   type: 'test'
   ...
 # Subtest: opposing fields and hidden zones are never legal free-move fallbacks
 ok 328 - opposing fields and hidden zones are never legal free-move fallbacks
   ---
-  duration_ms: 8.769928
+  duration_ms: 7.395042
   type: 'test'
   ...
 # Subtest: snapshot import rejects corruption and replay reproduces random state
 ok 329 - snapshot import rejects corruption and replay reproduces random state
   ---
-  duration_ms: 34.406328
+  duration_ms: 43.053066
   type: 'test'
   ...
 # Subtest: observer failure cannot roll back a committed action or block another observer
 ok 330 - observer failure cannot roll back a committed action or block another observer
   ---
-  duration_ms: 63.013855
+  duration_ms: 62.444971
   type: 'test'
   ...
 # Subtest: malformed actions leave the state and history untouched
 ok 331 - malformed actions leave the state and history untouched
   ---
-  duration_ms: 5.473815
+  duration_ms: 3.697826
   type: 'test'
   ...
 # Subtest: pending sacrifice choice exports, imports, cancels, and replays without debug assistance
 ok 332 - pending sacrifice choice exports, imports, cancels, and replays without debug assistance
   ---
-  duration_ms: 101.791066
+  duration_ms: 104.202132
   type: 'test'
   ...
 # Subtest: payment suspended after a mana activation remains a portable pending transaction
 ok 333 - payment suspended after a mana activation remains a portable pending transaction
   ---
-  duration_ms: 87.044799
+  duration_ms: 92.40153
   type: 'test'
   ...
 # Subtest: all redo entries are validated even when exported at undo cursor zero
 ok 334 - all redo entries are validated even when exported at undo cursor zero
   ---
-  duration_ms: 34.297906
+  duration_ms: 34.533465
   type: 'test'
   ...
 # Subtest: a forged pending transaction baseline is rejected rather than accepted by current-state hash
 ok 335 - a forged pending transaction baseline is rejected rather than accepted by current-state hash
   ---
-  duration_ms: 10.951217
+  duration_ms: 12.142376
   type: 'test'
   ...
 # Subtest: pending intents must actually reproduce pending state
 ok 336 - pending intents must actually reproduce pending state
   ---
-  duration_ms: 7.933251
+  duration_ms: 15.093552
   type: 'test'
   ...
 # Subtest: session schema mismatch and unsafe prototype keys are rejected
 ok 337 - session schema mismatch and unsafe prototype keys are rejected
   ---
-  duration_ms: 2.840736
+  duration_ms: 4.640013
   type: 'test'
   ...
 # Subtest: history patch paths cannot mutate object prototypes
 ok 338 - history patch paths cannot mutate object prototypes
   ---
-  duration_ms: 17.797845
+  duration_ms: 23.801836
   type: 'test'
   ...
 # Subtest: next-turn navigation advances a full round, performs untap and resets land use
 ok 339 - next-turn navigation advances a full round, performs untap and resets land use
   ---
-  duration_ms: 35.033423
+  duration_ms: 42.635563
   type: 'test'
   ...
 # Subtest: navigation to an eliminated opponent is rejected atomically
 ok 340 - navigation to an eliminated opponent is rejected atomically
   ---
-  duration_ms: 7.913306
+  duration_ms: 11.779776
   type: 'test'
   ...
 # Subtest: candidate construction keeps source copies and fixed lands in the active partition
 ok 341 - candidate construction keeps source copies and fixed lands in the active partition
   ---
-  duration_ms: 4.917239
+  duration_ms: 7.63989
   type: 'test'
   ...
 # Subtest: every candidate has an explicit acceptance entry, not just a generic module fallback
 ok 342 - every candidate has an explicit acceptance entry, not just a generic module fallback
   ---
-  duration_ms: 0.278439
+  duration_ms: 0.428022
   type: 'test'
   ...
 # Subtest: Rydia, Summoner of Mist: NO policy skips discard/draw and YES permits declining the selector
 ok 343 - Rydia, Summoner of Mist: NO policy skips discard/draw and YES permits declining the selector
   ---
-  duration_ms: 166.407454
+  duration_ms: 234.21589
   type: 'test'
   ...
 # Subtest: Rydia, Summoner of Mist: ASK remembers YES and discards before drawing
 ok 344 - Rydia, Summoner of Mist: ASK remembers YES and discards before drawing
   ---
-  duration_ms: 70.574924
+  duration_ms: 78.575337
   type: 'test'
   ...
 # Subtest: Quicksmith Genius: NO policy skips discard/draw and YES permits declining the selector
 ok 345 - Quicksmith Genius: NO policy skips discard/draw and YES permits declining the selector
   ---
-  duration_ms: 124.248191
+  duration_ms: 123.222433
   type: 'test'
   ...
 # Subtest: Quicksmith Genius: ASK remembers YES and discards before drawing
 ok 346 - Quicksmith Genius: ASK remembers YES and discards before drawing
   ---
-  duration_ms: 67.453015
+  duration_ms: 73.431538
   type: 'test'
   ...
 # Subtest: Manabond YES moves hand lands together, applies Minstrel, then discards remaining cards
 ok 347 - Manabond YES moves hand lands together, applies Minstrel, then discards remaining cards
   ---
-  duration_ms: 83.14858
+  duration_ms: 97.038568
   type: 'test'
   ...
 # Subtest: Manabond NO leaves every card in hand
 ok 348 - Manabond NO leaves every card in hand
   ---
-  duration_ms: 58.235967
+  duration_ms: 57.868225
   type: 'test'
   ...
 # Subtest: Cultivator repeats inside one resolution; landfall and bounce triggers wait outside it
 ok 349 - Cultivator repeats inside one resolution; landfall and bounce triggers wait outside it
   ---
-  duration_ms: 653.422023
+  duration_ms: 850.675921
   type: 'test'
   ...
 # Subtest: Cultivator selector may be declined despite a saved YES preference
 ok 350 - Cultivator selector may be declined despite a saved YES preference
   ---
-  duration_ms: 58.771283
+  duration_ms: 103.700083
   type: 'test'
   ...
 # Subtest: Cultivator NO skips the repeated optional effect
 ok 351 - Cultivator NO skips the repeated optional effect
   ---
-  duration_ms: 81.116388
+  duration_ms: 140.742739
   type: 'test'
   ...
 # Subtest: Moraug main-one extra combat untaps at its beginning but not at the later normal combat
 ok 352 - Moraug main-one extra combat untaps at its beginning but not at the later normal combat
   ---
-  duration_ms: 112.140525
+  duration_ms: 129.525684
   type: 'test'
   ...
 # Subtest: Moraug second-main landfalls queue separate combats and untap at each
 ok 353 - Moraug second-main landfalls queue separate combats and untap at each
   ---
-  duration_ms: 206.007105
+  duration_ms: 245.302819
   type: 'test'
   ...
 # Subtest: Moraug does not create extra combat for an opponent-turn land entry
 ok 354 - Moraug does not create extra combat for an opponent-turn land entry
   ---
-  duration_ms: 42.921452
+  duration_ms: 59.514822
   type: 'test'
   ...
 # Subtest: multiple additional-land effects combine and recalculate when one leaves
 ok 355 - multiple additional-land effects combine and recalculate when one leaves
   ---
-  duration_ms: 344.651881
+  duration_ms: 390.719298
   type: 'test'
   ...
 # Subtest: Citadel casts the actual top card for life, not mana, and land plays still consume allowance
 ok 356 - Citadel casts the actual top card for life, not mana, and land plays still consume allowance
   ---
-  duration_ms: 116.328436
+  duration_ms: 191.216372
   type: 'test'
   ...
 # Subtest: Chip plus Citadel offers normal mana or life independently
 ok 357 - Chip plus Citadel offers normal mana or life independently
   ---
-  duration_ms: 46.387421
+  duration_ms: 78.14538
   type: 'test'
   ...
 # Subtest: Crystal Skull allows only historic top cards and provides blue mana
 ok 358 - Crystal Skull allows only historic top cards and provides blue mana
   ---
-  duration_ms: 25.470521
+  duration_ms: 38.956397
   type: 'test'
   ...
 # Subtest: Reality Chip reconfigure removes creature type while attached and restores it on detachment
 ok 359 - Reality Chip reconfigure removes creature type while attached and restores it on detachment
   ---
-  duration_ms: 51.200017
+  duration_ms: 74.894764
   type: 'test'
   ...
 # Subtest: Top look uses an ordered selector without drawing or changing card incarnations
 ok 360 - Top look uses an ordered selector without drawing or changing card incarnations
   ---
-  duration_ms: 22.330617
+  duration_ms: 37.059139
   type: 'test'
   ...
 # Subtest: Top draw draws exactly one before returning the artifact to the library
 ok 361 - Top draw draws exactly one before returning the artifact to the library
   ---
-  duration_ms: 28.037769
+  duration_ms: 43.361217
   type: 'test'
   ...
 # Subtest: Scroll Rack exchange is not a draw and restores its linked exiled cards in chosen order
 ok 362 - Scroll Rack exchange is not a draw and restores its linked exiled cards in chosen order
   ---
-  duration_ms: 42.700881
+  duration_ms: 63.80141
   type: 'test'
   ...
 # Subtest: Marvel pays energy first, casts during resolution, and random-bottoms before the spell resolves
 ok 363 - Marvel pays energy first, casts during resolution, and random-bottoms before the spell resolves
   ---
-  duration_ms: 60.616886
+  duration_ms: 111.105422
   type: 'test'
   ...
 # Subtest: Marvel sees each permanent in a simultaneous graveyard batch, including itself
 ok 364 - Marvel sees each permanent in a simultaneous graveyard batch, including itself
   ---
-  duration_ms: 145.274524
+  duration_ms: 212.306259
   type: 'test'
   ...
 # Subtest: Ring counters increase draw size and reset on a new battlefield incarnation
 ok 365 - Ring counters increase draw size and reset on a new battlefield incarnation
   ---
-  duration_ms: 115.280075
+  duration_ms: 156.266294
   type: 'test'
   ...
 # Subtest: Emry reduction and ETB work, and permission is casting only rather than artifact-land playing
 ok 366 - Emry reduction and ETB work, and permission is casting only rather than artifact-land playing
   ---
-  duration_ms: 189.863216
+  duration_ms: 336.835376
   type: 'test'
   ...
 # Subtest: Six retrace consumes a land discard before the permanent spell is put on the stack
 ok 367 - Six retrace consumes a land discard before the permanent spell is put on the stack
   ---
-  duration_ms: 36.98167
+  duration_ms: 64.75022
   type: 'test'
   ...
 # Subtest: Six attack mills one batch then offers only lands from that batch
 ok 368 - Six attack mills one batch then offers only lands from that batch
   ---
-  duration_ms: 30.460538
+  duration_ms: 46.361925
   type: 'test'
   ...
 # Subtest: Jhoira triggers on historic spells, not historic land plays
 ok 369 - Jhoira triggers on historic spells, not historic land plays
   ---
-  duration_ms: 78.362473
+  duration_ms: 109.662706
   type: 'test'
   ...
 # Subtest: Rook excludes its own entry; Theorist includes its own entry and can decline
 ok 370 - Rook excludes its own entry; Theorist includes its own entry and can decline
   ---
-  duration_ms: 129.189647
+  duration_ms: 177.616676
   type: 'test'
   ...
 # Subtest: Sarinth offers land-to-hand and nonland mill choices without counting as draw
 ok 371 - Sarinth offers land-to-hand and nonland mill choices without counting as draw
   ---
-  duration_ms: 51.322721
+  duration_ms: 105.700942
   type: 'test'
   ...
 # Subtest: Codex Shredder recovery uses a target and sacrifices itself as cost
 ok 372 - Codex Shredder recovery uses a target and sacrifices itself as cost
   ---
-  duration_ms: 32.403862
+  duration_ms: 56.38425
   type: 'test'
   ...
 # Subtest: Claws player-targeted ability chooses rather than targets a graveyard card
 ok 373 - Claws player-targeted ability chooses rather than targets a graveyard card
   ---
-  duration_ms: 43.103961
+  duration_ms: 89.74292
   type: 'test'
   ...
 # Subtest: Valakut links each incarnation, grants enduring permission, and moves unused exiles at end step
 ok 374 - Valakut links each incarnation, grants enduring permission, and moves unused exiles at end step
   ---
-  duration_ms: 52.405355
+  duration_ms: 80.231102
   type: 'test'
   ...
 # Subtest: Memory Jar keeps linked original hands separate from seven new cards and restores at next end
 ok 375 - Memory Jar keeps linked original hands separate from seven new cards and restores at next end
   ---
-  duration_ms: 169.063356
+  duration_ms: 256.183348
   type: 'test'
   ...
 # Subtest: Combustible Gearhulk mill uses total printed mana values, not costs paid
 ok 376 - Combustible Gearhulk mill uses total printed mana values, not costs paid
   ---
-  duration_ms: 68.988572
+  duration_ms: 79.228622
   type: 'test'
   ...
 # Subtest: Smelting Vat enforces combined mana value and excludes artifact creatures
 ok 377 - Smelting Vat enforces combined mana value and excludes artifact creatures
   ---
-  duration_ms: 53.534939
+  duration_ms: 53.529187
   type: 'test'
   ...
 # Subtest: Miracle reveal interrupts the first draw, then the remainder draws before the casting trigger resolves
 ok 378 - Miracle reveal interrupts the first draw, then the remainder draws before the casting trigger resolves
   ---
-  duration_ms: 86.974268
+  duration_ms: 87.023801
   type: 'test'
   ...
 # Subtest: Second card drawn in a turn cannot use miracle
 ok 379 - Second card drawn in a turn cannot use miracle
   ---
-  duration_ms: 24.172486
+  duration_ms: 24.216555
   type: 'test'
   ...
 # Subtest: Base-setting effects preserve characteristic definitions, buffs, and counters in the correct sublayers
 ok 380 - Base-setting effects preserve characteristic definitions, buffs, and counters in the correct sublayers
   ---
-  duration_ms: 2.528776
+  duration_ms: 2.486944
   type: 'test'
   ...
 # Subtest: Oswald pays sacrifice before stack; exact MV+1 excludes both lower and higher artifacts
 ok 381 - Oswald pays sacrifice before stack; exact MV+1 excludes both lower and higher artifacts
   ---
-  duration_ms: 83.995097
+  duration_ms: 108.723135
   type: 'test'
   ...
 # Subtest: Birthing Pod activated Phyrexian cost may use two life; sacrificed creature MV is unchanged
 ok 382 - Birthing Pod activated Phyrexian cost may use two life; sacrificed creature MV is unchanged
   ---
-  duration_ms: 39.149992
+  duration_ms: 50.321881
   type: 'test'
   ...
 # Subtest: Repurposing Bay must sacrifice another artifact, never itself
 ok 383 - Repurposing Bay must sacrifice another artifact, never itself
   ---
-  duration_ms: 2.282707
+  duration_ms: 3.502638
   type: 'test'
   ...
 # Subtest: Forgemaster sacrifices exactly three artifacts, may include itself, and puts a searched artifact into play
 ok 384 - Forgemaster sacrifices exactly three artifacts, may include itself, and puts a searched artifact into play
   ---
-  duration_ms: 106.851614
+  duration_ms: 128.722991
   type: 'test'
   ...
 # Subtest: Eldritch Evolution sacrifices on cast and exiles after its search resolves
 ok 385 - Eldritch Evolution sacrifices on cast and exiles after its search resolves
   ---
-  duration_ms: 46.135932
+  duration_ms: 59.814123
   type: 'test'
   ...
 # Subtest: Neoform exact mana ladder adds the counter as the creature enters
 ok 386 - Neoform exact mana ladder adds the counter as the creature enters
   ---
-  duration_ms: 50.042912
+  duration_ms: 61.235064
   type: 'test'
   ...
 # Subtest: Expedition Map and Moonsilver Key use filtered library searches, not unfiltered force moves
 ok 387 - Expedition Map and Moonsilver Key use filtered library searches, not unfiltered force moves
   ---
-  duration_ms: 70.194885
+  duration_ms: 84.129162
   type: 'test'
   ...
 # Subtest: Elvish Reclaimer grows from graveyard lands and returns a searched land tapped
 ok 388 - Elvish Reclaimer grows from graveyard lands and returns a searched land tapped
   ---
-  duration_ms: 40.254609
+  duration_ms: 42.506485
   type: 'test'
   ...
 # Subtest: Goblin Engineer captures a legal MV≤3 target before sacrificing and returns it
 ok 389 - Goblin Engineer captures a legal MV≤3 target before sacrificing and returns it
   ---
-  duration_ms: 62.075099
+  duration_ms: 60.075663
   type: 'test'
   ...
 # Subtest: Goblin Welder exchanges simultaneously, generating one zone batch and correct landfall
 ok 390 - Goblin Welder exchanges simultaneously, generating one zone batch and correct landfall
   ---
-  duration_ms: 82.772089
+  duration_ms: 81.945957
   type: 'test'
   ...
 # Subtest: Welder cannot exchange cards belonging to different players or perform only half an exchange
 ok 391 - Welder cannot exchange cards belonging to different players or perform only half an exchange
   ---
-  duration_ms: 70.942338
+  duration_ms: 68.887409
   type: 'test'
   ...
 # Subtest: Master Transmuter may return itself as a cost and put itself back as a new object
 ok 392 - Master Transmuter may return itself as a cost and put itself back as a new object
   ---
-  duration_ms: 60.238362
+  duration_ms: 59.731347
   type: 'test'
   ...
 # Subtest: Metalwork Colossus may be activated twice holding priority but only returns once
 ok 393 - Metalwork Colossus may be activated twice holding priority but only returns once
   ---
-  duration_ms: 135.048477
+  duration_ms: 142.268023
   type: 'test'
   ...
 # Subtest: Salvage Titan alternative cost sacrifices three artifacts and does not change its mana value
 ok 394 - Salvage Titan alternative cost sacrifices three artifacts and does not change its mana value
   ---
-  duration_ms: 88.944604
+  duration_ms: 72.039704
   type: 'test'
   ...
 # Subtest: Cauldron death trigger survives the Cauldron leaving after trigger creation
 ok 395 - Cauldron death trigger survives the Cauldron leaving after trigger creation
   ---
-  duration_ms: 86.552203
+  duration_ms: 82.310131
   type: 'test'
   ...
 # Subtest: Cauldron gone before death creates no trigger; reanimation charges tap, mana and life
 ok 396 - Cauldron gone before death creates no trigger; reanimation charges tap, mana and life
   ---
-  duration_ms: 90.372072
+  duration_ms: 91.73762
   type: 'test'
   ...
 # Subtest: Portal forces three sacrifices from each configured abstract opponent
 ok 397 - Portal forces three sacrifices from each configured abstract opponent
   ---
-  duration_ms: 71.191482
+  duration_ms: 73.735279
   type: 'test'
   ...
 # Subtest: Portal upkeep can reanimate an opposing graveyard creature under your control as Phyrexian
 ok 398 - Portal upkeep can reanimate an opposing graveyard creature under your control as Phyrexian
   ---
-  duration_ms: 88.491198
+  duration_ms: 88.618791
   type: 'test'
   ...
 # Subtest: Faith’s Reward returns only your battlefield-origin cards from this turn
 ok 399 - Faith’s Reward returns only your battlefield-origin cards from this turn
   ---
-  duration_ms: 80.900677
+  duration_ms: 81.329282
   type: 'test'
   ...
 # Subtest: Second Sunrise includes opponents but never returns an old graveyard card
 ok 400 - Second Sunrise includes opponents but never returns an old graveyard card
   ---
-  duration_ms: 94.214367
+  duration_ms: 81.429419
   type: 'test'
   ...
 # Subtest: Sunrise uses current graveyard incarnation, not an earlier grave visit by the same physical card
 ok 401 - Sunrise uses current graveyard incarnation, not an earlier grave visit by the same physical card
   ---
-  duration_ms: 79.744239
+  duration_ms: 101.980019
   type: 'test'
   ...
 # Subtest: Pendant exiles as a cost and returns eligible cards tapped
 ok 402 - Pendant exiles as a cost and returns eligible cards tapped
   ---
-  duration_ms: 53.204254
+  duration_ms: 57.129859
   type: 'test'
   ...
 # Subtest: Open the Vaults returns artifacts/enchantments from all graveyards, not other creatures or ordinary lands
 ok 403 - Open the Vaults returns artifacts/enchantments from all graveyards, not other creatures or ordinary lands
   ---
-  duration_ms: 41.352404
+  duration_ms: 68.166506
   type: 'test'
   ...
 # Subtest: Aftermath Analyst puts lands without consuming land plays; Minstrel replaces tapped entry
 ok 404 - Aftermath Analyst puts lands without consuming land plays; Minstrel replaces tapped entry
   ---
-  duration_ms: 44.653333
+  duration_ms: 58.188264
   type: 'test'
   ...
 # Subtest: Scapeshift sacrifices seven lands as one batch, producing exactly one Gitrog draw
 ok 405 - Scapeshift sacrifices seven lands as one batch, producing exactly one Gitrog draw
   ---
-  duration_ms: 93.492106
+  duration_ms: 143.302824
   type: 'test'
   ...
 # Subtest: Pitiless Carnage plot is a special action, disallows same-turn casting, then grants free sorcery casting
 ok 406 - Pitiless Carnage plot is a special action, disallows same-turn casting, then grants free sorcery casting
   ---
-  duration_ms: 43.600017
+  duration_ms: 54.500414
   type: 'test'
   ...
 # Subtest: Shorikai draws two, discards one, creates a Pilot, and can crew using sick Pilots
 ok 407 - Shorikai draws two, discards one, creates a Pilot, and can crew using sick Pilots
   ---
-  duration_ms: 183.937732
+  duration_ms: 136.215511
   type: 'test'
   ...
 # Subtest: Crew does not permit a newly-entered Vehicle to use its tap symbol as a creature
 ok 408 - Crew does not permit a newly-entered Vehicle to use its tap symbol as a creature
   ---
-  duration_ms: 60.274178
+  duration_ms: 32.229361
   type: 'test'
   ...
 # Subtest: Station uses current creature power on resolution and works with summoning sickness
 ok 409 - Station uses current creature power on resolution and works with summoning sickness
   ---
-  duration_ms: 70.706142
+  duration_ms: 40.311418
   type: 'test'
   ...
 # Subtest: Station uses last-known power if its tapped creature leaves before resolution
 ok 410 - Station uses last-known power if its tapped creature leaves before resolution
   ---
-  duration_ms: 98.540571
+  duration_ms: 55.668228
   type: 'test'
   ...
 # Subtest: Seriema threshold protects only other tapped legendary creatures
 ok 411 - Seriema threshold protects only other tapped legendary creatures
   ---
-  duration_ms: 2.965828
+  duration_ms: 1.907677
   type: 'test'
   ...
 # Subtest: Seriema ETB searches only for a legendary creature
 ok 412 - Seriema ETB searches only for a legendary creature
   ---
-  duration_ms: 70.326813
+  duration_ms: 43.89043
   type: 'test'
   ...
 # Subtest: Uthros research triggers only after three charge counters and creature threshold is twelve
 ok 413 - Uthros research triggers only after three charge counters and creature threshold is twelve
   ---
-  duration_ms: 83.897944
+  duration_ms: 56.00494
   type: 'test'
   ...
 # Subtest: Rydia returns exactly-X Saga with haste and finality; final chapter sacrifices to exile
 ok 414 - Rydia returns exactly-X Saga with haste and finality; final chapter sacrifices to exile
   ---
-  duration_ms: 191.027042
+  duration_ms: 146.980851
   type: 'test'
   ...
 # Subtest: Bahamut final chapter damages each opponent for other permanent mana values
 ok 415 - Bahamut final chapter damages each opponent for other permanent mana values
   ---
-  duration_ms: 66.129644
+  duration_ms: 62.259689
   type: 'test'
   ...
 # Subtest: Tezzeret Seeker loyalty is paid first and only one loyalty activation is allowed per turn
 ok 416 - Tezzeret Seeker loyalty is paid first and only one loyalty activation is allowed per turn
   ---
-  duration_ms: 51.89639
+  duration_ms: 57.74584
   type: 'test'
   ...
 # Subtest: Tezzeret Seeker X tutor permits mana-value-zero artifact lands
 ok 417 - Tezzeret Seeker X tutor permits mana-value-zero artifact lands
   ---
-  duration_ms: 40.219294
+  duration_ms: 40.405645
   type: 'test'
   ...
 # Subtest: Tezzeret Seeker animation sets bases without erasing counters and expires in cleanup
 ok 418 - Tezzeret Seeker animation sets bases without erasing counters and expires in cleanup
   ---
-  duration_ms: 62.214178
+  duration_ms: 61.639015
   type: 'test'
   ...
 # Subtest: Cruel Captain adds loyalty for artifacts and 0 adds a counter only to artifact creatures
 ok 419 - Cruel Captain adds loyalty for artifacts and 0 adds a counter only to artifact creatures
   ---
-  duration_ms: 90.392717
+  duration_ms: 68.041061
   type: 'test'
   ...
 # Subtest: Cruel Captain emblem survives its source and uses normal targeting at each combat
 ok 420 - Cruel Captain emblem survives its source and uses normal targeting at each combat
   ---
-  duration_ms: 97.468964
+  duration_ms: 75.559751
   type: 'test'
   ...
 # Subtest: Blinking a planeswalker resets loyalty and allows another loyalty action in the same turn
 ok 421 - Blinking a planeswalker resets loyalty and allows another loyalty action in the same turn
   ---
-  duration_ms: 183.74254
+  duration_ms: 121.046545
   type: 'test'
   ...
 # Subtest: Mightstone draw mode and restricted colorless mana allow artifacts but not nonartifact spells
 ok 422 - Mightstone draw mode and restricted colorless mana allow artifacts but not nonartifact spells
   ---
-  duration_ms: 201.622963
+  duration_ms: 195.135759
   type: 'test'
   ...
 # Subtest: Mightstone weaken mode uses target and can kill through indestructible by reducing toughness
 ok 423 - Mightstone weaken mode uses target and can kill through indestructible by reducing toughness
   ---
-  duration_ms: 125.374356
+  duration_ms: 85.852915
   type: 'test'
   ...
 # Subtest: Urza Protector reduces artifact/instant/sorcery generic costs, never their mana values
 ok 424 - Urza Protector reduces artifact/instant/sorcery generic costs, never their mana values
   ---
-  duration_ms: 54.291872
+  duration_ms: 33.674242
   type: 'test'
   ...
 # Subtest: Meld creates one planeswalker permanent with two physical components and seven loyalty
 ok 425 - Meld creates one planeswalker permanent with two physical components and seven loyalty
   ---
-  duration_ms: 96.191394
+  duration_ms: 59.627075
   type: 'test'
   ...
 # Subtest: Melded permanent leaving separates the cards but counts as one leaving permanent
 ok 426 - Melded permanent leaving separates the cards but counts as one leaving permanent
   ---
-  duration_ms: 162.791401
+  duration_ms: 134.601856
   type: 'test'
   ...
 # Subtest: Meld activation without the other piece may be paid but does nothing on resolution
 ok 427 - Meld activation without the other piece may be paid but does nothing on resolution
   ---
-  duration_ms: 26.434204
+  duration_ms: 28.641033
   type: 'test'
   ...
 # Subtest: Urza planeswalker may activate twice per turn, including the same ability, but not a third time
 ok 428 - Urza planeswalker may activate twice per turn, including the same ability, but not a third time
   ---
-  duration_ms: 101.245976
+  duration_ms: 111.637871
   type: 'test'
   ...
 # Subtest: Urza planeswalker plus-two reduction applies to later artifact spells and gains life
 ok 429 - Urza planeswalker plus-two reduction applies to later artifact spells and gains life
   ---
-  duration_ms: 74.275242
+  duration_ms: 75.14491
   type: 'test'
   ...
 # Subtest: Urza planeswalker ultimate protects your artifacts and planeswalkers, destroys other nonlands
 ok 430 - Urza planeswalker ultimate protects your artifacts and planeswalkers, destroys other nonlands
   ---
-  duration_ms: 43.268321
+  duration_ms: 41.396263
   type: 'test'
   ...
 1..430
@@ -2587,4 +2587,4 @@ ok 430 - Urza planeswalker ultimate protects your artifacts and planeswalkers, d
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 16948.550638
+# duration_ms 17979.566511
