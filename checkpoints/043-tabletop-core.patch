@@ -1,0 +1,84 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -50,10 +50,16 @@
+     if (type === 'LAYOUT') {
+       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
+       for (const update of updates) {
+-        const object = this.object(update.id); requireRule(object && ['battlefield', 'graveyard'].includes(object.zone), 'Only cards already in battlefield or graveyard can be repositioned.');
+-        object.location = { x: integer(Math.round(update.x), 0, 10000), y: integer(Math.round(update.y), 0, 10000) };
++        const object = this.object(update.id);
++        requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
++        requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
++        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}) };
+       }
+-      this.record('LAYOUT_CHANGED', { updates }); return;
++      if (action.order) {
++        requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
++        action.order.forEach((id,index)=>{const object=this.object(id);requireRule(object,'Missing layer object.');object.flags.tableZ=index;});
++      }
++      this.record('LAYOUT_CHANGED', { updates, order: action.order || null }); return;
+     }
+     if (type === 'RESERVE_ACCESS') {
+       this.state.reserveAccess = !!action.enabled; this.record('HARNESS_RESERVE_ACCESS', { enabled: this.state.reserveAccess }); return;
+@@ -136,6 +142,11 @@
+     requireRule(land === c.types.includes('Land'), land ? 'This card is not a land.' : 'Lands are played, not cast.');
+     const permissions = this.castingPermissions(source, land);
+     requireRule(permissions.length, `You do not have permission to ${land ? 'play' : 'cast'} this card from ${source.zone}.`, 'NO_PERMISSION');
++    if (action.placement) {
++      const p=action.placement;
++      requireRule(Number.isFinite(p.x) && Number.isFinite(p.y) && Math.abs(p.x)<=100000 && Math.abs(p.y)<=100000 && Array.isArray(p.order), 'Invalid drop placement.');
++      source.flags.tablePlacement=clone(p);
++    }
+     const context = this.context(source, { inputs: clone(action.inputs || {}), castX: action.x ?? action.inputs?.x ?? 0 });
+     if (action.permission) context.inputs.permission = action.permission;
+     if (action.x != null) context.inputs.x = action.x;
+@@ -147,6 +158,11 @@
+     requireRule(source.controller === 0 || (source.zone !== 'battlefield' && source.owner === 0), 'You do not control this ability.');
+     const ability = this.abilities(source).find(a => a.id === action.abilityId);
+     requireRule(ability, 'This ability is not available in the current zone.', 'ABILITY_UNAVAILABLE');
++    // Reject impossible tap-symbol costs before asking for colors or targets.
++    if (ability.tap) {
++      requireRule(!source.tapped, 'This permanent is already tapped.', 'TAP_COST');
++      requireRule(!this.isSick(source), 'This creature has summoning sickness.', 'SUMMONING_SICKNESS');
++    }
+     const context = this.context(source, { inputs: clone(action.inputs || {}) });
+     if (action.x != null) context.inputs.x = action.x;
+     this.state.actionDraft = { kind: 'ability', source: ref(source), sourceCardId: context.sourceCardId, abilityId: ability.id, context, targets: [], autoPayment: action.payment === 'auto', payment: action.payment && action.payment !== 'auto' ? clone(action.payment) : null };
+diff --git a/src/core/zones.js b/src/core/zones.js
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -51,6 +51,7 @@
+         const target = this.state.zones[to]; if (proposal.position === 'bottom') target.push(object.id); else target.unshift(object.id);
+         continue;
+       }
++      const tablePlacement = clone(object.flags.tablePlacement || null);
+       const wasCast = from === 'stackCards' && !!object.flags.cast;
+       const castX = object.flags.castX || 0, prototype = clone(object.flags.prototype || null);
+       const spawnCopy = object.token && from === 'workspace' ? clone(object.copy) : null;
+@@ -59,6 +60,13 @@
+       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
+       object.modifications = []; object.copy = spawnCopy; object.attacksThisTurn = 0; object.location = null;
+       object.flags = { ...(object.token && (lki.flags.hasBeenOnBattlefield || from === 'battlefield') ? { hasBeenOnBattlefield: true, leftBattlefield: true } : {}), ...(proposal.flags || {}) };
++      if (tablePlacement && ['stackCards','battlefield'].includes(to)) {
++        if(to==='stackCards')object.flags.tablePlacement=tablePlacement;
++        else {
++          object.location={x:tablePlacement.x,y:tablePlacement.y,anchor:'corner-v2'};
++          tablePlacement.order.forEach((id,index)=>{const target=this.object(id);if(target)target.flags.tableZ=index;});
++        }
++      }
+       if (to === 'battlefield') {
+         object.enteredTurn = this.state.turnSerial; object.controlledSince = this.state.turnSerial;
+         object.tapped = proposal.tapped; object.flags.cast = wasCast; object.flags.castX = castX;
+diff --git a/tools/import_cards.py b/tools/import_cards.py
+--- a/tools/import_cards.py
++++ b/tools/import_cards.py
+@@ -203,6 +203,8 @@
+ if __name__ == '__main__':
+     try:
+         main()
++        from import_table_art import main as import_table_art
++        import_table_art()
+     except Exception as exc:
+         print(f'Import failed: {exc}', file=sys.stderr)
+         raise
