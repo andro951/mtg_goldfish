@@ -8,6 +8,7 @@ from ui_acceptance_geometry import geometry, panels
 from ui_acceptance_persistence import persistence, responsive
 
 from ui_acceptance_extra import extra_controls
+from ui_acceptance_misc import phase_controls
 
 server=None
 if not args.memory:
@@ -16,7 +17,7 @@ try:
  with sync_playwright() as pw:
   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
-  groups=[opening,mana,payments,recursion,libraries,triggers,special,menus,geometry,panels,persistence,responsive,extra_controls]
+  groups=[opening,mana,payments,recursion,libraries,triggers,special,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls]
   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
   for group in groups:
    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)

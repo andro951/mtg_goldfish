@@ -12,3 +12,4 @@ save('amber-no-legend',{battlefield:['Mox Amber','Mox Opal'],hand:['Walking Atla
 save('layers',{battlefield:['Ancient Den','Tree of Tales','Great Furnace','Seat of the Synod'],hand:['Walking Atlas','Razortide Bridge'],graveyard:['Scroll Rack','Mox Amber']},{mana:{C:4}});
 save('payments',{battlefield:['The Wandering Minstrel','Mox Amber','Mox Opal','Ancient Den','Razortide Bridge','Mana Vault',"Mishra's Workshop"],hand:['The One Ring','Walking Atlas'],graveyard:['Scroll Rack']});
 save('damaged-source',{battlefield:['Krark-Clan Ironworks','Ancient Den'],graveyard:['Mox Amber']});
+save('plot',{hand:['Pitiless Carnage'],battlefield:['Ancient Den']},{mana:{B:2,C:1}});

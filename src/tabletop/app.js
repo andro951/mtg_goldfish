@@ -101,7 +101,7 @@ function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')
 function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
 function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
- else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();}return result;}
+ else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO'].includes(action.type))autoResolve();}return result;}
 function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
 function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
 function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;
@@ -132,9 +132,9 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  // galleries still use native button clicks.
  if(action==='card'&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
  if((event.clientX||event.clientY)&&!el.closest('[data-floating=decision]'))atPoint({x:event.clientX,y:event.clientY});
- if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();}return;}
+ if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();autoResolve();}return;}
  if(action==='menu')return openDialog('menu');if(action==='dialog')return openDialog(el.dataset.dialog);
- if(action==='close-dialog'){ui.modal=null;renderModal();return;}
+ if(action==='close-dialog'){ui.modal=null;renderModal();autoResolve();return;}
  if(action==='undo')return run({type:'UNDO'});if(action==='redo')return run({type:'REDO'});
  if(action==='card')return clickCard(id,{x:event.clientX,y:event.clientY},event.shiftKey);
  if(action==='inspect')return inspect(id,{x:event.clientX,y:event.clientY});if(action==='close-inspector')return closeInspector();
@@ -202,7 +202,7 @@ document.addEventListener('change',e=>{const el=e.target;try{
 document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement)e.target.parentElement.classList.add('image-failed');},true);
 document.addEventListener('keydown',e=>{
  const editing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable;
- if(e.key==='Escape'){e.preventDefault();clearTimeout(autoTimer);if(ui.modal){ui.modal=null;renderModal();}else if(g.state.pending)run({type:'CANCEL'});else closeInspector();return;}
+ if(e.key==='Escape'){e.preventDefault();clearTimeout(autoTimer);if(ui.modal){ui.modal=null;renderModal();autoResolve();}else if(g.state.pending)run({type:'CANCEL'});else closeInspector();return;}
  if(e.key==='Tab'&&ui.modal){const list=[...overlay.querySelectorAll('button:not(:disabled),input:not(:disabled),select,textarea,[tabindex="0"]')].filter(el=>el.offsetParent!==null),first=list[0],last=list.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();exportJSON();return;}if(editing)return;
  if(e.key==='Backspace'){e.preventDefault();run({type:'UNDO'});return;}

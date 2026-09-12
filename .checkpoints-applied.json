@@ -18,5 +18,6 @@
   "checkpoints/048-tabletop-runtime.patch": "7354b49d5579c6d9cf9ecbde591d5672238561fb2f3e7cc05fc3ea07894ec4bc",
   "checkpoints/049-tabletop-mana-and-popups.patch": "82a5ac97fde5a014f6f8bfaea183d2fc7fa78eeb5b6d2e8a0807cca525083c53",
   "checkpoints/050-tabletop-undo-recovery.patch": "fd716376c197953b01e73899fbd20974e243b439d85abc4d942a23b4eec5df68",
-  "checkpoints/051-tabletop-release-gates.patch": "eaee3e3fd8b016a5cd0db9c419367e15dff2034fe67af512558f7682cd0bab08"
+  "checkpoints/051-tabletop-release-gates.patch": "eaee3e3fd8b016a5cd0db9c419367e15dff2034fe67af512558f7682cd0bab08",
+  "checkpoints/052-tabletop-completion.patch": "2e6f25f46a518f51f316a4239c3b39caf1435ada5247fe93a2375e8ef8a5f820"
 }
