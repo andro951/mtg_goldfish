@@ -273,6 +273,7 @@ export const zoneMethods = {
         const target = this.object(object.attachedTo);
         if (!target || target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature')) { object.attachedTo = null; this.touch(); }
       }
+      if (c.subtypes.includes('Aura') && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
       if (plus && minus) { const n = Math.min(plus, minus); object.counters['+1/+1'] -= n; object.counters['-1/-1'] -= n; this.touch(); }
     }

@@ -299,10 +299,11 @@ export const actionMethods = {
       }
       if (definition.validate) definition.validate(this, source, draft.context);
     }
-    const consumed = new Set();
+    const consumed = new Set(), tappedForCost = new Set();
     for (const [index, cost] of this.draftCosts(draft).entries()) {
       const selected = cost.self ? [source.id] : asArray(draft.context.inputs[costKey(cost, index)]);
       if (cost.kind === 'tap') for (const id of selected) {
+        requireRule(!tappedForCost.has(id), 'The same permanent cannot pay two tap costs.'); tappedForCost.add(id);
         const object = this.object(id); requireRule(object?.zone === 'battlefield' && !object.tapped && object.controller === 0, 'Tap costs require untapped permanents you control.', 'TAP_COST');
         if (cost.self) requireRule(!this.isSick(object), 'This creature has summoning sickness and cannot pay its tap-symbol cost.', 'SUMMONING_SICKNESS');
       }

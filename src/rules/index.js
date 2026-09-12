@@ -8,6 +8,8 @@ import { installTutorsRecursion } from './tutors-recursion.js';
 
 import { installLibraryEngines } from './library-engines.js';
 
+import { installArtifactMechanics } from './artifact-mechanics.js';
+
 export function createRegistry(definitions) {
   const registry = new CardRegistry(definitions);
   installCommonHandlers(registry);
@@ -16,5 +18,6 @@ export function createRegistry(definitions) {
   installLandfall(registry);
   installTutorsRecursion(registry);
   installLibraryEngines(registry);
+  installArtifactMechanics(registry);
   return registry;
 }
