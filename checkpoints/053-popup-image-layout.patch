@@ -1,0 +1,46 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -15,6 +15,7 @@
+ const floats=document.createElement('div');floats.id='floating-layer';document.body.append(floats);
+ const newSeed=()=>`astra-${new Date().toISOString().slice(0,10)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
+ let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,saveSequence=0,rendering=false,interactions;
++const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)positionPopups();});
+ const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,stackLabel:null,selected:new Set(),selectMode:false,
+  lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
+  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
+@@ -92,9 +93,11 @@
+  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
+  if(prefs.dock==='workspace'&&!g.state.lookWorkspace?.ids?.length)prefs.dock=null;
+  prepareChoice();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
++ popupObserver.disconnect();
+  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
+  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
+  renderModal(false);size();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
++ for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
+  restoreFocus(focus);interactions?.refreshHover();
+  }finally{rendering=false;}}
+ function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();renderModal();requestAnimationFrame(()=>overlay.querySelector('input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -12,3 +12,7 @@
+ .mana-choice:hover:not(:disabled){background:#d1b17840;transform:scale(1.12)}
+ .mana-choice .mana-symbol{width:30px;height:30px;min-width:30px;box-shadow:0 1px 3px #0009}
+ .mana-symbol svg{width:75%;height:75%;display:block}
++
++/* Reserve image geometry before local artwork decodes. This also prevents
++   an automatically placed inspector from growing over stack controls. */
++.inspect-art img,.stack-card img{aspect-ratio:63/88;object-fit:cover}
+--- a/tests/ui_acceptance_persistence.py
++++ b/tests/ui_acceptance_persistence.py
+@@ -11,8 +11,9 @@
+  choose_option(p,'U');click(p,'cancel','[data-floating=decision]')
+  fixture(p,'layers');handle=p.locator('[data-resize=hand]');handle.focus();p.keyboard.press('ArrowUp');p.keyboard.press('ArrowUp');click(p,'zone',extra='[data-zone=graveyard]')
+  inspect(p,'Ancient Den');head=p.locator('.inspector-window .float-header').bounding_box();drag(p,head['x']+30,head['y']+12,1020,150);click(p,'close-inspector')
+- p.evaluate('astra.flushSave()');prefs=p.evaluate('JSON.stringify(astra.prefs)');expected=checksum(p);p.reload();p.wait_for_function('()=>window.astra?.engine')
+- check('reload preserves game and hand/rail/dock/popup preferences',checksum(p)==expected and p.evaluate('JSON.stringify(astra.prefs)')==prefs)
++ p.evaluate('astra.flushSave()');prefs=p.evaluate('astra.prefs');expected=checksum(p);p.reload();p.wait_for_function('()=>window.astra?.engine')
++ check('reload preserves the saved game exactly',checksum(p)==expected,{'before':expected,'after':checksum(p)})
++ check('reload preserves hand/rail/dock/popup preferences',p.evaluate('astra.prefs')==prefs,{'before':prefs,'after':p.evaluate('astra.prefs')})
+  menu(p,'save')
+  with p.expect_download() as d:click(p,'export-json','.modal')
+  path=OUT/'exported-session.json';d.value.save_as(path);doc=json.loads(path.read_text());check('downloaded session contains game and complete table preferences',doc['stateChecksum']==expected and doc.get('uiLayout'))
