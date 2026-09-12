@@ -1,0 +1,58 @@
+name: Verify and package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: astra-build
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Import canonical metadata and pin local images
+        run: |
+          if [ ! -f data/cards.json ]; then
+            python tools/import_cards.py
+          fi
+      - name: Preserve imported assets in repository
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data assets
+          if ! git diff --cached --quiet; then
+            git commit -m 'build: pin canonical card data and offline images'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - name: Run engine and integration tests
+        run: |
+          if [ -f package.json ]; then npm test; fi
+      - name: Build offline application
+        run: |
+          if [ -f tools/build.mjs ]; then node tools/build.mjs; fi
+      - name: Package complete source, assets, and test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AstraSimulator-source
+          include-hidden-files: true
+          retention-days: 90
+          path: |
+            .
+            !.git/**
+            !node_modules/**
