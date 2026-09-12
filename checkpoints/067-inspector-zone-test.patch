@@ -1,0 +1,12 @@
+--- a/tests/ui_acceptance_misc.py
++++ b/tests/ui_acceptance_misc.py
+@@ -20,7 +20,7 @@
+  close(p);p.wait_for_function("()=>Object.values(astra.engine.state.instances).some(o=>o.zone==='battlefield'&&astra.engine.definition(o).name==='Walking Atlas')")
+  check('closing Menu resumes automatic resolution without another game action',state(p,'state.stack.length')==0)
+  fixture(p,'plot');inspect(p,'Pitiless Carnage','hand');click(p,'plot','.inspector-window');pay(p)
+- check('Plot pays its cost and exiles the card without using the stack',obj(p,'Pitiless Carnage','exile') is not None and state(p,'state.stack.length')==0)
+- click(p,'close-inspector');click(p,'zone',extra='[data-zone=exile]');inspect(p,'Pitiless Carnage','exile');check('plotted spell cannot be cast on the same turn',p.locator('.inspector-window [data-action=cast]').count()==0)
++ check('Plot pays its cost, exiles the card, and closes the stale hand inspector',obj(p,'Pitiless Carnage','exile') is not None and state(p,'state.stack.length')==0 and p.locator('.inspector-window').count()==0)
++ click(p,'zone',extra='[data-zone=exile]');inspect(p,'Pitiless Carnage','exile');check('plotted spell cannot be cast on the same turn',p.locator('.inspector-window [data-action=cast]').count()==0)
+  click(p,'close-inspector');click(p,'next-turn');settle(p);inspect(p,'Pitiless Carnage','exile');click(p,'cast','.inspector-window');p.wait_for_function('()=>astra.engine.state.pending||!astra.engine.state.stack.length');settle(p)
+  check('plotted spell casts on a later turn without mana and resolves choices',obj(p,'Pitiless Carnage','graveyard') is not None)
