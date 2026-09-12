@@ -12,7 +12,12 @@ export class Engine {
   }
   static create(registry, records, seed, options) { return new Engine(registry, createGameState(registry, records, seed, options)); }
   subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
-  notify() { for (const listener of this.listeners) listener(this); }
+  notify() {
+    // Views and persistence observers cannot roll back an already committed game action.
+    this.lastObserverError = null;
+    for (const listener of this.listeners) try { listener(this); }
+    catch (error) { this.lastObserverError = { message: error.message }; }
+  }
   touch() { this._cache = null; }
   object(idOrRef) {
     const object = this.state.instances[typeof idOrRef === 'string' ? idOrRef : idOrRef?.id];
@@ -144,6 +149,7 @@ export class Engine {
     return event;
   }
   perform(action) {
+    if (!action || typeof action.type !== 'string') return { ok: false, error: { message: 'Invalid action.', code: 'INVALID_ACTION' } };
     if (action?.type === 'UNDO') return this.undo();
     if (action?.type === 'REDO') return this.redo();
     const attemptBefore = clone(this.state), newTransaction = !this.transaction;
@@ -198,19 +204,31 @@ export class Engine {
   }
   static importSession(registry, document) {
     assertSerializable(document);
-    requireRule(document?.format === 'astra-goldfish-session' && document.rulesPack === RULES_PACK, 'This is not a compatible Astra session.', 'INVALID_SESSION');
+    requireRule(document?.format === 'astra-goldfish-session' && document.schemaVersion === 1 && document.rulesPack === RULES_PACK, 'This is not a compatible Astra session.', 'INVALID_SESSION');
     validateState(document.initialState, registry); validateState(document.currentState, registry);
     requireRule(document.stateChecksum === stateHash(document.currentState), 'Session checksum does not match. The file may be damaged.', 'INVALID_SESSION');
     const engine = new Engine(registry, document.initialState);
     requireRule(Array.isArray(document.history) && document.history.length <= 100000, 'Invalid session history.', 'INVALID_SESSION');
     engine.history = clone(document.history); engine.cursor = integer(document.cursor, 0, engine.history.length);
     let reconstructed = clone(document.initialState);
-    for (const entry of engine.history.slice(0, engine.cursor)) {
+    let cursorState = clone(reconstructed);
+    for (const [index, entry] of engine.history.entries()) {
+      requireRule(Array.isArray(entry.actions) && Array.isArray(entry.events) && Array.isArray(entry.patches), 'Invalid history entry.', 'INVALID_SESSION');
       requireRule(entry.beforeHash === stateHash(reconstructed), 'History integrity check failed.', 'INVALID_SESSION');
       reconstructed = applyPatches(reconstructed, entry.patches);
       requireRule(entry.afterHash === stateHash(reconstructed), 'History result does not match.', 'INVALID_SESSION');
+      validateState(reconstructed, registry);
+      if (index + 1 === engine.cursor) cursorState = clone(reconstructed);
     }
-    if (!document.transaction) requireRule(stateHash(reconstructed) === document.stateChecksum, 'History does not reproduce the session.', 'INVALID_SESSION');
+    if (!document.transaction) requireRule(stateHash(cursorState) === document.stateChecksum, 'History does not reproduce the session.', 'INVALID_SESSION');
+    else {
+      validateState(document.transaction.before, registry);
+      requireRule(stateHash(document.transaction.before) === stateHash(cursorState), 'Pending transaction does not match history.', 'INVALID_SESSION');
+      requireRule(Array.isArray(document.transaction.intents) && Array.isArray(document.transaction.events), 'Invalid pending transaction.', 'INVALID_SESSION');
+      const pendingReplay = new Engine(registry, cursorState);
+      for (const intent of document.transaction.intents) pendingReplay.act(intent);
+      requireRule(stateHash(pendingReplay.state) === document.stateChecksum, 'Pending choices do not reproduce the session.', 'INVALID_SESSION');
+    }
     engine.state = clone(document.currentState); engine.transaction = clone(document.transaction); return engine;
   }
   verifyReplay() {

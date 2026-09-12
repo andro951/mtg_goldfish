@@ -1,3 +1,4 @@
+import { ACCEPTED_CARDS } from './accepted-cards.js';
 import { CardRegistry } from '../core/registry.js';
 import { installCommonHandlers } from './helpers.js';
 import { installLands } from './lands.js';
@@ -22,5 +23,8 @@ export function createRegistry(definitions) {
   installLibraryEngines(registry);
   installArtifactMechanics(registry);
   installSpecialMechanics(registry);
+  for (const name of ACCEPTED_CARDS) {
+    if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for rules-pack 1.0.0 goldfish scope; see the capability and interaction tests.' });
+  }
   return registry;
 }
