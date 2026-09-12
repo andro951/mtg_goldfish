@@ -52,5 +52,6 @@
   "checkpoints/074-dialogs-and-order-layout.patch": "21b3006cee0ef6a9b86a9a55d4754f2e8925ce2b6cf6c585d50a66a1fda447d0",
   "checkpoints/075a-tablebar-and-stack-hooks.patch": "f076b7013780499ee8229f6879a92c2f145c49d232b902f7ccc8562504d70129",
   "checkpoints/075b-player-preferences-and-ordering.patch": "106534febfbb79c61340ebdd45e03e0133ae175d05880ad00a764762ee7fad5c",
-  "checkpoints/076-sequence-hook-safety.patch": "201afb46cd431c4c2a4259f84a3116c4c1d12a0fb8bd177e58d2fbdd8be294bd"
+  "checkpoints/076-sequence-hook-safety.patch": "201afb46cd431c4c2a4259f84a3116c4c1d12a0fb8bd177e58d2fbdd8be294bd",
+  "checkpoints/077-program-render-performance.patch": "2201d154c48ecd63ec64a5bfd673899cb56763b88461075beeeb417834e978e1"
 }
