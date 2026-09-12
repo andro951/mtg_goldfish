@@ -28,7 +28,7 @@ jobs:
         run: python tools/repair_checkpoint_transport.py
       - name: Apply durable source checkpoints
         run: python tools/apply_checkpoints.py
-      - name: Verify canonical data and complete related local images
+      - name: Verify canonical data and local images
         run: python tools/import_cards.py
       - name: Preserve checkpoint source and imported assets
         run: |
@@ -42,17 +42,28 @@ jobs:
           fi
       - name: Run engine and integration tests
         run: |
-          if [ -f package.json ]; then npm test; fi
-      - name: Build offline application
+          mkdir -p test-results
+          node --test --test-reporter=tap tests/*.test.js | tee test-results/engine.tap
+      - name: Build both offline editions
         run: |
-          if [ -f tools/build.mjs ]; then
-            node tools/build.mjs
-            git add index.html
-            if ! git diff --cached --quiet; then
-              git commit -m 'build: publish tested offline application'
-              git pull --rebase origin main
-              git push origin HEAD:main
-            fi
+          node tools/build.mjs
+          node tools/build.mjs --standalone
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Run real-browser acceptance tests
+        run: python tests/browser_test.py
+      - name: Verify release contents and create archive
+        run: |
+          if [ -f tools/package.py ]; then python tools/package.py; fi
+      - name: Preserve tested application and acceptance reports
+        run: |
+          git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/engine.tap
+          if ! git diff --cached --quiet; then
+            git commit -m 'release: preserve browser-tested offline build and verification reports'
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
       - name: Package complete source, assets, and test reports
         if: always()
@@ -65,3 +76,4 @@ jobs:
             .
             !.git/**
             !node_modules/**
+            !**/__pycache__/**
