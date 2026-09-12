@@ -1,0 +1,88 @@
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -9,6 +9,7 @@
+ export const actionMethods = {
+   handleAction(action) {
+     const type = action.type;
++    if (type === 'RUN_SEQUENCE')return this.runSequence(action);
+     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
+     if (type === 'CANCEL') {
+       // Cancel just the uncommitted nested mana activation. The outer casting
+@@ -433,15 +434,14 @@
+     }
+     const stackObject = { id: `s${this.state.nextStackId++}`, kind: draft.kind === 'spell' ? 'spell' : 'ability', source: draft.source, sourceCardId: draft.sourceCardId,
+       abilityId: draft.abilityId || null, label, controller: 0, context: clone(draft.context), targets: clone(draft.targets), paid, permission: clone(draft.permission || null) };
+-    if(draft.kind==='ability')this.record('ABILITY_ACTIVATED',{source:draft.source,abilityId:draft.abilityId});
+     if (definition.mana && draft.kind === 'ability') {
+-      this.record('MANA_ABILITY_RESOLVED', { source: draft.source, label });
++      this.record('MANA_ABILITY_RESOLVED', { source: draft.source, abilityId:draft.abilityId, label });
+       const commands = definition.effect ? definition.effect(this, draft.context) : [];
+       this.state.resolving = { object: stackObject, context: clone(draft.context), commands: asArray(commands), pc: 0, manaAbility: true };
+       this.runEffects();
+     } else {
+       this.state.stack.push(stackObject);
+-      this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, targets: stackObject.targets, paid });
++      this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
+       if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id });
+     }
+     if (this.state.castParent) {
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -38,7 +38,7 @@
+       const frame = this.state.resolving;
+       if (!frame || this.state.pending || this.state.actionDraft) return;
+       if (frame.pc >= frame.commands.length) {
+-        this.record('RESOLUTION_FINISHED', { stackId: frame.object.id, label: frame.object.label });
++        this.record('RESOLUTION_FINISHED', { stackId: frame.object.id, label: frame.object.label, cardId:frame.object.sourceCardId, abilityId:frame.object.abilityId||null, source:frame.object.source });
+         this.state.resolving = null; this.state.lookWorkspace = null;
+         if (this.state.effectPaymentParent) {
+           const parent = this.state.effectPaymentParent; this.state.effectPaymentParent = null;
+--- a/src/core/index.js
++++ b/src/core/index.js
+@@ -1,10 +1,11 @@
++import { sequenceMethods } from './sequences.js';
+ import { Engine } from './engine.js';
+ import { actionMethods } from './actions.js';
+ import { zoneMethods } from './zones.js';
+ import { effectMethods } from './effects.js';
+ import { eventMethods } from './events.js';
+ import { phaseMethods } from './phases.js';
+-Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods);
++Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods);
+ export { Engine };
+ export { CardRegistry } from './registry.js';
+ export { parseDeck, createGameState, validateState, makeInstance } from './deck.js';
+--- a/src/tabletop/preferences.js
++++ b/src/tabletop/preferences.js
+@@ -1,14 +1,15 @@
++import { futurePrograms } from './programs.js';
+ import { clamp } from './geometry.js';
+ export const PREF_KEY='astra-table-layout-v2';
+ export function defaultPreferences(){return {version:2,sidebarWidth:100,handHeight:155,dockWidth:290,dock:null,
+-  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,deckText:null};}
++  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
+ export function cleanPreferences(value={}){
+   const p=defaultPreferences(); if(!value||typeof value!=='object')return p;
+   p.sidebarWidth=clamp(value.sidebarWidth??p.sidebarWidth,92,260);
+   p.handHeight=clamp(value.handHeight??p.handHeight,80,400);
+   p.dockWidth=clamp(value.dockWidth??p.dockWidth,170,900);
+   p.dock=['graveyard','exile','workspace','outside'].includes(value.dock)?value.dock:null;
+-  for(const key of ['holdPriority','reserveAccess','orderTriggers'])if(typeof value[key]==='boolean')p[key]=value[key];
++  for(const key of ['holdPriority','reserveAccess','orderTriggers','autoAccept'])if(typeof value[key]==='boolean')p[key]=value[key];
+   for(const zone of ['battlefield','graveyard','exile','workspace','outside']){
+     const c=value.cameras?.[zone];if(c&&Number.isFinite(c.x)&&Number.isFinite(c.y)&&Number.isFinite(c.zoom))
+       p.cameras[zone]={x:clamp(c.x,-100000,100000),y:clamp(c.y,-100000,100000),zoom:clamp(c.zoom,.18,3)};
+@@ -19,7 +20,13 @@
+   if(value.modeDefaults&&typeof value.modeDefaults==='object')for(const [key,choice] of Object.entries(value.modeDefaults).slice(0,500)){
+     if(typeof key==='string'&&key.length<300&&typeof choice==='string'&&choice.length<100)p.modeDefaults[key]=choice;
+   }
++  for(const name of ['decision','stack']){
++    const v=value.popupSizes?.[name];if(v&&Number.isFinite(v.width)&&Number.isFinite(v.height))p.popupSizes[name]={width:clamp(v.width,280,1800),height:clamp(v.height,160,1200)};
++  }
++  if(value.playerDefaults&&typeof value.playerDefaults==='object')for(const [key,choice] of Object.entries(value.playerDefaults).slice(0,500))
++    if(key.length<250&&!['__proto__','constructor','prototype'].includes(key)&&Number.isInteger(choice)&&choice>=0&&choice<=3)p.playerDefaults[key]=choice;
+   if(typeof value.deckText==='string')p.deckText=value.deckText.slice(0,100000);
++  p.savedPrograms=futurePrograms(value.savedPrograms||{sequences:[],rules:[]});
+   return p;
+ }
+ export function loadPreferences(storage){try{return cleanPreferences(JSON.parse((storage??globalThis.localStorage).getItem(PREF_KEY)||'{}'));}catch{return defaultPreferences();}}
