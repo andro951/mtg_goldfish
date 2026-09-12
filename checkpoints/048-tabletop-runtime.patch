@@ -1,0 +1,60 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -13,2 +13,16 @@
+     if (type === 'CANCEL') {
++      // Cancel just the uncommitted nested mana activation. The outer casting
++      // payment remains open, including mana already produced by other sources.
++      if (this.state.actionDraft?.kind === 'ability' && this.state.pending?.kind === 'draft') {
++        if (this.state.paymentParent) {
++          const parent=this.state.paymentParent; this.state.paymentParent=null;
++          this.state.actionDraft=parent.draft; this.state.pending=parent.pending;
++          this.record('MANA_CHOICE_CANCELLED', {}); return;
++        }
++        if (this.state.effectPaymentParent) {
++          const parent=this.state.effectPaymentParent; this.state.effectPaymentParent=null;
++          this.state.actionDraft=null; this.state.resolving=parent.frame; this.state.pending=parent.pending;
++          this.record('MANA_CHOICE_CANCELLED', {}); return;
++        }
++      }
+       requireRule(this.state.pending?.optional || this.state.actionDraft?.kind !== 'trigger', 'A mandatory trigger or effect cannot be cancelled.');
+diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
+--- a/src/tabletop/interactions.js
++++ b/src/tabletop/interactions.js
+@@ -14,3 +14,3 @@
+     clearHover();if(gesture||api.ui.modal)return;
+-    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.view-control'))return;
++    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.opening-prompt,.view-control'))return;
+     const surface=getSurface(p);let el;
+@@ -39,3 +39,3 @@
+     else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f};}
+-    else if(target.closest('.floating,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
++    else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
+     else{
+diff --git a/src/tabletop/preferences.js b/src/tabletop/preferences.js
+--- a/src/tabletop/preferences.js
++++ b/src/tabletop/preferences.js
+@@ -21,3 +21,3 @@
+ }
+-export function loadPreferences(storage=globalThis.localStorage){try{return cleanPreferences(JSON.parse(storage.getItem(PREF_KEY)||'{}'));}catch{return defaultPreferences();}}
+-export function savePreferences(p,storage=globalThis.localStorage){try{storage.setItem(PREF_KEY,JSON.stringify(cleanPreferences(p)));return true;}catch{return false;}}
++export function loadPreferences(storage){try{return cleanPreferences(JSON.parse((storage??globalThis.localStorage).getItem(PREF_KEY)||'{}'));}catch{return defaultPreferences();}}
++export function savePreferences(p,storage){try{(storage??globalThis.localStorage).setItem(PREF_KEY,JSON.stringify(cleanPreferences(p)));return true;}catch{return false;}}
+diff --git a/tools/build.mjs b/tools/build.mjs
+--- a/tools/build.mjs
++++ b/tools/build.mjs
+@@ -18,3 +18,3 @@
+ }
+-bundle('src/ui/app.js');
++bundle('src/tabletop/app.js');
+ const cards=JSON.parse(read('data/cards.json')),pool=JSON.parse(read('data/pool.json'));
+@@ -22,6 +22,6 @@
+ const standalone=process.argv.includes('--standalone');
+-const embedded=standalone?Object.fromEntries([...new Set(cards.flatMap(c=>[c.image,c.backImage].filter(Boolean)))].map(p=>[p,'data:image/jpeg;base64,'+fs.readFileSync(path.join(root,p)).toString('base64')])):null;
++const embedded=standalone?Object.fromEntries([...new Set([...cards.flatMap(c=>[c.image,c.backImage].filter(Boolean)),...Object.keys(JSON.parse(read('data/ui-assets.json')))])].map(p=>[p,'data:image/jpeg;base64,'+fs.readFileSync(path.join(root,p)).toString('base64')])):null;
+ const payload=JSON.stringify({cards,pool,deckText:read('data/candidate-pool.txt')}).replace(/</g,'\\u003c');
+-const runtime=`(()=>{'use strict';const factories={${[...modules].map(([id,s])=>`${JSON.stringify(id)}:(module,exports,require)=>{\n${s}\n}`).join(',\n')}};const cache={};function require(id){if(cache[id])return cache[id].exports;if(!factories[id])throw new Error('Missing module '+id);const module=cache[id]={exports:{}};factories[id](module,module.exports,require);return module.exports;}require('src/ui/app.js');})();`;
+-const html=`<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: file:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="description" content="An offline, rules-aware Magic goldfish laboratory for the supplied 160-card candidate pool."><title>Astra · The Goldfish Lab</title><link rel="icon" href="data:,"><style>${read('src/ui/styles.css')}</style></head><body><div id="app"><div class="starting">Opening your laboratory…</div></div><div id="overlay"></div><noscript>JavaScript is required. No network connection is needed.</noscript><script>${embedded?`window.ASTRA_IMAGES=${JSON.stringify(embedded)};`:""}window.ASTRA_DATA=${payload};</script><script>${runtime.replace(/<\/script/gi,'<\\/script')}</script></body></html>\n`;
++const runtime=`(()=>{'use strict';const factories={${[...modules].map(([id,s])=>`${JSON.stringify(id)}:(module,exports,require)=>{\n${s}\n}`).join(',\n')}};const cache={};function require(id){if(cache[id])return cache[id].exports;if(!factories[id])throw new Error('Missing module '+id);const module=cache[id]={exports:{}};factories[id](module,module.exports,require);return module.exports;}require('src/tabletop/app.js');})();`;
++const html=`<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: file:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="description" content="An offline, rules-aware Magic goldfish laboratory for the supplied 160-card candidate pool."><title>Astra · The Goldfish Lab</title><link rel="icon" href="data:,"><style>${read('src/tabletop/styles.css')}</style></head><body><div id="app"><div class="starting">Opening your laboratory…</div></div><div id="overlay"></div><noscript>JavaScript is required. No network connection is needed.</noscript><script>${embedded?`window.ASTRA_IMAGES=${JSON.stringify(embedded)};`:""}window.ASTRA_DATA=${payload};</script><script>${runtime.replace(/<\/script/gi,'<\\/script')}</script></body></html>\n`;
+ const output=standalone?'Astra-standalone.html':'index.html';
