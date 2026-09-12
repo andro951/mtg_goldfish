@@ -1,0 +1,27 @@
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# Astra 1.1 — The Goldfish Lab
++# Astra 1.2 — The Goldfish Lab
+ 
+ A compact, offline, rules-aware Magic testing table for the supplied **160-card candidate pool**. The battlefield fills the window; other controls appear only when needed.
+ 
+@@ -16,7 +16,7 @@
+ 
+ ## The compact table
+ 
+-The top-left **Menu** button contains New test, Laboratory, Cards, Deck pool, Save / import, Settings, Action log and Notes, plus Guide and undo/redo. The narrow toolbar also provides phases, opponent turns and the small zone/selection/arrangement icons.
++The top-left **Menu** button contains New test, Laboratory, Cards, Deck editor, Save / import, Settings, Action log and Notes, plus Guide and undo/redo. The narrow toolbar also provides phases, opponent turns and the small zone/selection/arrangement icons.
+ 
+ The battlefield is always visible. Graveyard, exile and outside-the-game open alongside it, not instead of it. Close the side zone to return its width to the battlefield. Wheel over either table to zoom around your pointer. Drag empty space to pan; holding Space allows panning from over a card. The small fit icon brings that area's cards back into view.
+ 
+@@ -62,7 +62,9 @@
+ 
+ The supplied main pool contains 119 copies: 34 fixed lands, 65 selected nonlands in the active 99, and 20 reserve candidates. There is one commander and 41 outside-the-game cards. Reserve access is on by default in this edition and can be disabled in Settings. The supplied duplicate Scroll Rack is preserved and reported, not deleted. The harness is not a Commander deck-legality validator.
+ 
+-Deck pool accepts quantity/name lines and `// Main`, `// Commander`, and `// Outside the Game` headings. Unsupported names produce a missing-card report rather than being silently treated as implemented cards. Editing the deck does not replace an in-progress table until a new test is started.
++**Menu → Deck editor** is a visual builder backed by the 160 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
++
++For bulk edits, **Advanced text / paste list** remains available with `// Main`, `// Commander`, and `// Outside the Game` headings. Unsupported names stay visible so you can remove them and are reported rather than silently treated as implemented cards. Deck edits are saved locally and affect the next New test; they do not mutate the game already in progress.
+ 
+ Browser autosave includes the exact game state, pending decisions, undo/redo history, notes and table layout. It keeps a previous distinct recovery point. **Save / import** exports a portable session JSON or a readable action log, imports a session with integrity checks, recovers the previous autosave, and verifies deterministic replay. A corrupted import is rejected before replacing the current game.
