@@ -1,0 +1,42 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -100,18 +145,18 @@
+  renderModal(false);size();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
+  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
+  restoreFocus(focus);interactions?.refreshHover();
+- }finally{rendering=false;}}
++ }finally{rendering=false;}scheduleModeDefault();}
+ function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(name==='deck')auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
+ function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
+  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
+ function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
+  else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO'].includes(action.type))autoResolve();}return result;}
+ function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
+-function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
++function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;if(same)clearInspectorState();else{ui.inspected=id;ui.inspectDefinition=null;ui.inspectOrigin=inspectorOrigin(id);ui.inspectorActivation=null;ui.stackLabel=null;}if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
+ function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;
+  if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1)ui.choice=[id];else if(ui.choice.length<(p.max||1))ui.choice.push(id);else toast(`Choose at most ${p.max} cards.`,true);render();return true;}
+ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&selectChoice(id))return;
+- if(ui.inspected===id){ui.inspected=null;ui.stackLabel=null;render();return;}
++ if(ui.inspected===id){clearInspectorState();render();return;}
+  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
+  const o=g.object(id);if(!o)return;const p=g.state.pending;
+  if(o.zone==='battlefield'&&!o.tapped&&!g.isSick(o)&&(!p||['payment','effectPayment'].includes(p.kind))){
+@@ -119,7 +164,7 @@
+  }
+  inspect(id,point);
+ }
+-function choose(value){return run({type:'CHOOSE',value,remember:!!byId('remember-choice')?.checked});}
++function choose(value){const identity=draftIdentity();const result=run({type:'CHOOSE',value,remember:!!byId('remember-choice')?.checked});if(result.ok&&identity&&ui.modeBypass===identity&&!g.state.actionDraft)ui.modeBypass=null;return result;}
+ function auditDeck(){const parsed=parseDeck(ui.deckText),report=registry.report(parsed.records),errors=parsed.errors.map(e=>`Line ${e.line}: ${e.message}`);let construction=null;if(!errors.length&&!report.missing.length)try{construction=Engine.create(registry,parsed.records,'deck-audit').state.initialDeck;}catch(e){errors.push(e.message);}
+  const accepted=report.accepted&&!errors.length,lines=[...errors,...report.missing.map(r=>`MISSING: ${r.quantity} ${r.name}`),...report.partial.map(r=>`PARTIAL: ${r.name} — ${r.notes}`),...report.duplicates.map(r=>`DUPLICATE (preserved): ${r.quantity} ${r.name}`)];
+  return ui.deckReport={...report,accepted,errors,records:parsed.records,construction,summary:accepted?`Ready: ${construction.fixedLands} lands + ${construction.selectedNonlands} selected nonlands; ${construction.reserveOrder.length} reserve cards.`:'Resolve the deck issues below.',details:lines.join('\n')||'Every card has registered rules.'};}
+@@ -133,7 +178,7 @@
+ function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=fitCamera(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
+ function arrange(){const zone=prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield',el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
+  const result=run({type:'LAYOUT',anchor:'corner-v2',order:ids,updates:ids.map((id,i)=>({id,x:CARD_H+10+(i%columns)*(CARD_W+12),y:CARD_H+14+Math.floor(i/columns)*(CARD_H+16)}))});if(result.ok)fit(zone);}
+-function closeInspector(){ui.inspected=null;ui.inspectDefinition=null;ui.stackLabel=null;render();}
++function closeInspector(){clearInspectorState();render();}
+ async function handleClick(event){const el=event.target.closest('[data-action]');if(!el)return;const action=el.dataset.action,id=el.dataset.id;
+  // Table pointer gestures own mouse picking. Keyboard activation and decision
+  // galleries still use native button clicks.
