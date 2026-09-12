@@ -1,0 +1,37 @@
+--- a/docs/DEVELOPMENT.md
++++ b/docs/DEVELOPMENT.md
+@@ -6,9 +6,9 @@
+ 
+ `src/rules` registers card capabilities and small named effect handlers. Its modules group mana engines, landfall, library manipulation, tutors/recursion, artifact mechanics and special mechanics. `accepted-cards.js` is an explicit acceptance allowlist, not a blanket declaration that future imports are implemented.
+ 
+-`src/ui` contains presentation, dialogs, pointer interactions, browser persistence and prepared laboratory fixtures. DOM and image data do not belong in game state. `window.ASTRA_IMAGES` is an optional presentation cache used by the single-file edition; canonical definitions retain compact local image paths even when an image is displayed from an embedded data URI.
++`src/tabletop` is the delivered 1.1 UI: its app controller, geometry, pointer interactions, popup views, symbol-only mana palette and preferences. `src/ui` supplies shared dialogs, selectors, browser persistence and prepared laboratory fixtures; its original app controller is historical and is not bundled. DOM and image data do not belong in game state. `window.ASTRA_IMAGES` is an optional presentation cache used by the single-file edition; canonical definitions retain compact local image paths even when an image is displayed from an embedded data URI.
+ 
+-`data` contains a pinned Oracle snapshot, compact definitions, candidate-pool records, original text, and a hashed local image manifest. Tokens and derived faces extend the definitions beyond the 160 candidates. `assets/cards` contains the local JPEG files.
++`data` contains a pinned Oracle snapshot, compact definitions, candidate-pool records, original text, and a hashed local image manifest. Tokens and derived faces extend the definitions beyond the 160 candidates. `assets/cards` contains the 175 local JPEG files. `assets/card-back.jpg` and `data/ui-assets.json` supply and verify the real Magic back; the standalone edition embeds 176 images in total.
+ 
+ `tests` contains targeted interactions, per-card legal-entry and activated-ability capability smoke tests, transaction/import integrity tests, and a real browser suite. `tools` builds both editions, serves locally, imports data, applies historical checkpoints and validates a release archive.
+ 
+@@ -44,11 +44,21 @@
+ 
+ ## Browser acceptance
+ 
+-`python tests/browser_test.py` starts the standard-library Node server, uses isolated Chromium contexts, clicks the real controls and checks engine outcomes. It also verifies direct-file startup, image loading, IndexedDB recovery after reload, actual downloads, rejected corrupted imports, responsive widths, and absence of external requests and browser errors.
++`python tests/browser_tabletop.py` starts the standard-library Node server, uses isolated Chromium contexts, clicks the real controls and checks engine outcomes. It also verifies direct-file startup, image loading, IndexedDB recovery after reload, actual downloads, rejected corrupted imports, responsive widths, and absence of external requests and browser errors.
+ 
+ The optional `--memory` mode renders authored HTML bytes into a blank page only for environments where URL navigation is unavailable. Its report explicitly lists the persistence/download/file-navigation checks it cannot run. A release must use the full report with **no skipped checks**; a memory-only report is insufficient.
+ 
+ The separate portable test opens a copied `Astra-standalone.html` with no adjacent source or asset directory, confirming that the single-file delivery does not depend on files left behind in the build workspace.
++
++## Table geometry and UI persistence
++
++A card's `corner-v2` layout anchor is its upright bottom-left corner. A -90-degree rotation leaves that point at the tapped bottom-right corner. Old top-left layout coordinates are migrated for display. Zone moves and casts carry a pending placement through the core action; the UI does not force-move a card to make a drag look successful.
++
++Canonical card picking ignores hover paint elevation. Drop ordering uses pointer intersection and overlap to support inserting a card between existing layers. Normalized grab points preserve exact placement across zoom and tapping. Tests verify the actual browser rectangles during the drag and after release, as well as visual undo/redo.
++
++Panel geometry and camera state live in validated `uiLayout`, not in the rules state. The exported session also contains `tableView` for stable implicit card placement. Browser preferences are independent of new game construction; imported sessions retain their own game settings. Saved preference comparisons use values, not JSON object-key ordering. Explicit popup positions are respected; automatic positions avoid other popups and respond to size changes, including local image decoding and expanding rules text.
++
++The 1.1 interface retains rules-pack/session compatibility with 1.0. Future incompatible rules-state changes must still bump the rules-pack identifier. New games default to no held priority and explicit reserve access enabled; imported games keep their settings. The ordinary core API remains independent of those interface defaults.
+ 
+ ## Build and release
+ 
