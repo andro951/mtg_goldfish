@@ -43,6 +43,7 @@ jobs:
       - name: Run engine and integration tests
         run: |
           mkdir -p test-results
+          set -o pipefail
           node --test --test-reporter=tap tests/*.test.js | tee test-results/engine.tap
       - name: Build both offline editions
         run: |
@@ -53,12 +54,11 @@ jobs:
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
       - name: Run real-browser acceptance tests
-        run: python tests/browser_test.py
+        run: python tests/browser_tabletop.py
       - name: Test isolated portable edition with networking disabled
         run: python tests/portable_test.py
       - name: Verify release contents and create archive
-        run: |
-          if [ -f tools/package.py ]; then python tools/package.py; fi
+        run: python tools/package.py
       - name: Preserve tested application and acceptance reports
         run: |
           git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap
