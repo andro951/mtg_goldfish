@@ -136,10 +136,12 @@ def main() -> None:
     cards_path = data_dir / 'cards.json'
     previous = {} if not cards_path.exists() else {c['id']: c for c in json.loads(cards_path.read_text(encoding='utf-8'))}
     # Only related tokens/meld results, not unrelated cards named in a printing's parts.
-    related = {p['uri'] for raw in list(snapshots.values()) for p in raw.get('all_parts', []) if p.get('component') in ('token', 'meld_result')}
+    related = {normalize(p['name']): p['uri'] for raw in list(snapshots.values()) for p in raw.get('all_parts', []) if p.get('component') in ('token', 'meld_result')}
     known_prints = {r['id'] for r in snapshots.values()}
-    for uri in sorted(related):
-        if uri.rsplit('/', 1)[-1] not in known_prints:
+    for name, uri in sorted(related.items()):
+        # Related printings may differ while referring to the same token. Keep
+        # the already pinned definition instead of silently repinning every CI run.
+        if name not in snapshots and uri.rsplit('/', 1)[-1] not in known_prints:
             raw = json.loads(request(uri))
             snapshots[normalize(raw['name'])] = raw
             known_prints.add(raw['id'])
@@ -168,7 +170,7 @@ def main() -> None:
             content = target.read_bytes()
             assets[path] = {'sha256': hashlib.sha256(content).hexdigest(), 'bytes': len(content), 'source': url, 'printing': raw['id']}
         prev = previous.get(oracle_id, {})
-        rulings = prev.get('rulings')
+        rulings = None if args.refresh else prev.get('rulings')
         if rulings is None:
             rulings = [] if args.no_rulings or not raw.get('rulings_uri') else json.loads(request(raw['rulings_uri']))['data']
         card = compact(raw, image, back, rulings)
