@@ -48,3 +48,28 @@ for repair in REPAIRS:
     temporary.write_bytes(after)
     temporary.replace(path)
     print('Verified transport restored: ' + repair['path'])
+
+# Restore two known transcription substitutions in the new, unapplied envelope.
+# The full decompressed source hash remains the authority, never fuzzy repair.
+path = root / 'checkpoints/088-expanded-engine.json'
+expected = '98d07d8564132f7dc50a59904d3c01b62dc2a4f6a2d12af466610fec30bfa411'
+if path.exists():
+    envelope = json.loads(path.read_text())
+    if envelope.get('sha256') != expected:
+        raise RuntimeError('Unexpected expanded-engine checkpoint')
+    data = envelope['data']
+    try:
+        raw = zlib.decompress(base64.b64decode(data, validate=True))
+        valid = hashlib.sha256(raw).hexdigest() == expected
+    except (ValueError, zlib.error):
+        valid = False
+    if not valid:
+        if path.relative_to(root).as_posix() in json.loads((root / '.checkpoints-applied.json').read_text()):
+            raise RuntimeError('Refusing to modify an applied checkpoint')
+        data = data.replace('eTg6Ojs1O3', 'eTg6ujs1O3').replace('VacHGS/qHVpUC', 'VacHGS/qjjpUC')
+        raw = zlib.decompress(base64.b64decode(data, validate=True))
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise RuntimeError('Expanded checkpoint repair does not match source hash')
+        envelope['data'] = data
+        path.write_text(json.dumps(envelope, separators=(',', ':')) + '\n')
+        print('Verified expanded-engine transport restored')
