@@ -1,0 +1,58 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -134,3 +145,3 @@
+ }
+-function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0,nested=new Map(preserve?[...overlay.querySelectorAll('[data-modal-scroll]')].map(el=>[el.dataset.modalScroll,[el.scrollLeft,el.scrollTop]]):[]);overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;for(const el of overlay.querySelectorAll('[data-modal-scroll]')){const pos=nested.get(el.dataset.modalScroll);if(pos){el.scrollLeft=pos[0];el.scrollTop=pos[1];}}restoreFocus(focus);}}
++function renderModal(preserve=true){if(modalRendering)return;modalRendering=true;try{const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0,nested=new Map(preserve?[...overlay.querySelectorAll('[data-modal-scroll]')].map(el=>[el.dataset.modalScroll,[el.scrollLeft,el.scrollTop]]):[]);overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;for(const el of overlay.querySelectorAll('[data-modal-scroll]')){const pos=nested.get(el.dataset.modalScroll);if(pos){el.scrollLeft=pos[0];el.scrollTop=pos[1];}}restoreFocus(focus);}}finally{modalRendering=false;}}
+ function render(){if(!g||rendering)return;rendering=true;try{
+@@ -143,2 +154,3 @@
+  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
++ for(const el of floats.querySelectorAll('[data-resizable]')){const v=prefs.popupSizes?.[el.dataset.floating];if(v){el.style.width=Math.min(v.width,innerWidth-8)+'px';el.style.height=Math.min(v.height,innerHeight-40)+'px';}}
+  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
+@@ -149,10 +161,41 @@
+ function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(name==='deck')auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
+-function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
+- autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
+-function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
+- else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO'].includes(action.type))autoResolve();}return result;}
++function autoResolve(){
++ clearTimeout(autoTimer);
++ if(!g||programs.recording||programs.running||programs.model.paused||(g.state.settings.holdPriority&&!ui.resolveRequested)||!g.state.stack.length)return;
++ if(g.state.pending||g.state.actionDraft||g.state.resolving){ui.resolveRequested=false;return;}
++ autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}run({type:'RESOLVE_TOP'},false);},160);
++}
++function run(action,user=true){
++ clearTimeout(autoTimer);if(user)programs.userAction();
++ if(programs.running&&user&&!['UNDO','CANCEL'].includes(action.type)){toast('Stop the running sequence before taking another action.',true);return {ok:false};}
++ if(programs.running&&user)programs.stop();
++ if(action.type==='RESOLVE_ALL'){if(g.state.pending)return {ok:false};programs.resume();ui.resolveRequested=true;return run({type:'RESOLVE_TOP'},false);}
++ if(action.type==='PASS_PRIORITY'&&g.state.stack.length)action={type:'RESOLVE_TOP'};
++ if(action.type==='RESOLVE_TOP'){
++   if(user&&programs.model.paused)programs.resume();
++   if(!programs.recording&&!programs.beforeResolve()){autoResolve();return {ok:true,deferred:true};}
++ }
++ let step;try{step=programs.prepare(action);if(programs.recording&&['ADJUST_MANA','ADJUST_PLAYER'].includes(action.type))toast('Manual adjustments are not recorded. Only legal card actions and their choices are saved.');}catch(error){toast(error.message,true);return {ok:false};}
++ const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
++ else {programs.completed(action,result,step);if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO'].includes(action.type))autoResolve();else ui.resolveRequested=false;}
++ return result;
++}
+ function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
+ function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;if(same)clearInspectorState();else{ui.inspected=id;ui.inspectDefinition=null;ui.inspectOrigin=inspectorOrigin(id);ui.inspectorActivation=null;ui.stackLabel=null;}if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
++function refreshSelection(){
++ const p=g.state.pending;
++ for(const el of document.querySelectorAll('.decision-gallery [data-card]'))el.classList.toggle('is-selected',ui.choice.includes(el.dataset.card));
++ for(const el of document.querySelectorAll('.surface [data-card],.hand [data-card]'))el.classList.toggle('selected',ui.choice.includes(el.dataset.card)||ui.selected.has(el.dataset.card));
++ const count=floats.querySelector('.selected-count');if(count)count.textContent=`${ui.choice.length} selected`;
++ const done=floats.querySelector('[data-action="confirm-choice"]');if(done&&!p?.ordered){done.disabled=ui.choice.length<(p.min||0)||ui.choice.length>(p.max||1);done.textContent=`Confirm${ui.choice.length?' ('+ui.choice.length+')':p.min===0?' / choose none':''}`;}
++}
+ function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;
+- if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1)ui.choice=[id];else if(ui.choice.length<(p.max||1))ui.choice.push(id);else toast(`Choose at most ${p.max} cards.`,true);render();return true;}
++ let added=false;
++ if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1){ui.choice=[id];added=true;}else if(ui.choice.length<(p.max||1)){ui.choice.push(id);added=true;}else toast(`Choose at most ${p.max} cards.`,true);
++ refreshSelection();
++ if(added&&prefs.autoAccept&&(ui.choice.length===(p.max||1)||p.minTotalPower!=null)){
++   try{g.validateInput(p,ui.choice,g.state.actionDraft?.context||g.state.resolving?.context||{});choose([...ui.choice]);}catch{}
++ }
++ return true;
++}
+ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&selectChoice(id))return;
