@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def opening(p):
- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.1.0')
+ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.2.0')
  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
@@ -72,4 +72,3 @@ def payments(p):
  shot(p,'04-spell-stack.png');click(p,'stack-inspect','.stack-window');check('stack image opens card/effect inspector',p.locator('.inspector-window').is_visible())
  click(p,'resolve','.stack-window');check('manual Resolve empties stack and enters permanent',obj(p,'Walking Atlas','battlefield') is not None and p.locator('.stack-window').count()==0)
  click(p,'dialog',extra='[data-dialog=mana]');check('restricted mana detail opens from hidden dialog',p.locator('#modal-title').inner_text()=='Restricted mana');close(p)
-
