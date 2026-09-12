@@ -6,7 +6,7 @@ import { h, saveDownload } from '../ui/components.js';
 import { choiceOptions } from '../ui/views.js';
 import { toolbar, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
 import { dialogs } from './dialogs.js';
-import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,bounds,overlaps } from './geometry.js';
+import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
 import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
 import { installInteractions } from './interactions.js';
 
@@ -68,18 +68,24 @@ function size(){
  const commandCount=Math.max(1,g.state.zones.command.length),maxCard=(height-extra)/(88/63*(1+commandCount));
  style.setProperty('--rail-card',clamp(Math.min(side-16,maxCard),32,110)+'px');
  const handEl=document.querySelector('.hand');if(handEl){const n=handEl.children.length,w=(hand-8)*63/88;
-  const step=n>1?Math.max(8,Math.min(w+4,(handEl.clientWidth-8-w)/(n-1))):0;
+  const step=n>1?Math.max(0,Math.min(w+4,(handEl.clientWidth-8-w)/(n-1))):0;
   for(const [i,el]of [...handEl.children].entries()){el.style.width=w+'px';el.style.height=(hand-8)+'px';el.style.left=(4+i*step)+'px';}
  }
  positionPopups();
 }
-function positionPopups(){for(const el of floats.querySelectorAll('[data-floating]')){
- const name=el.dataset.floating,measurement=el.getBoundingClientRect();let anchor=ui.lastPoint;
- const saved=ui.popupPositions[name]||prefs.popups[name];
- if(name==='stack'&&!saved)anchor={x:innerWidth-measurement.width-20,y:document.querySelector('.toolbar').getBoundingClientRect().bottom};
- const pos=popupPosition(anchor,measurement.width,measurement.height,{width:innerWidth,height:innerHeight},saved);
- ui.popupPositions[name]=pos;el.style.left=pos.x+'px';el.style.top=pos.y+'px';
-}}
+function positionPopups(){
+ const occupied=[],viewport={width:innerWidth,height:innerHeight};
+ for(const el of floats.querySelectorAll('[data-floating]')){
+  const name=el.dataset.floating,mini=el.classList.contains('mana-window'),key=mini?'mana':name;
+  const measurement=el.getBoundingClientRect(),explicit=mini?null:prefs.popups[name];let anchor=ui.lastPoint;
+  const cached=mini?null:ui.popupPositions[key],saved=explicit||cached;
+  if(name==='stack'&&!saved)anchor={x:innerWidth-measurement.width-20,y:document.querySelector('.toolbar').getBoundingClientRect().bottom};
+  let pos=popupPosition(anchor,measurement.width,measurement.height,viewport,saved);
+  if(!explicit&&!mini)pos=avoidPopupOverlap(pos,measurement.width,measurement.height,viewport,occupied);
+  ui.popupPositions[key]=pos;el.style.left=pos.x+'px';el.style.top=pos.y+'px';
+  occupied.push({left:pos.x,top:pos.y,right:pos.x+measurement.width,bottom:pos.y+measurement.height});
+ }
+}
 function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0;overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;restoreFocus(focus);}}
 function render(){if(!g||rendering)return;rendering=true;try{
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
@@ -95,7 +101,7 @@ function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPrior
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
 function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
  else if(!['UNDO','REDO','CANCEL','LAYOUT','NOTE','SET_OPTIONAL'].includes(action.type))autoResolve();return result;}
-function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision)delete ui.popupPositions.decision;}}
+function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
 function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
 function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;
  if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1)ui.choice=[id];else if(ui.choice.length<(p.max||1))ui.choice.push(id);else toast(`Choose at most ${p.max} cards.`,true);render();return true;}
@@ -124,7 +130,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  // Table pointer gestures own mouse picking. Keyboard activation and decision
  // galleries still use native button clicks.
  if(action==='card'&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
- if(event.clientX||event.clientY)atPoint({x:event.clientX,y:event.clientY});
+ if((event.clientX||event.clientY)&&!el.closest('[data-floating=decision]'))atPoint({x:event.clientX,y:event.clientY});
  if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();}return;}
  if(action==='menu')return openDialog('menu');if(action==='dialog')return openDialog(el.dataset.dialog);
  if(action==='close-dialog'){ui.modal=null;renderModal();return;}

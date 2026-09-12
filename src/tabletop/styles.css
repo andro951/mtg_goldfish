@@ -4,3 +4,11 @@
 @media(max-width:450px){.toolbar{gap:2px}.turn-tools{margin-left:0}.toolbar-section.zone-tools{margin-left:auto}.app-menu-grid{gap:5px}.toolbar button{min-height:22px}.turn-chip{font-size:9px}.rail{padding:4px 3px}.mana-row,.total-row{grid-template-columns:1fr 16px 22px 16px}.mana-row button,.total-row button{width:16px;height:16px}.decision-window{width:calc(100vw - 8px)}.floating{max-height:66dvh}.stack-window{width:245px}.decision-gallery .card{width:78px;flex-basis:78px}}
 @media(max-height:650px){.rail{gap:1px;padding-top:3px}.mana-row,.total-row{min-height:18px}.command-slot{margin-bottom:2px}.library-icons{height:19px}.totals,.opponents-totals{padding-top:2px;margin-top:1px}.floating{max-height:80dvh}.watermark{font-size:7px;line-height:10px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* A mana-color choice should be no larger than the choices themselves. */
+.mana-window{width:max-content;min-width:0;max-width:calc(100vw - 8px);height:auto;padding:5px;z-index:1300;border-color:#9c8358;border-radius:24px;overflow:visible;background:#13222bf5}
+.mana-options{display:flex;gap:5px;align-items:center}
+.mana-choice{display:flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:50%;width:36px;height:36px;padding:2px}
+.mana-choice:hover:not(:disabled){background:#d1b17840;transform:scale(1.12)}
+.mana-choice .mana-symbol{width:30px;height:30px;min-width:30px;box-shadow:0 1px 3px #0009}
+.mana-symbol svg{width:75%;height:75%;display:block}

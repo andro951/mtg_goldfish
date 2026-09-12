@@ -71,3 +71,16 @@ export function popupPosition(anchor,width,height,viewport,saved=null) {
   if(!saved){if(x>maxX)x=anchor.x-width-gap;if(y>maxY)y=anchor.y-height-gap;}
   return {x:clamp(x,4,maxX),y:clamp(y,4,maxY)};
 }
+
+/** Prefer a nearby free rectangle for automatic popups. Explicitly positioned
+ * windows keep their positions; small screens can still overlap and be moved. */
+export function avoidPopupOverlap(preferred,width,height,viewport,occupied=[]){
+  const clampPos=p=>({x:clamp(p.x,4,Math.max(4,viewport.width-width-4)),y:clamp(p.y,34,Math.max(34,viewport.height-height-4))});
+  const candidates=[clampPos(preferred)];
+  for(const r of occupied){
+    candidates.push(clampPos({x:r.left-width-8,y:preferred.y}),clampPos({x:r.right+8,y:preferred.y}),
+      clampPos({x:preferred.x,y:r.top-height-8}),clampPos({x:preferred.x,y:r.bottom+8}));
+  }
+  const score=p=>occupied.reduce((sum,r)=>sum+Math.max(0,Math.min(p.x+width,r.right)-Math.max(p.x,r.left))*Math.max(0,Math.min(p.y+height,r.bottom)-Math.max(p.y,r.top)),0)*1000+Math.hypot(p.x-preferred.x,p.y-preferred.y);
+  return candidates.sort((a,b)=>score(a)-score(b))[0];
+}
