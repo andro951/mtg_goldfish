@@ -1205,10 +1205,10 @@
     "faces": [],
     "image": "assets/cards/ee740c48-59cd-4fcc-b4a5-fe3dde1361d5.jpg",
     "backImage": null,
-    "printId": "48fdadab-af27-46d3-bcf6-35e7affb1e43",
-    "set": "tcmm",
-    "collectorNumber": "41",
-    "source": "https://scryfall.com/card/tcmm/41/construct?utm_source=api",
+    "printId": "a7caaf39-8f16-4f1d-bee6-a45674306319",
+    "set": "tmh2",
+    "collectorNumber": "16",
+    "source": "https://scryfall.com/card/tmh2/16/construct?utm_source=api",
     "rulings": [],
     "related": [
       {
@@ -1221,11 +1221,11 @@
       },
       {
         "object": "related_card",
-        "id": "3ec5d76d-58c0-4525-be90-b37f4a97e14c",
+        "id": "2138dfbb-a4e3-49db-b908-95d0b2b7e82f",
         "component": "combo_piece",
         "name": "Urza's Saga",
         "type_line": "Enchantment Land — Urza's Saga",
-        "uri": "https://api.scryfall.com/cards/3ec5d76d-58c0-4525-be90-b37f4a97e14c"
+        "uri": "https://api.scryfall.com/cards/2138dfbb-a4e3-49db-b908-95d0b2b7e82f"
       },
       {
         "object": "related_card",
@@ -1245,11 +1245,11 @@
       },
       {
         "object": "related_card",
-        "id": "3e286a7c-9643-492f-8ce9-255499dfd1a7",
+        "id": "86d744cd-225c-4279-898a-858dc316cf7f",
         "component": "combo_piece",
         "name": "Urza, Lord High Artificer",
         "type_line": "Legendary Creature — Human Artificer",
-        "uri": "https://api.scryfall.com/cards/3e286a7c-9643-492f-8ce9-255499dfd1a7"
+        "uri": "https://api.scryfall.com/cards/86d744cd-225c-4279-898a-858dc316cf7f"
       },
       {
         "object": "related_card",
@@ -1261,11 +1261,11 @@
       },
       {
         "object": "related_card",
-        "id": "48fdadab-af27-46d3-bcf6-35e7affb1e43",
+        "id": "a7caaf39-8f16-4f1d-bee6-a45674306319",
         "component": "token",
         "name": "Construct",
         "type_line": "Token Artifact Creature — Construct",
-        "uri": "https://api.scryfall.com/cards/48fdadab-af27-46d3-bcf6-35e7affb1e43"
+        "uri": "https://api.scryfall.com/cards/a7caaf39-8f16-4f1d-bee6-a45674306319"
       },
       {
         "object": "related_card",
@@ -1302,10 +1302,10 @@
     "faces": [],
     "image": "assets/cards/88c78601-87f0-45e7-b2e0-e7ffcfb1cb70.jpg",
     "backImage": null,
-    "printId": "e85f57c5-923a-4824-969e-53feddd78c3b",
-    "set": "totj",
-    "collectorNumber": "1",
-    "source": "https://scryfall.com/card/totj/1/copy?utm_source=api",
+    "printId": "f4e87a11-b3b1-47b2-bd73-f4c78d6fbe6c",
+    "set": "tmsc",
+    "collectorNumber": "17",
+    "source": "https://scryfall.com/card/tmsc/17/copy?utm_source=api",
     "rulings": [],
     "related": [
       {
@@ -1798,11 +1798,11 @@
       },
       {
         "object": "related_card",
-        "id": "1e7eed7b-722b-46fc-af99-d40a00f15849",
+        "id": "c39be5b1-b693-4b1b-b40b-8bf6d1fe986d",
         "component": "combo_piece",
         "name": "Three Steps Ahead",
         "type_line": "Instant",
-        "uri": "https://api.scryfall.com/cards/1e7eed7b-722b-46fc-af99-d40a00f15849"
+        "uri": "https://api.scryfall.com/cards/c39be5b1-b693-4b1b-b40b-8bf6d1fe986d"
       },
       {
         "object": "related_card",
@@ -2206,11 +2206,11 @@
       },
       {
         "object": "related_card",
-        "id": "816ee5e5-c833-437b-b031-1abd72269149",
+        "id": "3dfccb9c-e098-4f5b-817c-08403d0d27ef",
         "component": "combo_piece",
         "name": "Angel of Indemnity",
         "type_line": "Creature — Angel Warrior",
-        "uri": "https://api.scryfall.com/cards/816ee5e5-c833-437b-b031-1abd72269149"
+        "uri": "https://api.scryfall.com/cards/3dfccb9c-e098-4f5b-817c-08403d0d27ef"
       },
       {
         "object": "related_card",
@@ -2774,11 +2774,11 @@
       },
       {
         "object": "related_card",
-        "id": "0f020359-5ad1-43c4-8588-172be635cccc",
+        "id": "d9e8f74a-fb7d-4291-b3c0-72c1796f3c70",
         "component": "combo_piece",
         "name": "Impulsive Pilferer",
         "type_line": "Creature — Goblin Pirate",
-        "uri": "https://api.scryfall.com/cards/0f020359-5ad1-43c4-8588-172be635cccc"
+        "uri": "https://api.scryfall.com/cards/d9e8f74a-fb7d-4291-b3c0-72c1796f3c70"
       },
       {
         "object": "related_card",
@@ -2934,11 +2934,11 @@
       },
       {
         "object": "related_card",
-        "id": "e85f57c5-923a-4824-969e-53feddd78c3b",
+        "id": "f4e87a11-b3b1-47b2-bd73-f4c78d6fbe6c",
         "component": "token",
         "name": "Copy",
         "type_line": "Token",
-        "uri": "https://api.scryfall.com/cards/e85f57c5-923a-4824-969e-53feddd78c3b"
+        "uri": "https://api.scryfall.com/cards/f4e87a11-b3b1-47b2-bd73-f4c78d6fbe6c"
       },
       {
         "object": "related_card",
@@ -3054,11 +3054,11 @@
       },
       {
         "object": "related_card",
-        "id": "61fbf320-63e1-461e-9696-561a2d6f554a",
+        "id": "1083552e-8002-486d-b23c-93f2c317a6f9",
         "component": "combo_piece",
         "name": "Molten Duplication",
         "type_line": "Sorcery",
-        "uri": "https://api.scryfall.com/cards/61fbf320-63e1-461e-9696-561a2d6f554a"
+        "uri": "https://api.scryfall.com/cards/1083552e-8002-486d-b23c-93f2c317a6f9"
       },
       {
         "object": "related_card",
@@ -3094,11 +3094,11 @@
       },
       {
         "object": "related_card",
-        "id": "29db3d9f-d95e-4854-8ea6-7970877221d6",
+        "id": "54a5deb8-7439-40b2-84bc-95dbde805d22",
         "component": "combo_piece",
         "name": "Worldwalker Helm",
         "type_line": "Artifact",
-        "uri": "https://api.scryfall.com/cards/29db3d9f-d95e-4854-8ea6-7970877221d6"
+        "uri": "https://api.scryfall.com/cards/54a5deb8-7439-40b2-84bc-95dbde805d22"
       },
       {
         "object": "related_card",
@@ -3374,11 +3374,11 @@
       },
       {
         "object": "related_card",
-        "id": "373f199d-f1a6-4a3d-ac83-28741131f313",
+        "id": "7efdfa29-c7a0-4804-ba1f-f9e989e8d2aa",
         "component": "combo_piece",
         "name": "Scute Swarm",
         "type_line": "Creature — Insect",
-        "uri": "https://api.scryfall.com/cards/373f199d-f1a6-4a3d-ac83-28741131f313"
+        "uri": "https://api.scryfall.com/cards/7efdfa29-c7a0-4804-ba1f-f9e989e8d2aa"
       },
       {
         "object": "related_card",
@@ -3942,11 +3942,11 @@
       },
       {
         "object": "related_card",
-        "id": "07ca436a-e992-40a9-978a-501a82e443ed",
+        "id": "3ff26cbe-eb5d-444b-9de2-51dd85d0a492",
         "component": "combo_piece",
         "name": "Vaultborn Tyrant",
         "type_line": "Creature — Dinosaur",
-        "uri": "https://api.scryfall.com/cards/07ca436a-e992-40a9-978a-501a82e443ed"
+        "uri": "https://api.scryfall.com/cards/3ff26cbe-eb5d-444b-9de2-51dd85d0a492"
       },
       {
         "object": "related_card",
@@ -3966,11 +3966,11 @@
       },
       {
         "object": "related_card",
-        "id": "9f29858f-0833-461d-87ea-0059e9e1d5d4",
+        "id": "68c98a4a-d4fa-47ed-9e80-a41fe841ef4e",
         "component": "combo_piece",
         "name": "Calamity, Galloping Inferno",
         "type_line": "Legendary Creature — Horse Mount",
-        "uri": "https://api.scryfall.com/cards/9f29858f-0833-461d-87ea-0059e9e1d5d4"
+        "uri": "https://api.scryfall.com/cards/68c98a4a-d4fa-47ed-9e80-a41fe841ef4e"
       },
       {
         "object": "related_card",
@@ -5356,10 +5356,10 @@
     "faces": [],
     "image": "assets/cards/a468338f-635e-4206-89d6-72d723071d45.jpg",
     "backImage": null,
-    "printId": "95a625ba-330c-4677-a9b3-9c471225b204",
-    "set": "tmoc",
-    "collectorNumber": "35",
-    "source": "https://scryfall.com/card/tmoc/35/food?utm_source=api",
+    "printId": "261aed78-2d57-4ed4-b3d2-53b139b6bd44",
+    "set": "teld",
+    "collectorNumber": "18",
+    "source": "https://scryfall.com/card/teld/18/food?utm_source=api",
     "rulings": [],
     "related": [
       {
@@ -5460,11 +5460,11 @@
       },
       {
         "object": "related_card",
-        "id": "198be33b-d6d1-4c96-bdfa-4b4098079042",
+        "id": "2688ac16-4ed6-4e79-815a-be173deb4603",
         "component": "combo_piece",
         "name": "Trail of Crumbs",
         "type_line": "Enchantment",
-        "uri": "https://api.scryfall.com/cards/198be33b-d6d1-4c96-bdfa-4b4098079042"
+        "uri": "https://api.scryfall.com/cards/2688ac16-4ed6-4e79-815a-be173deb4603"
       },
       {
         "object": "related_card",
@@ -5476,11 +5476,11 @@
       },
       {
         "object": "related_card",
-        "id": "2ab0e660-86a3-4b92-82fa-77dcb5db947d",
+        "id": "42a4d090-1bb7-4334-ab22-e2527391e79b",
         "component": "combo_piece",
         "name": "Bake into a Pie",
         "type_line": "Instant",
-        "uri": "https://api.scryfall.com/cards/2ab0e660-86a3-4b92-82fa-77dcb5db947d"
+        "uri": "https://api.scryfall.com/cards/42a4d090-1bb7-4334-ab22-e2527391e79b"
       },
       {
         "object": "related_card",
@@ -5540,11 +5540,11 @@
       },
       {
         "object": "related_card",
-        "id": "afec640e-2695-429f-82b3-61c2387e6f1e",
+        "id": "867e245b-6153-479c-9e09-682afb017ff3",
         "component": "combo_piece",
         "name": "Gluttonous Troll",
         "type_line": "Creature — Troll",
-        "uri": "https://api.scryfall.com/cards/afec640e-2695-429f-82b3-61c2387e6f1e"
+        "uri": "https://api.scryfall.com/cards/867e245b-6153-479c-9e09-682afb017ff3"
       },
       {
         "object": "related_card",
@@ -5628,11 +5628,11 @@
       },
       {
         "object": "related_card",
-        "id": "b6d3bff2-9d08-4774-909a-bac0ae6245df",
+        "id": "1de43c67-7dfe-4282-b433-4e394366d2e9",
         "component": "combo_piece",
         "name": "Bartered Cow",
         "type_line": "Creature — Ox",
-        "uri": "https://api.scryfall.com/cards/b6d3bff2-9d08-4774-909a-bac0ae6245df"
+        "uri": "https://api.scryfall.com/cards/1de43c67-7dfe-4282-b433-4e394366d2e9"
       },
       {
         "object": "related_card",
@@ -5668,11 +5668,11 @@
       },
       {
         "object": "related_card",
-        "id": "6d284306-3365-45b4-8539-c2af7b3e16c4",
+        "id": "40383646-3fc4-4267-b9ad-bf90a85972fc",
         "component": "combo_piece",
         "name": "Giant Opportunity",
         "type_line": "Sorcery",
-        "uri": "https://api.scryfall.com/cards/6d284306-3365-45b4-8539-c2af7b3e16c4"
+        "uri": "https://api.scryfall.com/cards/40383646-3fc4-4267-b9ad-bf90a85972fc"
       },
       {
         "object": "related_card",
@@ -5836,11 +5836,11 @@
       },
       {
         "object": "related_card",
-        "id": "2285b3a3-782e-4acd-bf32-cb116c27b883",
+        "id": "15c98441-2b31-4e48-a399-f36dffcfa41d",
         "component": "combo_piece",
         "name": "Savvy Hunter",
         "type_line": "Creature — Human Warrior",
-        "uri": "https://api.scryfall.com/cards/2285b3a3-782e-4acd-bf32-cb116c27b883"
+        "uri": "https://api.scryfall.com/cards/15c98441-2b31-4e48-a399-f36dffcfa41d"
       },
       {
         "object": "related_card",
@@ -5852,11 +5852,11 @@
       },
       {
         "object": "related_card",
-        "id": "016b0750-d48d-4b6e-ac9c-a7904371a914",
+        "id": "acbb9670-5e79-4f19-b4bc-afbbe130d122",
         "component": "combo_piece",
         "name": "Oko, Thief of Crowns",
         "type_line": "Legendary Planeswalker — Oko",
-        "uri": "https://api.scryfall.com/cards/016b0750-d48d-4b6e-ac9c-a7904371a914"
+        "uri": "https://api.scryfall.com/cards/acbb9670-5e79-4f19-b4bc-afbbe130d122"
       },
       {
         "object": "related_card",
@@ -5988,11 +5988,11 @@
       },
       {
         "object": "related_card",
-        "id": "8adbd4a5-3171-495a-a540-0ecf280b77fc",
+        "id": "8b217e5a-3c18-48b4-8124-b8c4fd7b2df1",
         "component": "combo_piece",
         "name": "Tempting Witch",
         "type_line": "Creature — Human Warlock",
-        "uri": "https://api.scryfall.com/cards/8adbd4a5-3171-495a-a540-0ecf280b77fc"
+        "uri": "https://api.scryfall.com/cards/8b217e5a-3c18-48b4-8124-b8c4fd7b2df1"
       },
       {
         "object": "related_card",
@@ -6084,11 +6084,11 @@
       },
       {
         "object": "related_card",
-        "id": "1546013b-89d7-46b8-bfcb-9d150a50499f",
+        "id": "04ef8493-d986-45f8-a718-617b028f7ad4",
         "component": "combo_piece",
         "name": "Witch's Oven",
         "type_line": "Artifact",
-        "uri": "https://api.scryfall.com/cards/1546013b-89d7-46b8-bfcb-9d150a50499f"
+        "uri": "https://api.scryfall.com/cards/04ef8493-d986-45f8-a718-617b028f7ad4"
       },
       {
         "object": "related_card",
@@ -6140,11 +6140,11 @@
       },
       {
         "object": "related_card",
-        "id": "95a625ba-330c-4677-a9b3-9c471225b204",
+        "id": "261aed78-2d57-4ed4-b3d2-53b139b6bd44",
         "component": "token",
         "name": "Food",
         "type_line": "Token Artifact — Food",
-        "uri": "https://api.scryfall.com/cards/95a625ba-330c-4677-a9b3-9c471225b204"
+        "uri": "https://api.scryfall.com/cards/261aed78-2d57-4ed4-b3d2-53b139b6bd44"
       },
       {
         "object": "related_card",
@@ -6188,11 +6188,11 @@
       },
       {
         "object": "related_card",
-        "id": "a1e048e0-19d2-4076-892d-f8b3104dee37",
+        "id": "6d2e2e8d-8382-4d98-9e25-2dff1b1d0ff8",
         "component": "combo_piece",
         "name": "Tireless Provisioner",
         "type_line": "Creature — Elf Scout",
-        "uri": "https://api.scryfall.com/cards/a1e048e0-19d2-4076-892d-f8b3104dee37"
+        "uri": "https://api.scryfall.com/cards/6d2e2e8d-8382-4d98-9e25-2dff1b1d0ff8"
       },
       {
         "object": "related_card",
@@ -6220,11 +6220,11 @@
       },
       {
         "object": "related_card",
-        "id": "207788a7-c6aa-4aad-b2d1-f1b20355ae7b",
+        "id": "d63a6be2-ae9a-4758-9d5c-0297ef9af57c",
         "component": "combo_piece",
         "name": "Fierce Witchstalker",
         "type_line": "Creature — Wolf",
-        "uri": "https://api.scryfall.com/cards/207788a7-c6aa-4aad-b2d1-f1b20355ae7b"
+        "uri": "https://api.scryfall.com/cards/d63a6be2-ae9a-4758-9d5c-0297ef9af57c"
       },
       {
         "object": "related_card",
@@ -6452,11 +6452,11 @@
       },
       {
         "object": "related_card",
-        "id": "4f8ca405-f3e2-4efd-9f31-2acc44fefc1b",
+        "id": "8a20f78f-32c6-4ba4-8389-1fde32ea42e4",
         "component": "combo_piece",
         "name": "Curious Pair // Treats to Share",
         "type_line": "Creature — Human Peasant // Sorcery — Adventure",
-        "uri": "https://api.scryfall.com/cards/4f8ca405-f3e2-4efd-9f31-2acc44fefc1b"
+        "uri": "https://api.scryfall.com/cards/8a20f78f-32c6-4ba4-8389-1fde32ea42e4"
       },
       {
         "object": "related_card",
@@ -6516,11 +6516,11 @@
       },
       {
         "object": "related_card",
-        "id": "58b98563-88b6-49a1-b467-a24e7a985f72",
+        "id": "98ce113c-53da-4fab-b7c9-fc3df248b65e",
         "component": "combo_piece",
         "name": "Fortifying Provisions",
         "type_line": "Enchantment",
-        "uri": "https://api.scryfall.com/cards/58b98563-88b6-49a1-b467-a24e7a985f72"
+        "uri": "https://api.scryfall.com/cards/98ce113c-53da-4fab-b7c9-fc3df248b65e"
       },
       {
         "object": "related_card",
@@ -6532,19 +6532,19 @@
       },
       {
         "object": "related_card",
-        "id": "8ecc97f2-0d24-4ea7-b10e-26b61357711d",
+        "id": "66bd70d4-4cdd-4b92-8792-2a225bc69d1c",
         "component": "combo_piece",
         "name": "Gilded Goose",
         "type_line": "Creature — Bird",
-        "uri": "https://api.scryfall.com/cards/8ecc97f2-0d24-4ea7-b10e-26b61357711d"
+        "uri": "https://api.scryfall.com/cards/66bd70d4-4cdd-4b92-8792-2a225bc69d1c"
       },
       {
         "object": "related_card",
-        "id": "f9c55add-d621-4477-95ec-f2b691c0bdae",
+        "id": "545f6d3a-5101-407c-acde-168c5097d866",
         "component": "combo_piece",
         "name": "Academy Manufactor",
         "type_line": "Artifact Creature — Assembly-Worker",
-        "uri": "https://api.scryfall.com/cards/f9c55add-d621-4477-95ec-f2b691c0bdae"
+        "uri": "https://api.scryfall.com/cards/545f6d3a-5101-407c-acde-168c5097d866"
       },
       {
         "object": "related_card",
@@ -6564,11 +6564,11 @@
       },
       {
         "object": "related_card",
-        "id": "a4e52634-8502-4b72-950d-eb4c2f6b3bc4",
+        "id": "851066e5-d5f2-4e53-8b88-487441a77548",
         "component": "combo_piece",
         "name": "Taste of Death",
         "type_line": "Sorcery",
-        "uri": "https://api.scryfall.com/cards/a4e52634-8502-4b72-950d-eb4c2f6b3bc4"
+        "uri": "https://api.scryfall.com/cards/851066e5-d5f2-4e53-8b88-487441a77548"
       },
       {
         "object": "related_card",
@@ -6596,11 +6596,11 @@
       },
       {
         "object": "related_card",
-        "id": "3b583cc8-95e6-4772-afe3-d405b65836e0",
+        "id": "b11f5296-5f7d-41ca-a67d-e976273d7386",
         "component": "combo_piece",
         "name": "Gingerbread Cabin",
         "type_line": "Land — Forest",
-        "uri": "https://api.scryfall.com/cards/3b583cc8-95e6-4772-afe3-d405b65836e0"
+        "uri": "https://api.scryfall.com/cards/b11f5296-5f7d-41ca-a67d-e976273d7386"
       },
       {
         "object": "related_card",
@@ -8829,10 +8829,10 @@
     "faces": [],
     "image": "assets/cards/bf690282-125f-431c-a363-39f6772324c8.jpg",
     "backImage": null,
-    "printId": "9d54ed64-573d-45cc-9d5c-94c5d0fc88ec",
-    "set": "sld",
-    "collectorNumber": "2101",
-    "source": "https://scryfall.com/card/sld/2101/myr?utm_source=api",
+    "printId": "cf455c08-adf5-486b-9661-d6c0099afce3",
+    "set": "ttdc",
+    "collectorNumber": "30",
+    "source": "https://scryfall.com/card/ttdc/30/myr?utm_source=api",
     "rulings": [],
     "related": [
       {
@@ -8893,19 +8893,19 @@
       },
       {
         "object": "related_card",
-        "id": "9d54ed64-573d-45cc-9d5c-94c5d0fc88ec",
+        "id": "cf455c08-adf5-486b-9661-d6c0099afce3",
         "component": "token",
         "name": "Myr",
         "type_line": "Token Artifact Creature — Myr",
-        "uri": "https://api.scryfall.com/cards/9d54ed64-573d-45cc-9d5c-94c5d0fc88ec"
+        "uri": "https://api.scryfall.com/cards/cf455c08-adf5-486b-9661-d6c0099afce3"
       },
       {
         "object": "related_card",
-        "id": "0db4cf09-8cf0-4aa7-8bfe-fe600352032d",
+        "id": "71e7ef4a-2032-4571-afc6-5207d4b40c3d",
         "component": "combo_piece",
         "name": "Myr Battlesphere",
         "type_line": "Artifact Creature — Myr Construct",
-        "uri": "https://api.scryfall.com/cards/0db4cf09-8cf0-4aa7-8bfe-fe600352032d"
+        "uri": "https://api.scryfall.com/cards/71e7ef4a-2032-4571-afc6-5207d4b40c3d"
       },
       {
         "object": "related_card",
@@ -13763,10 +13763,10 @@
     "faces": [],
     "image": "assets/cards/3c549374-6c37-42e0-8d88-a8555d46732d.jpg",
     "backImage": null,
-    "printId": "1728ad2d-c8a6-49e4-85bb-29934fa26208",
-    "set": "tmom",
-    "collectorNumber": "21",
-    "source": "https://scryfall.com/card/tmom/21/treasure?utm_source=api",
+    "printId": "d1892b78-7663-4cbd-a732-9a4b0b18d4c8",
+    "set": "thob",
+    "collectorNumber": "13",
+    "source": "https://scryfall.com/card/thob/13/treasure?utm_source=api",
     "rulings": [],
     "related": [
       {
@@ -14067,11 +14067,11 @@
       },
       {
         "object": "related_card",
-        "id": "6c2d70d2-8759-4b0e-aa39-ac4f73a766e3",
+        "id": "7c3aeedd-d41b-44c9-9b0a-e5952202f632",
         "component": "combo_piece",
         "name": "Captain Lannery Storm",
         "type_line": "Legendary Creature — Human Pirate",
-        "uri": "https://api.scryfall.com/cards/6c2d70d2-8759-4b0e-aa39-ac4f73a766e3"
+        "uri": "https://api.scryfall.com/cards/7c3aeedd-d41b-44c9-9b0a-e5952202f632"
       },
       {
         "object": "related_card",
@@ -14307,11 +14307,11 @@
       },
       {
         "object": "related_card",
-        "id": "fae3bf4a-a732-48aa-a1a4-7e5fd007774c",
+        "id": "a71d1ec3-2d7a-4749-8936-8bf7a8b83d84",
         "component": "combo_piece",
         "name": "Ragavan, Nimble Pilferer",
         "type_line": "Legendary Creature — Monkey Pirate",
-        "uri": "https://api.scryfall.com/cards/fae3bf4a-a732-48aa-a1a4-7e5fd007774c"
+        "uri": "https://api.scryfall.com/cards/a71d1ec3-2d7a-4749-8936-8bf7a8b83d84"
       },
       {
         "object": "related_card",
@@ -14363,11 +14363,11 @@
       },
       {
         "object": "related_card",
-        "id": "1728ad2d-c8a6-49e4-85bb-29934fa26208",
+        "id": "d1892b78-7663-4cbd-a732-9a4b0b18d4c8",
         "component": "token",
         "name": "Treasure",
         "type_line": "Token Artifact — Treasure",
-        "uri": "https://api.scryfall.com/cards/1728ad2d-c8a6-49e4-85bb-29934fa26208"
+        "uri": "https://api.scryfall.com/cards/d1892b78-7663-4cbd-a732-9a4b0b18d4c8"
       },
       {
         "object": "related_card",
@@ -14827,11 +14827,11 @@
       },
       {
         "object": "related_card",
-        "id": "6cfe5398-88e1-4106-9223-80bda0cd2e9a",
+        "id": "84ff997f-4852-4533-af06-fef596337496",
         "component": "combo_piece",
         "name": "Brass's Bounty",
         "type_line": "Sorcery",
-        "uri": "https://api.scryfall.com/cards/6cfe5398-88e1-4106-9223-80bda0cd2e9a"
+        "uri": "https://api.scryfall.com/cards/84ff997f-4852-4533-af06-fef596337496"
       },
       {
         "object": "related_card",
@@ -15723,11 +15723,11 @@
       },
       {
         "object": "related_card",
-        "id": "a1e048e0-19d2-4076-892d-f8b3104dee37",
+        "id": "6d2e2e8d-8382-4d98-9e25-2dff1b1d0ff8",
         "component": "combo_piece",
         "name": "Tireless Provisioner",
         "type_line": "Creature — Elf Scout",
-        "uri": "https://api.scryfall.com/cards/a1e048e0-19d2-4076-892d-f8b3104dee37"
+        "uri": "https://api.scryfall.com/cards/6d2e2e8d-8382-4d98-9e25-2dff1b1d0ff8"
       },
       {
         "object": "related_card",
@@ -16579,11 +16579,11 @@
       },
       {
         "object": "related_card",
-        "id": "f9c55add-d621-4477-95ec-f2b691c0bdae",
+        "id": "545f6d3a-5101-407c-acde-168c5097d866",
         "component": "combo_piece",
         "name": "Academy Manufactor",
         "type_line": "Artifact Creature — Assembly-Worker",
-        "uri": "https://api.scryfall.com/cards/f9c55add-d621-4477-95ec-f2b691c0bdae"
+        "uri": "https://api.scryfall.com/cards/545f6d3a-5101-407c-acde-168c5097d866"
       },
       {
         "object": "related_card",
@@ -17397,10 +17397,10 @@
     "faces": [],
     "image": "assets/cards/759406d7-44ae-4260-9ef5-3bb2c92f751a.jpg",
     "backImage": null,
-    "printId": "40a01679-3224-427e-bd1d-b797b0ab68b7",
-    "set": "bro",
-    "collectorNumber": "238b",
-    "source": "https://scryfall.com/card/bro/238b/urza-planeswalker?utm_source=api",
+    "printId": "7e44b30f-aed6-47af-8b6c-0669c644e46f",
+    "set": "pbro",
+    "collectorNumber": "238bs",
+    "source": "https://scryfall.com/card/pbro/238bs/urza-planeswalker?utm_source=api",
     "rulings": [
       {
         "object": "ruling",
@@ -17491,27 +17491,27 @@
       },
       {
         "object": "related_card",
-        "id": "40a01679-3224-427e-bd1d-b797b0ab68b7",
+        "id": "7e44b30f-aed6-47af-8b6c-0669c644e46f",
         "component": "meld_result",
         "name": "Urza, Planeswalker",
         "type_line": "Legendary Planeswalker — Urza",
-        "uri": "https://api.scryfall.com/cards/40a01679-3224-427e-bd1d-b797b0ab68b7"
+        "uri": "https://api.scryfall.com/cards/7e44b30f-aed6-47af-8b6c-0669c644e46f"
       },
       {
         "object": "related_card",
-        "id": "02aea379-b444-46a3-82f4-3038f698d4f4",
+        "id": "bc8cfad0-78e8-4a8b-b8cb-cd4a5eeade24",
         "component": "meld_part",
         "name": "The Mightstone and Weakstone",
         "type_line": "Legendary Artifact — Powerstone",
-        "uri": "https://api.scryfall.com/cards/02aea379-b444-46a3-82f4-3038f698d4f4"
+        "uri": "https://api.scryfall.com/cards/bc8cfad0-78e8-4a8b-b8cb-cd4a5eeade24"
       },
       {
         "object": "related_card",
-        "id": "8aefe8bd-216a-4ec1-9362-3f9dbf7fd083",
+        "id": "600259ab-2bb7-4e09-b957-b07dbd37a521",
         "component": "meld_part",
         "name": "Urza, Lord Protector",
         "type_line": "Legendary Creature — Human Artificer",
-        "uri": "https://api.scryfall.com/cards/8aefe8bd-216a-4ec1-9362-3f9dbf7fd083"
+        "uri": "https://api.scryfall.com/cards/600259ab-2bb7-4e09-b957-b07dbd37a521"
       }
     ],
     "metadataStatus": "canonical",
