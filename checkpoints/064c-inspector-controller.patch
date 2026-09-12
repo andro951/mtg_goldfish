@@ -1,0 +1,40 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -160,7 +205,18 @@
+  if(action==='fit')return fit(el.dataset.zone);if(action==='arrange')return arrange();
+  if(action==='select-mode'){ui.selectMode=!ui.selectMode;if(!ui.selectMode)ui.selected.clear();render();return;}
+  if(action==='cast')return run({type:g.characteristics(id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id});
+- if(action==='ability')return run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});if(action==='plot')return run({type:'SPECIAL_ACTION',id,special:'plot'});
++ if(action==='ability'){
++  const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
++  if(ui.inspected===id&&source&&ability)ui.inspectorActivation={origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor};
++  return run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
++ }
++ if(action==='revise-choice'){ui.modeBypass=draftIdentity();return run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});}
++ if(action==='mode-default'){
++  const key=el.dataset.modeKey,value=el.dataset.modeValue;prefs.modeDefaults||={};
++  if(value==='ASK')delete prefs.modeDefaults[key];else prefs.modeDefaults[key]=value;
++  savePreferences();render();return;
++ }
++ if(action==='plot')return run({type:'SPECIAL_ACTION',id,special:'plot'});
+  if(action==='cancel')return run({type:'CANCEL'});
+  if(action==='confirm-choice')return choose([...ui.choice]);if(action==='confirm-number')return choose(Number(byId('number-choice').value));
+  if(action==='suggest-payment'){ui.paymentEdited=false;ui.payment=suggestPayment(g.state.pending.cost,g.state.players[g.state.pending.player||0],g.state.pending.context)||{normal:{},tagged:[]};render();return;}
+@@ -169,7 +225,7 @@
+  if(action==='option'){const p=g.state.pending,value=choiceOptions(p)[Number(el.dataset.option)].value;if((p.max||1)>1){ui.choice=ui.choice.includes(value)?ui.choice.filter(v=>v!==value):[...ui.choice,value];render();return;}return choose(value);}
+  if(action==='order'){const from=Number(el.dataset.index),to=from+Number(el.dataset.direction);if(to>=0&&to<ui.choice.length)[ui.choice[from],ui.choice[to]]=[ui.choice[to],ui.choice[from]];render();return;}
+  if(action==='stack-inspect'){const entries=[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])],entry=entries.find(v=>v.id===el.dataset.stackId);if(!entry)return;
+- const source=g.object(entry.source);ui.inspected=source?.id||null;ui.inspectDefinition=source?null:entry.sourceCardId;ui.stackLabel=entry.label;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();return;}
++ const source=g.object(entry.source);ui.inspected=source?.id||null;ui.inspectDefinition=source?null:entry.sourceCardId;ui.inspectOrigin=source?inspectorOrigin(source.id):null;ui.inspectorActivation=null;ui.stackLabel=entry.label;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();return;}
+  if(action==='note'){const text=ui.noteText;ui.noteText='';const result=run({type:'NOTE',text});if(!result.ok)ui.noteText=text;renderModal();return;}
+  if(action==='start-new'){ui.seed=byId('new-seed').value.trim()||newSeed();const report=auditDeck();if(!report.accepted){ui.modal='deck';renderModal();return toast('The deck needs attention before starting.',true);}useEngine(newEngine(Engine.create(registry,report.records,ui.seed)));toast('New seeded test.');return;}
+  if(action==='start-lab'){useEngine(newEngine(createLab(registry,data.pool,el.dataset.lab)));fit('battlefield');return;}
+@@ -253,7 +309,7 @@
+ });
+ let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.0'};
++window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.1'};
+ async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
+  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
+  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
