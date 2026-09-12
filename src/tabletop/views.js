@@ -42,7 +42,7 @@ export function inspectorPopup({g,ui,registry,prefs}){
   const c=o?g.characteristics(o):d,mod=o?g.module(o):registry.module(d.id);
   const abilities=o?g.abilities(o):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
   const waiting=!!g.state.pending,payment=['payment','effectPayment'].includes(g.state.pending?.kind);
-  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div>${o?modePolicies(g,o,prefs):''}<details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}`;
+  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div>${o?modePolicies(g,o,prefs):''}<details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}${o?playerPolicies(g,o,prefs,ui):''}`;
   return floating('inspector',d.name,body,tool('close','close-inspector'),'inspector-window');
 }
 function modePolicies(g,o,prefs){
@@ -56,19 +56,39 @@ function optionalPolicies(g,o){
   if(!keys.length)return '';
   return `<details class="policies"><summary>Optional effects</summary>${keys.map(k=>{const key=`${o.copy?.rulesId||o.cardId}/${k.id}`,value=g.state.optionalPreferences[key]||(k.token?'Treasure':'ASK');return `<label>${h(k.label)}<select data-policy="${h(key)}">${(k.token?['ASK','Treasure','Food']:['ASK','YES','NO']).map(v=>`<option ${v===value?'selected':''}>${v}</option>`).join('')}</select></label>`;}).join('')}</details>`;
 }
+function playerPolicies(g,o,prefs,ui){
+ const context=g.context(o),definitions=[...(g.module(o).activated||[]),...(g.module(o).triggers||[])];
+ const rows=[];
+ for(const d of definitions){let specs=[];try{specs=typeof d.inputs==='function'?d.inputs(g,o,context):d.inputs||[];}catch{}
+  for(const spec of specs.filter(s=>s.type==='player')){
+   const key=`${context.sourceCardId}/${d.id}/${spec.key}`,value=prefs.playerDefaults?.[key];
+   rows.push(`<div class="player-policy"><small>${h(d.label||d.id)} — target player</small><div class="mode-pref-buttons">${[['ASK','Ask'],[0,'You'],[1,'OP1'],[2,'OP2'],[3,'OP3'],['ONCE','Choose once']].map(([v,label])=>button(label,'player-default',`data-player-key="${h(key)}" data-player-value="${v}" title="${v==='ONCE'?'Ignore the saved player for the next activation only':'Default target: '+label}"`,(v==='ASK'?value==null:v==='ONCE'?ui.askOnce?.[key]:value===v)?'active':'')).join('')}</div></div>`);
+  }
+ }
+ return rows.length?`<div class="player-policies">${rows.join('')}</div>`:'';
+}
 export function decisionPopup(ctx){
-  const p=ctx.g.state.pending;if(!p)return '';
-  if(isManaColorChoice(p))return manaChoiceHTML(p);
-  const draft=ctx.g.state.actionDraft,definition=draft?ctx.g.draftDefinition(draft):null,mode=definition?.modePreference;
-  const revise=draft&&p.kind==='draft'&&mode&&p.key!==mode.key&&Object.hasOwn(draft.context.inputs,mode.key)
+ const p=ctx.g.state.pending;if(!p)return '';
+ if(isManaColorChoice(p))return manaChoiceHTML(p);
+ const draft=ctx.g.state.actionDraft,definition=draft?ctx.g.draftDefinition(draft):null,mode=definition?.modePreference;
+ let revise=draft&&p.kind==='draft'&&mode&&p.key!==mode.key&&Object.hasOwn(draft.context.inputs,mode.key)
     ?button('Modes','revise-choice',`data-key="${h(mode.key)}" title="Choose a different mode for this trigger only"`,'quiet'):'';
-  return floating('decision',p.label,decisionHTML(ctx),revise+tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window');
+ if(draft&&p.kind==='draft')for(const spec of ctx.g.inputSpecs(draft))if(spec.type==='player'&&p.key!==spec.key&&Object.hasOwn(draft.context.inputs,spec.key))revise+=button('Player','revise-choice',`data-key="${h(spec.key)}" title="Choose another player this time"`,'quiet');
+ let body;
+ if(p.ordered){
+  const options=p.options||[];
+  body=`<p class="muted">First row resolves first. Drag rows or use the arrows.</p><div class="ordered-list" data-scroll="ordered">${ctx.ui.choice.map((id,i)=>`<div class="choice-row" draggable="true" data-order-id="${h(id)}"><span class="order-grip" title="Drag to reorder">⠿</span><span class="ordinal">${i+1}</span><span class="order-label">${h(options.find(o=>o.value===id)?.label||ctx.g.definition(id).name)}</span>${button('⇈','order-edge',`data-index="${i}" data-edge="top" title="Move to top" aria-label="Move item ${i+1} to top" ${i===0?'disabled':''}`)}${button('↑','order',`data-index="${i}" data-direction="-1" aria-label="Move item ${i+1} earlier" ${i===0?'disabled':''}`)}${button('↓','order',`data-index="${i}" data-direction="1" aria-label="Move item ${i+1} later" ${i===ctx.ui.choice.length-1?'disabled':''}`)}${button('⇊','order-edge',`data-index="${i}" data-edge="bottom" title="Move to bottom" aria-label="Move item ${i+1} to bottom" ${i===ctx.ui.choice.length-1?'disabled':''}`)}</div>`).join('')}</div><div class="order-footer">${button('Confirm resolution order','confirm-choice','','primary')}</div>`;
+ }else body=decisionHTML(ctx);
+ if(!p.ordered&&(p.candidates||p.ids))body+=`<label class="auto-accept"><input type="checkbox" data-auto-accept ${ctx.prefs.autoAccept?'checked':''}> Auto-accept completed selections</label>`;
+ let html=floating('decision',p.label,body,revise+tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window'+(p.ordered?' ordering-window':''));
+ if(p.ordered)html=html.replace('data-floating="decision"','data-floating="decision" data-resizable="true"').replace('</section>','<div class="popup-resize" data-resize-popup="decision" title="Resize ordering window" role="separator" aria-label="Resize ordering window" tabindex="0"></div></section>');
+ return html;
 }
 export function openingPopup({g}){
   if(g.state.started||g.state.pending)return '';
   return `<section class="opening-prompt" aria-label="Opening hand"><span>Opening hand${g.state.mulligans?' · mulligan '+g.state.mulligans:''}</span>${button('Mulligan','mulligan')}${button('Keep','keep','','primary')}</section>`;
 }
 export function menuBody({g,saveStatus}){
-  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck editor','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide']];
+  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck editor','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide'],['Sequences','sequences'],['Automations','automation']];
   return `<div class="app-menu-grid">${items.map(([label,name])=>button(label,'dialog',`data-dialog="${name}"`)).join('')}</div><div class="menu-undo">${button('Undo','undo',!g.cursor&&!g.transaction?'disabled':'')}${button('Redo','redo',g.cursor>=g.history.length||g.transaction?'disabled':'')}<small>Backspace: undo · Esc: cancel</small></div><label class="menu-preference"><input type="checkbox" data-setting="holdPriority" ${g.state.settings.holdPriority?'checked':''}> Hold priority</label><p class="save-status ${saveStatus.error?'error':''}" id="save-status">${h(saveStatus.text)}</p>`;
 }
