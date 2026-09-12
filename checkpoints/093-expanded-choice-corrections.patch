@@ -1,0 +1,19 @@
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -64,3 +64,6 @@
+       case 'call': {
+         const handler = this.registry.handlers.get(command.handler); requireRule(handler, `Missing effect handler ${command.handler}.`);
++        // Nested effect programs retain their variable references until they run.
++        // Resolving them here would erase choices produced by earlier branch steps.
++        for (const key of ['then', 'else', 'program']) if (command[key]) cmd[key] = clone(command[key]);
+         const result = handler(this, context, cmd);
+@@ -226,3 +229,4 @@
+     if (cmd.options) {
+       spec = { key, type: cmd.type || 'option', label: cmd.label, options: cmd.options, min: cmd.min ?? 1, max: cmd.max ?? 1, ordered: !!cmd.ordered };
++      if (!spec.options.length || spec.max === 0) { context.vars[key] = []; this.record('EMPTY_SELECTION', { key }); return; }
+     } else {
+--- a/src/rules/expanded-artifacts.js
++++ b/src/rules/expanded-artifacts.js
+@@ -36 +36 @@
+- register(registry,'Slagstone Refinery',{triggers:[{id:'powerstone',label:'Create a tapped Powerstone',event:'LEAVE',lookBack:true,test:(g,s,e)=>e.change.lki.controller===s.controller&&!e.change.lki.token&&e.change.lki.characteristics.types.includes('Artifact')&&['graveyard','exile'].includes(e.change.to),effect:()=>[{op:'token',card:'Powerstone',options:{tapped:true}}]}]});
++ register(registry,'Slagstone Refinery',{triggers:[{id:'powerstone',label:'Create a tapped Powerstone',event:'LEAVE',lookBack:true,test:(g,s,e)=>e.change.lki.controller===s.controller&&(sameRef(s,e.change.beforeRef)||!e.change.lki.token)&&e.change.lki.characteristics.types.includes('Artifact')&&['graveyard','exile'].includes(e.change.to),effect:()=>[{op:'token',card:'Powerstone',options:{tapped:true}}]}]});
