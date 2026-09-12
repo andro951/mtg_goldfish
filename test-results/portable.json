@@ -1,0 +1,18 @@
+{
+  "mode": "isolated single-file Chromium with offline networking",
+  "checksPassed": 8,
+  "checks": [
+    "portable folder contains only the delivered HTML",
+    "single file starts while browser is offline",
+    "all 175 local images are embedded",
+    "every embedded image decodes successfully",
+    "portable UI records a real game action offline",
+    "portable file restores its saved game after reload",
+    "portable source never stores embedded image bytes in game state",
+    "portable game has no external network requests"
+  ],
+  "failures": [],
+  "browserErrors": [],
+  "externalRequests": [],
+  "skipped": []
+}

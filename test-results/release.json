@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "version": "1.0.0",
+  "engineTestsPassed": 430,
+  "browserChecksPassed": 77,
+  "portableChecksPassed": 8,
+  "failedOrSkippedChecks": 0,
+  "candidateCards": 160,
+  "localDefinitions": 175,
+  "verifiedLocalImages": 175,
+  "reproducibleBuilds": [
+    {
+      "path": "index.html",
+      "bytes": 913922,
+      "sha256": "703734d50b166077c082e9633485ac935c16e2f5c5969c5c3e6f1f3d4a6bb91b"
+    },
+    {
+      "path": "Astra-standalone.html",
+      "bytes": 23304762,
+      "sha256": "eb74e6315dd5f981c64876ffb4021cc8584d82ea1bbbed26cc2815f36b791f7e"
+    }
+  ],
+  "archive": "dist/AstraSimulator.zip",
+  "scope": "supplied-pool goldfish; abstract opponents and user-assisted blocking/combat damage"
+}
