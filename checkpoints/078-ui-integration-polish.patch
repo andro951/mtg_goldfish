@@ -1,0 +1,56 @@
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -66,3 +66,3 @@
+       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
+-      for (const update of updates) {
++      for (const [slot, update] of updates.entries()) {
+         const object = this.object(update.id);
+@@ -70,3 +70,3 @@
+         requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
+-        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot: updates.indexOf(update)} : {}) };
++        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot} : {}) };
+       }
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -9,3 +9,3 @@
+ import { choiceOptions } from '../ui/views.js';
+-import { toolbar, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
++import { toolbar, programControls, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
+ import { dialogs } from './dialogs.js';
+@@ -28,3 +28,9 @@
+ let programRender=0,modalRendering=false;
+-const programs=createProgramController({get g(){return g;},toast,changed(){prefs.savedPrograms=futurePrograms(programs.model);savePreferences();if(!programRender)programRender=requestAnimationFrame(()=>{programRender=0;if(g&&!ui.gestureActive)render();});}});
++const programs=createProgramController({get g(){return g;},toast,changed(configuration=true){
++ if(configuration){prefs.savedPrograms=futurePrograms(programs.model);savePreferences();}else scheduleSave();
++ if(!programRender)programRender=requestAnimationFrame(()=>{programRender=0;if(!g)return;
++  const controls=document.querySelector('.program-tools');if(controls)controls.innerHTML=programControls(ctx());
++  if(['sequences','automation'].includes(ui.modal)&&!document.activeElement?.closest('input,select,textarea'))renderModal();
++ });
++}});
+ const ctx=()=>({g,ui,prefs,registry,saveStatus,programs}),byId=id=>document.getElementById(id);
+@@ -38,6 +44,6 @@
+ function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
+-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
++function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+ function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
+ function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
+-function prepareChoice(){const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
++function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
+  if(key!==ui.pendingKey){ui.pendingKey=key;ui.choiceFilter='';ui.choice=p?.ordered?[...(p.candidates||choiceOptions(p).map(o=>o.value))]:[];ui.number=p?.min||0;ui.paymentEdited=false;}
+@@ -78,3 +84,3 @@
+   if(!sourceCardId)return null;
+-  const field=player?pending.key:meta.key,key=`${sourceCardId}/${definition.id}/${field}`;
++  const field=player?pending.key:meta.key,key=`${sourceCardId}/${definition.id||'spell'}/${field}`;
+   return {key,meta:player?{key:field}:meta,player,identity:draftIdentity(draft)};
+@@ -196,3 +202,6 @@
+  if(added&&prefs.autoAccept&&(ui.choice.length===(p.max||1)||p.minTotalPower!=null)){
+-   try{g.validateInput(p,ui.choice,g.state.actionDraft?.context||g.state.resolving?.context||{});choose([...ui.choice]);}catch{}
++   try{
++     if(p.kind==='draft'||p.kind==='effectChoice')g.validateInput(p,ui.choice,g.state.actionDraft?.context||g.state.resolving?.context||{});
++     choose([...ui.choice]);
++   }catch{}
+  }
+@@ -395,2 +404,3 @@
+ document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement)e.target.parentElement.classList.add('image-failed');},true);
++document.addEventListener('submit',e=>{if(e.target.id==='rule-form'){e.preventDefault();e.target.querySelector('[data-action=rule-save]')?.click();}});
+ document.addEventListener('keydown',e=>{
