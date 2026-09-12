@@ -43,7 +43,7 @@ test('new tabletop defaults do not hold priority and enable reserve access',()=>
 });
 test('layout preferences validate geometry and survive round-trip storage',()=>{
  let text='';const storage={getItem:()=>text,setItem:(k,v)=>{text=v;}};
- const p=cleanPreferences({handHeight:230,sidebarWidth:115,dock:'graveyard',cameras:{battlefield:{zoom:.7,x:-100,y:50}},popups:{inspector:{x:60,y:70}}});
+ const p=cleanPreferences({handHeight:230,sidebarWidth:115,dock:'graveyard',cameras:{battlefield:{zoom:.7,x:-100,y:50}},popups:{inspector:{x:60,y:70}},modeDefaults:{'card/steer/mode':'untap'}});
  assert.equal(savePreferences(p,storage),true);assert.deepEqual(loadPreferences(storage),p);
  const hostile=cleanPreferences({handHeight:1e12,cameras:{battlefield:{x:Infinity,y:0,zoom:0}},dock:'invalid'});assert.equal(hostile.handHeight,400);assert.equal(hostile.dock,null);assert.equal(hostile.cameras.battlefield,undefined);
 });

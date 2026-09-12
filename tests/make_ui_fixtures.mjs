@@ -13,3 +13,6 @@ save('layers',{battlefield:['Ancient Den','Tree of Tales','Great Furnace','Seat 
 save('payments',{battlefield:['The Wandering Minstrel','Mox Amber','Mox Opal','Ancient Den','Razortide Bridge','Mana Vault',"Mishra's Workshop"],hand:['The One Ring','Walking Atlas'],graveyard:['Scroll Rack']});
 save('damaged-source',{battlefield:['Krark-Clan Ironworks','Ancient Den'],graveyard:['Mox Amber']});
 save('plot',{hand:['Pitiless Carnage'],battlefield:['Ancient Den']},{mana:{B:2,C:1}});
+
+save('inspector-actions',{battlefield:['Krark-Clan Ironworks','Ancient Den','Scene of the Crime','Walking Atlas']},{mana:{C:2}});
+save('raft-modes',{battlefield:['Elven Raft-Steerer','Walking Atlas','Azusa, Lost but Seeking',{name:'Krang, Master Mind',owner:1,controller:1}],hand:['Ancient Den','Tree of Tales']});

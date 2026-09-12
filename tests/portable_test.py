@@ -30,7 +30,7 @@ try:
         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
         page.goto(destination.as_uri())
         page.wait_for_function('() => window.astra?.engine')
-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.2.0')
+        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.2.1')
         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
         check('all 175 card images and the real Magic back are embedded', count == 176)
         image_report = page.evaluate('''async () => {

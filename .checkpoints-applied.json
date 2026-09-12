@@ -37,5 +37,7 @@
   "checkpoints/063-inspector-view.patch": "36ca604815adbf779a19963156e9281dfef435e5ec043821ee8da83ffde52802",
   "checkpoints/064a-inspector-controller.patch": "6c0fbce30835c7f1defe0484f3893fe2a59f91a9b0c0409deda567131d8faf5b",
   "checkpoints/064b-inspector-controller.patch": "f6c0cc25712fccd4df353d8a3a255f3e0243ab936001533ebb876430fc85f111",
-  "checkpoints/064c-inspector-controller.patch": "d0d10d2138c88011c72d0fb3de3973ff105a26bda218046ad6e12c75c44616f4"
+  "checkpoints/064c-inspector-controller.patch": "d0d10d2138c88011c72d0fb3de3973ff105a26bda218046ad6e12c75c44616f4",
+  "checkpoints/065-inspector-test-fixtures.patch": "fa5ef57add8567272f10245524d19f14f5ea5a87a49385fc151646fc22a3e96c",
+  "checkpoints/066-inspector-browser-gates.patch": "079b2b2f9d3f75f8cc8094146f2beca477e7cfc0643d828535d88ea75388a416"
 }
