@@ -1,0 +1,175 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -16,2 +16,3 @@
+       if (this.state.pending?.kind === 'optional') return this.acceptChoice('NO', action);
++      if (this.state.pending?.kind === 'miracleReveal') return this.acceptChoice('decline', action);
+       if (this.state.pending?.kind === 'effectPayment') return this.acceptChoice('decline', action);
+@@ -415,2 +416,17 @@
+     this.record('CHOICE_MADE', { kind: pending.kind, key: pending.key || null, value: clone(value) });
++    if (pending.kind === 'miracleReveal') {
++      const option = asArray(value)[0]; requireRule(['reveal', 'decline'].includes(option), 'Reveal the card or decline miracle.');
++      const card = this.object(pending.object), continuation = this.state.drawContinuation;
++      this.state.pending = null; this.state.drawContinuation = null;
++      if (option === 'reveal' && card?.zone === 'hand') {
++        card.flags.revealed = true;
++        this.record('MIRACLE_REVEALED', { object: ref(card), cost: pending.cost });
++        this.queueTrigger({ source: ref(card), sourceCardId: card.cardId, controller: card.owner, abilityId: 'miracle', label: `${this.definition(card).name} — miracle`,
++          context: this.context(card), program: [{ op: 'castChoice', ids: [ref(card)], method: 'alternate', cost: pending.cost, label: `Cast for miracle ${pending.cost}?` }] });
++      }
++      const drawn = continuation ? this.drawCards(continuation.remaining, continuation.player, continuation.cause) : [];
++      if (continuation?.resultKey && this.state.resolving) this.state.resolving.context.vars[continuation.resultKey] = [...continuation.accumulated, ...drawn];
++      if (this.state.resolving && !this.state.pending) this.runEffects();
++      return;
++    }
+     if (pending.kind === 'triggerOrder') return this.acceptTriggerOrder(value);
+diff --git a/src/core/effects.js b/src/core/effects.js
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -83,3 +83,5 @@
+         const ids = this.drawCards(integer(cmd.count ?? 1, 0, 1000000), player);
+-        if (command.key) context.vars[command.key] = ids; return;
++        if (command.key) context.vars[command.key] = ids;
++        if (this.state.drawContinuation) this.state.drawContinuation.resultKey = command.key || null;
++        return;
+       }
+diff --git a/src/core/engine.js b/src/core/engine.js
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -58,11 +58,2 @@
+     if (object.flags.prototype) Object.assign(base, clone(object.flags.prototype));
+-    if (this.module(object).reconfigure && object.attachedTo) base.types = base.types.filter(t => t !== 'Creature');
+-    for (const modification of object.modifications || []) {
+-      if (modification.types) base.types = [...modification.types];
+-      if (modification.addTypes) base.types = unique([...base.types, ...modification.addTypes]);
+-      if (modification.addSubtypes) base.subtypes = unique([...base.subtypes, ...modification.addSubtypes]);
+-      if (modification.keywords) base.keywords = unique([...base.keywords, ...modification.keywords]);
+-      if (modification.basePower != null) base.power = modification.basePower;
+-      if (modification.baseToughness != null) base.toughness = modification.baseToughness;
+-    }
+     return base;
+@@ -79,22 +70,24 @@
+         const statics = sources.flatMap(source => (this.module(source).statics || []).map(rule => ({ source, rule })));
+-        for (const layer of [4, 6, 7]) {
+-          for (const { source, rule } of statics.filter(x => (x.rule.layer || 7) === layer))
+-            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
+-          for (const effect of this.state.effects.filter(e => e.kind === 'modify' && (e.layer || 7) === layer)) {
+-            for (const target of all) if ((effect.targets ? effect.targets.some(r => sameRef(r, target)) : matches(this, target, effect.selector || {}, { controller: effect.controller }))) this.applyCharacteristicModification(view[target.id], effect.modification);
++        // Supported continuous effects are evaluated in type, ability, and P/T
++        // sublayers. A base-setting animation must not erase counters or buffs.
++        const modifications = all.flatMap(target => (target.modifications || []).map(modification => ({ target, modification })));
++        for (const effect of this.state.effects.filter(e => e.kind === 'modify')) {
++          for (const target of all) if (effect.targets ? effect.targets.some(r => sameRef(r, target)) : matches(this, target, effect.selector || {}, { controller: effect.controller }))
++            modifications.push({ target, modification: effect.modification });
++        }
++        for (const layer of [4, 6, 7.1, 7.2, 7.3, 7.4]) {
++          if (layer === 4) for (const target of all) {
++            if (this.module(target).reconfigure && target.attachedTo) view[target.id].types = view[target.id].types.filter(t => t !== 'Creature');
+           }
+-          if (layer === 7) {
+-            for (const target of all) {
+-              const own = this.module(target).characteristics;
+-              if (own) own(this, target, view[target.id]);
+-            }
++          if (layer === 7.1) for (const target of all) this.module(target).cda?.(this, target, view[target.id]);
++          for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
++            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
++          for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
++          if (layer === 7.3) for (const target of all) this.module(target).characteristics?.(this, target, view[target.id]);
++          if (layer === 7.4) for (const target of all) {
++            const c = view[target.id], counters = (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
++            c.power += counters; c.toughness += counters;
++            c.keywords = unique(c.keywords); c.types = unique(c.types); c.subtypes = unique(c.subtypes);
+           }
+         }
+-        for (const target of all) {
+-          const c = view[target.id];
+-          for (const modification of target.modifications || []) { c.power += modification.power || 0; c.toughness += modification.toughness || 0; }
+-          c.power += (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
+-          c.toughness += (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
+-          c.keywords = unique(c.keywords); c.types = unique(c.types); c.subtypes = unique(c.subtypes);
+-        }
+         this._cache = view;
+@@ -104,10 +97,15 @@
+   }
+-  applyCharacteristicModification(c, modification) {
+-    if (modification.types) c.types = [...modification.types];
+-    if (modification.addTypes) c.types = unique([...c.types, ...modification.addTypes]);
+-    if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
+-    if (modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
+-    if (modification.basePower != null) c.power = modification.basePower;
+-    if (modification.baseToughness != null) c.toughness = modification.baseToughness;
+-    c.power += modification.power || 0; c.toughness += modification.toughness || 0;
++  applyCharacteristicModification(c, modification, layer) {
++    if (layer === 4) {
++      if (modification.types) c.types = [...modification.types];
++      if (modification.addTypes) c.types = unique([...c.types, ...modification.addTypes]);
++      if (modification.removeTypes) c.types = c.types.filter(t => !modification.removeTypes.includes(t));
++      if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
++    }
++    if (layer === 6 && modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
++    if (layer === 7.2) {
++      if (modification.basePower != null) c.power = modification.basePower;
++      if (modification.baseToughness != null) c.toughness = modification.baseToughness;
++    }
++    if (layer === 7.3) { c.power += modification.power || 0; c.toughness += modification.toughness || 0; }
+   }
+diff --git a/src/core/mana.js b/src/core/mana.js
+--- a/src/core/mana.js
++++ b/src/core/mana.js
+@@ -38,3 +38,3 @@
+ export function suggestPayment(cost, player, context = {}) {
+-  const buckets = COLORS.map(color => ({ color, available: player.mana[color] || 0, id: null }));
++  const buckets = ['C', 'W', 'U', 'B', 'R', 'G'].map(color => ({ color, available: player.mana[color] || 0, id: null }));
+   for (const tag of player.restrictedMana || []) if (restrictionAllows(tag, context)) buckets.unshift({ color: tag.color, available: tag.amount, id: tag.id });
+diff --git a/src/core/util.js b/src/core/util.js
+--- a/src/core/util.js
++++ b/src/core/util.js
+@@ -30,4 +30,4 @@
+ export function stableJSON(value) {
+-  if (Array.isArray(value)) return '[' + value.map(stableJSON).join(',') + ']';
+-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableJSON(value[k])).join(',') + '}';
++  if (Array.isArray(value)) return '[' + value.map(v => v === undefined ? 'null' : stableJSON(v)).join(',') + ']';
++  if (value && typeof value === 'object') return '{' + Object.keys(value).filter(k => value[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + stableJSON(value[k])).join(',') + '}';
+   return JSON.stringify(value);
+diff --git a/src/core/zones.js b/src/core/zones.js
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -185,3 +185,12 @@
+         this.state.turnCounts[key] = (this.state.turnCounts[key] || 0) + 1;
+-        this.emit('DRAW', { player, card: ref(card), first: this.state.turnCounts[key] === 1, amount: 1 }); result.push(card.id);
++        const first = this.state.turnCounts[key] === 1;
++        this.emit('DRAW', { player, card: ref(card), first, amount: 1 }); result.push(card.id);
++        if (first && player === 0 && this.module(card).miracle) {
++          // Reveal during this particular draw, before the next card is drawn.
++          // The resulting triggered ability still waits for the whole effect.
++          this.state.drawContinuation = { remaining: count - index - 1, player, cause, accumulated: [...result] };
++          this.state.pending = { kind: 'miracleReveal', key: 'miracle-reveal', label: `Reveal ${this.definition(card).name} for miracle?`, object: ref(card), cost: this.module(card).miracle,
++            optional: true, options: [{ value: 'reveal', label: 'Reveal for miracle' }, { value: 'decline', label: 'Do not reveal' }] };
++          break;
++        }
+       }
+diff --git a/src/rules/landfall.js b/src/rules/landfall.js
+--- a/src/rules/landfall.js
++++ b/src/rules/landfall.js
+@@ -64,3 +64,3 @@
+   }] });
+-  register(registry, 'Cultivator Colossus', { characteristics: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }])] });
++  register(registry, 'Cultivator Colossus', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; }, triggers: [etb('colossus', 'Put a land, draw, and repeat', () => [{ op: 'call', handler: 'landfall.colossus' }])] });
+   registry.registerHandler('landfall.colossus', (g, ctx) => {
+diff --git a/src/rules/mana-engines.js b/src/rules/mana-engines.js
+--- a/src/rules/mana-engines.js
++++ b/src/rules/mana-engines.js
+@@ -7,3 +7,3 @@
+   register(registry, 'Food', { activated: [{ id: 'eat', label: 'Sacrifice Food: gain 3 life', cost: '{2}', tap: true, costs: [selfSacrifice], effect: () => [{ op: 'life', amount: 3 }] }] });
+-  register(registry, 'Construct', { characteristics: (g, o, c) => { if (o.zone === 'battlefield') { c.power = countType(g, 'Artifact', o.controller); c.toughness = c.power; } } });
++  register(registry, 'Construct', { characteristics: (g, o, c) => { if (o.zone === 'battlefield') { const n = countType(g, 'Artifact', o.controller); c.power += n; c.toughness += n; } } });
+   register(registry, 'Pilot', { crewBonus: 2 });
+diff --git a/src/rules/tutors-recursion.js b/src/rules/tutors-recursion.js
+--- a/src/rules/tutors-recursion.js
++++ b/src/rules/tutors-recursion.js
+@@ -91,3 +91,3 @@
+   register(registry, 'Redress Fate', { miracle: '{3}{W}', spell: { effect: () => graveReturn({ type: ['Artifact', 'Enchantment'], token: false }) } });
+-  register(registry, 'Lumra, Bellow of the Woods', { characteristics: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; },
++  register(registry, 'Lumra, Bellow of the Woods', { cda: (g, o, c) => { c.power = countType(g, 'Land', o.controller); c.toughness = c.power; },
+     triggers: [etb('lands-return', 'Mill four; return all your graveyard lands tapped', () => [{ op: 'mill', count: 4 }, ...graveReturn({ land: true }, true)])] });
