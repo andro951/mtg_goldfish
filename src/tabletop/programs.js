@@ -66,6 +66,7 @@ function decodeValue(g,v,context={}){
   return v;
 }
 export function captureStep(g,action){
+  if(action.type==='DROP_CARD'&&action.zone==='battlefield'&&g.object(action.id)?.zone!=='battlefield')action={...action,type:g.characteristics(action.id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL'};
   if(!ACTION_TYPES.includes(action.type))return null;
   const a=clone(action);delete a.placement;
   if(a.type==='CHOOSE'&&['payment','effectPayment'].includes(g.state.pending?.kind)&&a.value!=='decline')a.value='auto';

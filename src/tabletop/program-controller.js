@@ -1,4 +1,4 @@
-import { captureStep, cleanPrograms, restorePrograms, preflightSequence, ruleMatches, eventSignals, PROGRAM_LIMIT } from './programs.js';
+import { captureStep, cleanPrograms, restorePrograms, preflightSequence, ruleMatches, eventSignals, PROGRAM_LIMIT, programId } from './programs.js';
 
 /** Runs only validated game intents at ordinary priority boundaries. Configuration
  * is data, never executable code; automatic chains and repetitions are bounded. */
@@ -14,8 +14,13 @@ export function createProgramController(api) {
     model.queue.push(...eventSignals(api.g,events));
     if(model.queue.length>200){model.queue.length=200;pause('Automation queue limit reached. Review rules, then resume.');}
   }
+  function preflight(sequence){return preflightSequence(api.g,sequence,{beforeResolve(trial,top){
+    if(!top)return;
+    const e={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id};
+    if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new Error('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
+  }});}
   function execute(sequence) {
-    const check=preflightSequence(api.g,sequence);
+    const check=preflight(sequence);
     if(!check.ok)return check;
     const result=api.g.perform({type:'RUN_SEQUENCE',name:sequence.name,commands:check.commands});
     if(!result.ok)return {ok:false,error:result.error.message};
@@ -54,7 +59,8 @@ export function createProgramController(api) {
       applyRule(rule,event);
       if(model.paused||!cleanBoundary())return false;
     }
-    return api.g.state.stack.at(-1)?.id===top.id;
+    pump();
+    return !model.paused&&api.g.state.stack.at(-1)?.id===top.id;
   }
   return {
     get model(){return model;},get recording(){return recording;},get running(){return running;},get busy(){return busy;},
@@ -86,7 +92,7 @@ export function createProgramController(api) {
       if(!cleanBoundary())throw new Error('Finish the pending choice before saving the recording.');
       if(!recording.steps.length)throw new Error('Perform at least one game action before saving.');
       if(recording.steps.length>PROGRAM_LIMIT)throw new Error('The recording exceeds 256 steps.');
-      const sequence={id:'seq-'+crypto.randomUUID(),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
+      const sequence={id:programId('seq'),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
       model.sequences.push(sequence);recording=null;changed();return sequence;
     },
     cancelRecording(){recording=null;model.queue=[];changed();},
@@ -109,7 +115,7 @@ export function createProgramController(api) {
         return {completed:job.completed,requested:count,reason:model.pauseReason||(job.stop?'Stopped by you.':'')};
       } finally {if(running===job)running=null;changed();}
     },
-    preflight(id){return preflightSequence(api.g,model.sequences.find(s=>s.id===id));},
+    preflight(id){return preflight(model.sequences.find(s=>s.id===id));},
     saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new Error('Invalid rule.');
       if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new Error('Choose a recorded sequence first.');
       const old=model.rules.findIndex(r=>r.id===clean.id);if(old<0)model.rules.push(clean);else model.rules[old]=clean;changed();},
