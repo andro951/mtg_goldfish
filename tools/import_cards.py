@@ -121,10 +121,16 @@ def main() -> None:
     data_dir = ROOT / 'data'
     data_dir.mkdir(exist_ok=True)
     records = parse_deck((ROOT / args.deck).read_text(encoding='utf-8'))
-    names = list(dict.fromkeys(r['name'] for r in records))
+    requested = ROOT / 'data/expanded-card-names.txt'
+    extra_names = requested.read_text(encoding='utf-8').splitlines() if requested.exists() else []
+    names = list(dict.fromkeys([*(r['name'] for r in records), *(n.strip() for n in extra_names if n.strip())]))
+    def aliases(raw):
+        return {normalize(raw['name']), *(normalize(f['name']) for f in raw.get('card_faces', []))}
+    def known_names():
+        return {name for raw in snapshots.values() for name in aliases(raw)}
     raw_path = data_dir / 'oracle-snapshot.json'
     snapshots = {} if args.refresh or not raw_path.exists() else json.loads(raw_path.read_text(encoding='utf-8'))
-    missing = [n for n in names if normalize(n) not in snapshots]
+    missing = [n for n in names if normalize(n) not in known_names()]
     for start in range(0, len(missing), 75):
         response = json.loads(request(API + '/cards/collection', {'identifiers': [{'name': n} for n in missing[start:start + 75]]}))
         if response.get('not_found'):
@@ -176,10 +182,10 @@ def main() -> None:
         card = compact(raw, image, back, rulings)
         if prev and not args.refresh:
             card['oracleSnapshotAt'] = prev.get('oracleSnapshotAt', card['oracleSnapshotAt'])
-        card['candidate'] = name_key in {normalize(n) for n in names}
+        card['candidate'] = bool(aliases(raw) & {normalize(n) for n in names})
         cards.append(card)
         print(f'[{index + 1}/{len(snapshots)}] {raw["name"]}', flush=True)
-    by_name = {normalize(c['name']): c for c in cards}
+    by_name = {alias: c for c in cards for alias in {normalize(c['name']), *(normalize(f['name']) for f in c.get('faces', []))}}
     for record in records:
         card = by_name[normalize(record['name'])]
         record['id'] = card['id']
