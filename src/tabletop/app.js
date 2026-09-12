@@ -9,6 +9,7 @@ import { dialogs } from './dialogs.js';
 import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
 import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
 import { installInteractions } from './interactions.js';
+import { editDeck } from './deck-editor.js';
 
 const data=window.ASTRA_DATA,registry=createRegistry(data.cards),store=new SessionStore();
 const root=document.getElementById('app'),overlay=document.getElementById('overlay');
@@ -19,7 +20,7 @@ const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)pos
 const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,stackLabel:null,selected:new Set(),selectMode:false,
  lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
- noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null};
+ noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null};
 const saveStatus={text:'Opening browser storage…',error:false};
 const ctx=()=>({g,ui,prefs,registry,saveStatus}),byId=id=>document.getElementById(id);
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
@@ -87,7 +88,7 @@ function positionPopups(){
   occupied.push({left:pos.x,top:pos.y,right:pos.x+measurement.width,bottom:pos.y+measurement.height});
  }
 }
-function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0;overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;restoreFocus(focus);}}
+function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0,nested=new Map(preserve?[...overlay.querySelectorAll('[data-modal-scroll]')].map(el=>[el.dataset.modalScroll,[el.scrollLeft,el.scrollTop]]):[]);overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;for(const el of overlay.querySelectorAll('[data-modal-scroll]')){const pos=nested.get(el.dataset.modalScroll);if(pos){el.scrollLeft=pos[0];el.scrollTop=pos[1];}}restoreFocus(focus);}}
 function render(){if(!g||rendering)return;rendering=true;try{
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
@@ -100,7 +101,7 @@ function render(){if(!g||rendering)return;rendering=true;try{
  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
  restoreFocus(focus);interactions?.refreshHover();
  }finally{rendering=false;}}
-function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();renderModal();requestAnimationFrame(()=>overlay.querySelector('input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
+function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(name==='deck')auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
 function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
 function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
@@ -122,6 +123,9 @@ function choose(value){return run({type:'CHOOSE',value,remember:!!byId('remember
 function auditDeck(){const parsed=parseDeck(ui.deckText),report=registry.report(parsed.records),errors=parsed.errors.map(e=>`Line ${e.line}: ${e.message}`);let construction=null;if(!errors.length&&!report.missing.length)try{construction=Engine.create(registry,parsed.records,'deck-audit').state.initialDeck;}catch(e){errors.push(e.message);}
  const accepted=report.accepted&&!errors.length,lines=[...errors,...report.missing.map(r=>`MISSING: ${r.quantity} ${r.name}`),...report.partial.map(r=>`PARTIAL: ${r.name} — ${r.notes}`),...report.duplicates.map(r=>`DUPLICATE (preserved): ${r.quantity} ${r.name}`)];
  return ui.deckReport={...report,accepted,errors,records:parsed.records,construction,summary:accepted?`Ready: ${construction.fixedLands} lands + ${construction.selectedNonlands} selected nonlands; ${construction.reserveOrder.length} reserve cards.`:'Resolve the deck issues below.',details:lines.join('\n')||'Every card has registered rules.'};}
+function updateDeckText(next,{message}={}){ui.deckText=next;prefs.deckText=next;ui.deckReport=null;auditDeck();savePreferences();renderModal();if(message)toast(message);}
+function deckEdit(operation,message){updateDeckText(editDeck(ui.deckText,operation),{message});}
+
 function exportJSON(){saveDownload(`astra-session-${g.state.seed.replace(/[^a-zA-Z0-9_-]/g,'-')}.json`,exported());toast('Session and table layout exported.');}
 async function importFile(file){if(!file)return;if(file.size>50*1024*1024)throw new Error('Session exceeds the 50 MB import limit.');const doc=JSON.parse(await file.text()),engine=Engine.importSession(registry,doc);
  if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText||data.deckText;}
@@ -169,8 +173,13 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='note'){const text=ui.noteText;ui.noteText='';const result=run({type:'NOTE',text});if(!result.ok)ui.noteText=text;renderModal();return;}
  if(action==='start-new'){ui.seed=byId('new-seed').value.trim()||newSeed();const report=auditDeck();if(!report.accepted){ui.modal='deck';renderModal();return toast('The deck needs attention before starting.',true);}useEngine(newEngine(Engine.create(registry,report.records,ui.seed)));toast('New seeded test.');return;}
  if(action==='start-lab'){useEngine(newEngine(createLab(registry,data.pool,el.dataset.lab)));fit('battlefield');return;}
+ if(action==='deck-tab'){ui.deckTab=el.dataset.pool;renderModal();return;}
+ if(action==='deck-add'){deckEdit({type:'adjust',pool:el.dataset.pool||ui.deckTab,name:el.dataset.cardName,delta:1});return;}
+ if(action==='deck-adjust'){deckEdit({type:'adjust',pool:el.dataset.pool,name:el.dataset.cardName,delta:Number(el.dataset.delta)});return;}
+ if(action==='deck-remove'){deckEdit({type:'remove',pool:el.dataset.pool,name:el.dataset.cardName});return;}
+ if(action==='deck-apply-text'){auditDeck();prefs.deckText=ui.deckText;savePreferences();renderModal();return;}
  if(action==='validate-deck'){auditDeck();renderModal();return;}
- if(action==='restore-pool'){ui.deckText=data.deckText;prefs.deckText=null;ui.deckReport=null;renderModal();savePreferences();return;}
+ if(action==='restore-pool'){ui.deckText=data.deckText;prefs.deckText=null;ui.deckReport=null;auditDeck();renderModal();savePreferences();return;}
  if(action==='export-report'){saveDownload('missing-cards-report.json',auditDeck());renderModal();return;}
  if(action==='export-json')return exportJSON();if(action==='export-text'){saveDownload('astra-action-log.txt',g.exportText(),'text/plain');return;}
  if(action==='verify-replay'){if(g.transaction)return toast('Finish or undo the current action before replay verification.',true);const r=g.verifyReplay();toast(`Replay verified: ${r.actions} actions · ${r.checksum}`);return;}
@@ -187,8 +196,36 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
 interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
 document.addEventListener('pointerdown',e=>{const zone=e.target.closest('[data-surface]')?.dataset.surface;if(zone)ui.activeZone=zone;});
 document.addEventListener('click',e=>{handleClick(e).catch(error=>{toast(error.message,true);console.error(error);});});
+document.addEventListener('dragstart',e=>{
+ const el=e.target.closest?.('[data-deck-drag]');if(!el||ui.modal!=='deck')return;
+ ui.deckDrag={origin:el.dataset.deckDrag,pool:el.dataset.pool||null,name:el.dataset.cardName,quantity:Number(el.dataset.quantity||1)};
+ e.dataTransfer.effectAllowed=ui.deckDrag.origin==='database'?'copy':'move';
+ try{e.dataTransfer.setData('text/plain',JSON.stringify(ui.deckDrag));}catch{}
+ el.classList.add('deck-drag-source');overlay.classList.add('deck-drag-active');
+});
+function clearDeckDragVisuals(){overlay.classList.remove('deck-drag-active');for(const el of overlay.querySelectorAll('.deck-drag-over,.deck-drag-source'))el.classList.remove('deck-drag-over','deck-drag-source');}
+document.addEventListener('dragover',e=>{
+ if(ui.modal!=='deck'||!ui.deckDrag)return;const target=e.target.closest?.('[data-deck-drop-before],[data-deck-drop]');if(!target)return;
+ e.preventDefault();e.dataTransfer.dropEffect=ui.deckDrag.origin==='database'?'copy':'move';
+ for(const el of overlay.querySelectorAll('.deck-drag-over'))if(el!==target)el.classList.remove('deck-drag-over');target.classList.add('deck-drag-over');
+});
+document.addEventListener('dragleave',e=>{const target=e.target.closest?.('.deck-drag-over');if(target&&!target.contains(e.relatedTarget))target.classList.remove('deck-drag-over');});
+document.addEventListener('drop',e=>{
+ if(ui.modal!=='deck'||!ui.deckDrag)return;const before=e.target.closest?.('[data-deck-drop-before]'),target=before||e.target.closest?.('[data-deck-drop]');if(!target)return;
+ e.preventDefault();const drag=ui.deckDrag;let pool=before?.dataset.pool||target.dataset.deckDrop,beforeName=before?.dataset.deckDropBefore||null,next=ui.deckText;
+ if(pool==='remove'){
+  if(drag.origin==='deck')next=editDeck(next,{type:'remove',pool:drag.pool,name:drag.name});
+ }else if(['main','command','outside'].includes(pool)){
+  if(drag.origin==='database')next=editDeck(next,{type:'adjust',pool,name:drag.name,delta:1});
+  else if(drag.pool!==pool)next=editDeck(next,{type:'move',from:drag.pool,to:pool,name:drag.name});
+  if(beforeName&&beforeName.toLowerCase()!==drag.name.toLowerCase())next=editDeck(next,{type:'reorder',pool,name:drag.name,before:beforeName});
+  ui.deckTab=pool;
+ }
+ ui.deckDrag=null;clearDeckDragVisuals();if(next!==ui.deckText)updateDeckText(next);else renderModal();
+});
+document.addEventListener('dragend',()=>{if(!ui.deckDrag)return;ui.deckDrag=null;clearDeckDragVisuals();});
 document.addEventListener('input',e=>{const el=e.target;
- if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;savePreferences();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
+ if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
  if(el.id==='card-search'){ui.cardFilter=el.value;renderModal();}if(el.id==='choice-filter'){ui.choiceFilter=el.value;render();}
  if(el.dataset.payment){ui.payment||={normal:{},tagged:[]};ui.payment.normal[el.dataset.payment]=Number(el.value);ui.paymentEdited=true;}
  if(el.dataset.tagged){ui.payment||={normal:{},tagged:[]};const item=ui.payment.tagged.find(v=>v.id===el.dataset.tagged);if(item)item.amount=Number(el.value);else ui.payment.tagged.push({id:el.dataset.tagged,amount:Number(el.value)});ui.paymentEdited=true;}
@@ -198,6 +235,8 @@ document.addEventListener('change',e=>{const el=e.target;try{
  if(el.dataset.policy)run({type:'SET_OPTIONAL',key:el.dataset.policy,value:el.value});
  if(el.id==='reserve-access'){run({type:'RESERVE_ACCESS',enabled:el.checked});prefs.reserveAccess=el.checked;savePreferences();}
  if(el.id==='card-type'){ui.cardType=el.value;renderModal();}if(el.id==='show-derived'){ui.showDerived=el.checked;renderModal();}
+ if(el.id==='deck-type'){ui.deckType=el.value;renderModal();}if(el.id==='deck-color'){ui.deckColor=el.value;renderModal();}if(el.id==='deck-sort'){ui.deckSort=el.value;renderModal();}
+ if(el.dataset.deckQty!==undefined){deckEdit({type:'set',pool:el.dataset.pool,name:el.dataset.cardName,quantity:Number(el.value)});}
  if(el.dataset.playerField){const p=Number(el.dataset.player),field=el.dataset.playerField;run({type:'ADJUST_PLAYER',player:p,field,delta:Number(el.value)-g.state.players[p][field]});}
  if(el.dataset.attacker){el.checked?ui.selected.add(el.dataset.attacker):ui.selected.delete(el.dataset.attacker);}if(el.dataset.destination)ui.attacks[el.dataset.destination]=Number(el.value);
  if(el.id==='session-file')importFile(el.files[0]).catch(error=>toast(error.message,true));
@@ -214,7 +253,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.1.0'};
+window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.0'};
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
