@@ -26,7 +26,7 @@ export function installLands(registry) {
   ] });
   register(registry, 'Power Depot', { possibleMana: ['C', ...anyColor], entersCounters: { '+1/+1': 1 }, activated: [
     { id: 'restricted-color', label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
-  ], triggers: [{ id: 'modular', label: 'Modular 1', event: 'DIED', lookBack: true, test: (g, s, e) => sameRef(s, e.change.beforeRef), optional: true,
+  ], triggers: [{ id: 'modular', label: 'Modular 1', event: 'LEAVE', lookBack: true, test: (g, s, e) => e.change.to === 'graveyard' && sameRef(s, e.change.beforeRef), optional: true,
     inputs: [target({ zones: ['battlefield'], allTypes: ['Artifact', 'Creature'] })], effect: (g, ctx) => [{ op: 'counter', ids: '$input.target', type: '+1/+1', amount: ctx.event.change.lki.counters['+1/+1'] || 0 }] }] });
   const fairCondition = (g, controller = 0) => countType(g, 'Artifact', controller) >= 3;
   register(registry, 'Inventors\' Fair', { triggers: [upkeep('fair-life', 'Gain 1 life if you control three artifacts', () => [{ op: 'life', amount: 1 }], {

@@ -73,10 +73,10 @@ test('restricted mana: Workshop is artifact spells only, Depot permits artifact 
   player.restrictedMana[0].restriction = 'artifactSpellOrAbility';
   assert.ok(suggestPayment(cost, player, {kind:'ability', types:['Artifact']}));
 });
-test('multiple ETB doublers multiply; they do not add just two extra triggers', () => {
+test('additional-trigger effects add one apiece: two effects produce three triggers', () => {
   const g = fixture({ battlefield: ['Traveling Chocobo', 'Ancient Greenwarden', 'Lotus Cobra'], hand: ['Ancient Den'] });
-  g.act({ type: 'PLAY_LAND', id: id(g, 'Ancient Den', 'hand') }); assert.equal(g.state.stack.length, 4);
-  drain(g); assert.equal(Object.values(g.state.players[0].mana).reduce((a,b)=>a+b), 4); roundTrip(g);
+  g.act({ type: 'PLAY_LAND', id: id(g, 'Ancient Den', 'hand') }); assert.equal(g.state.stack.length, 3);
+  drain(g); assert.equal(Object.values(g.state.players[0].mana).reduce((a,b)=>a+b), 3); roundTrip(g);
 });
 test('opposing fields and hidden zones are never legal free-move fallbacks', () => {
   const g = fixture({ hand: ['Ancient Den'] });
