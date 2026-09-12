@@ -1,0 +1,80 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -176,8 +219,41 @@
+  if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText||data.deckText;}
+- useEngine(engine,{memo:doc.tableView});toast('Session restored, including unfinished choices.');}
++ useEngine(engine,{memo:doc.tableView,grids:doc.tableGrids,playerPrograms:doc.playerPrograms});toast('Session restored, including unfinished choices.');}
+ function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=fitCamera(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
+-function arrange(){const zone=prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield',el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
+- const result=run({type:'LAYOUT',anchor:'corner-v2',order:ids,updates:ids.map((id,i)=>({id,x:CARD_H+10+(i%columns)*(CARD_W+12),y:CARD_H+14+Math.floor(i/columns)*(CARD_H+16)}))});if(result.ok)fit(zone);}
++function arrange(requested){const zone=requested||(prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield'),el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
++ let updates;
++ if(['graveyard','exile','outside'].includes(zone)){
++   ui.grids[zone]=[];updates=gridLayout(ids.map(id=>({...g.object(id),location:null})),[],prefs.dockWidth).cards.map(({id,x,y})=>({id,x,y}));
++ }else updates=ids.map((id,i)=>({id,x:CARD_H+10+(i%columns)*(CARD_W+12),y:CARD_H+14+Math.floor(i/columns)*(CARD_H+16)}));
++ const result=run({type:'LAYOUT',anchor:'corner-v2',grid:zone!=='battlefield',order:ids,updates});if(result.ok)fit(zone);}
+ function closeInspector(){clearInspectorState();render();}
++function readRuleForm(){
++ const r=ui.ruleDraft;if(!r||!byId('rule-form'))return;
++ const keys={name:'name',event:'event',card:'cardId',ability:'abilityId',action:'action',sequence:'sequenceId',scope:'scope',match:'conditionMatch'};
++ for(const [id,key]of Object.entries(keys))r[key]=byId('rule-'+id).value;
++ r.enabled=byId('rule-enabled').checked;
++ r.conditions=r.conditions.map((c,i)=>({cardId:byId('condition-card-'+i).value,test:byId('condition-test-'+i).value}));
++}
++function newRule(entry=null){
++ ui.ruleDraft={id:programId('rule'),name:entry?entry.label+' shortcut':'My priority rule',enabled:true,event:entry&&g.state.resolving?.object.id!==entry.id?'beforeResolve':'afterResolve',cardId:entry?.sourceCardId||'',abilityId:entry?.abilityId||'',action:'hold',sequenceId:'',scope:entry?'one':'future',stackIds:[],conditions:[],conditionMatch:'all',stackContext:entry?{id:entry.id,cardId:entry.sourceCardId,abilityId:entry.abilityId||''}:null};
++ openDialog('automation');
++}
+ async function handleClick(event){const el=event.target.closest('[data-action]');if(!el)return;const action=el.dataset.action,id=el.dataset.id;
++ const sid=el.dataset.sequenceId,rid=el.dataset.ruleId;
++ if(action==='sequence-record'){programs.startRecording();ui.sequenceName='New sequence';ui.sequenceFuture=false;ui.modal=null;render();return;}
++ if(action==='sequence-save'){programs.finishRecording(byId('sequence-name').value,byId('sequence-future').checked);renderModal();return;}
++ if(action==='sequence-discard'){programs.cancelRecording();renderModal();autoResolve();return;}
++ if(action==='sequence-delete'){programs.removeSequence(sid);renderModal();return;}
++ if(action==='sequence-step'){programs.editStep(sid,Number(el.dataset.index),el.dataset.direction);renderModal();return;}
++ if(action==='sequence-check'){const r=programs.preflight(sid);toast(r.ok?'The entire sequence is legal from this position.':r.error,!r.ok);return;}
++ if(action==='sequence-run'||action==='sequence-repeat'){const count=action==='sequence-run'?1:Number(document.querySelector(`[data-repeat="${sid}"]`).value);ui.modal=null;render();const r=await programs.repeat(sid,count);toast(`${r.completed} / ${r.requested} iterations completed.${r.reason?' '+r.reason:''}`,!!r.reason);autoResolve();return;}
++ if(action==='program-stop'){clearTimeout(autoTimer);programs.stop();return;}
++ if(action==='program-resume'){programs.resume();ui.modal=null;render();autoResolve();return;}
++ if(action==='rule-new'){newRule();return;}
++ if(action==='stack-hook'){const entry=[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])].find(s=>s.id===el.dataset.stackId);if(entry)newRule(entry);return;}
++ if(action==='rule-edit'){const r=programs.model.rules.find(r=>r.id===rid);ui.ruleDraft={...structuredClone(r),editing:true};renderModal();return;}
++ if(action==='rule-delete'){programs.removeRule(rid);renderModal();return;}
++ if(action==='rule-cancel'){ui.ruleDraft=null;renderModal();return;}
++ if(action==='rule-condition-add'){readRuleForm();if(ui.ruleDraft.conditions.length<12)ui.ruleDraft.conditions.push({cardId:registry.list().find(c=>c.candidate).id,test:'present'});renderModal();return;}
++ if(action==='rule-condition-remove'){readRuleForm();ui.ruleDraft.conditions.splice(Number(el.dataset.index),1);renderModal();return;}
++ if(action==='rule-save'){readRuleForm();const r=structuredClone(ui.ruleDraft);if(['one','current'].includes(r.scope)){const c=r.stackContext;r.stackIds=r.scope==='one'?[c.id]:[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])].filter(s=>s.sourceCardId===c.cardId&&(s.abilityId||'')===c.abilityId).map(s=>s.id);r.scope='stack';}programs.saveRule(r);ui.ruleDraft=null;renderModal();return;}
+  // Table pointer gestures own mouse picking. Keyboard activation and decision
+@@ -204,3 +280,3 @@
+  if(action==='close-zone'){prefs.dock=null;ui.activeZone='battlefield';render();savePreferences();return;}
+- if(action==='fit')return fit(el.dataset.zone);if(action==='arrange')return arrange();
++ if(action==='fit')return fit(el.dataset.zone);if(action==='arrange')return arrange(el.dataset.zone);
+  if(action==='select-mode'){ui.selectMode=!ui.selectMode;if(!ui.selectMode)ui.selected.clear();render();return;}
+@@ -215,3 +291,9 @@
+  }
+- if(action==='revise-choice'){ui.modeBypass=draftIdentity();return run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});}
++ if(action==='revise-choice'){ui.modeBypass=draftIdentity();ui.playerBypass=draftIdentity();return run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});}
++ if(action==='player-default'){
++  const key=el.dataset.playerKey,value=el.dataset.playerValue;prefs.playerDefaults||={};
++  if(value==='ASK')delete prefs.playerDefaults[key];else if(value==='ONCE')ui.askOnce[key]=true;else prefs.playerDefaults[key]=Number(value);
++  savePreferences();render();return;
++ }
++ if(action==='order-edge'){const from=Number(el.dataset.index),item=ui.choice.splice(from,1)[0];if(el.dataset.edge==='top')ui.choice.unshift(item);else ui.choice.push(item);render();return;}
+  if(action==='mode-default'){
+@@ -244,3 +326,3 @@
+  if(action==='verify-replay'){if(g.transaction)return toast('Finish or undo the current action before replay verification.',true);const r=g.verifyReplay();toast(`Replay verified: ${r.actions} actions · ${r.checksum}`);return;}
+- if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView});toast('Previous autosave recovered.');return;}
++ if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
+  if(action==='zoom'){ui.previousModal=ui.modal;ui.zoomCard=el.dataset.cardId;ui.backFace=false;ui.modal='card';renderModal();return;}
+@@ -258,2 +340,3 @@
+ document.addEventListener('dragstart',e=>{
++ const row=e.target.closest?.('[data-order-id]');if(row){ui.orderDrag=row.dataset.orderId;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',ui.orderDrag);return;}
+  const el=e.target.closest?.('[data-deck-drag]');if(!el||ui.modal!=='deck')return;
+@@ -266,2 +349,3 @@
+ document.addEventListener('dragover',e=>{
++ const row=e.target.closest?.('[data-order-id]');if(ui.orderDrag&&row){e.preventDefault();e.dataTransfer.dropEffect='move';return;}
+  if(ui.modal!=='deck'||!ui.deckDrag)return;const target=e.target.closest?.('[data-deck-drop-before],[data-deck-drop]');if(!target)return;
+@@ -272,2 +356,3 @@
+ document.addEventListener('drop',e=>{
++ const row=e.target.closest?.('[data-order-id]');if(ui.orderDrag&&row){e.preventDefault();const id=ui.orderDrag,target=row.dataset.orderId;ui.orderDrag=null;if(id!==target){const next=ui.choice.filter(v=>v!==id),at=next.indexOf(target),box=row.getBoundingClientRect();next.splice(at+(e.clientY>box.top+box.height/2?1:0),0,id);ui.choice=next;render();}return;}
+  if(ui.modal!=='deck'||!ui.deckDrag)return;const before=e.target.closest?.('[data-deck-drop-before]'),target=before||e.target.closest?.('[data-deck-drop]');if(!target)return;
