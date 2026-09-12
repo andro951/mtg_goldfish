@@ -1,0 +1,21 @@
+--- a/src/ui/styles.css
++++ b/src/ui/styles.css
+@@ -6 +6,18 @@
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
++
++/* Keep the desktop table in view while resources and the inspector scroll. */
++@media(min-width:901px){
++ .workspace{height:calc(100dvh - 150px);min-height:570px}
++ .resources,.table,.inspector-pane{overflow:auto;scrollbar-width:thin;scrollbar-color:#425760 transparent}
++ .inspector-content{max-height:none}
++ .command-section .small-card{--card:78px}
++ .resources .resource-section+.resource-section{margin-top:14px;padding-top:13px}
++ .resources .eyebrow{margin-bottom:8px}
++ .canvas{min-height:320px;max-height:49dvh}
++}
++@media(max-width:900px){.workspace{height:auto}.resources,.table,.inspector-pane{overflow:visible}}
++@media(max-width:600px){.resources .library-section.top-visible{display:block;grid-column:1/-1}.library-section.top-visible .small-card{--card:100px;margin:8px 0}.phase-bar>.row{gap:4px;flex-wrap:wrap}.phase-bar>.row button{font-size:10px;padding:6px}}
++.ordered-list{max-height:340px;overflow:auto}
++.inspector-content>button.quiet:has(.inspector-image){display:block;padding:0;margin:0 auto 15px;width:195px;max-width:100%}
++.inspector-image{margin-bottom:0}
++@media(max-width:900px){.inspector-content>button.quiet:has(.inspector-image){float:right;width:155px;margin:0 0 15px 15px}}
