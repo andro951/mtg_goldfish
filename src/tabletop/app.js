@@ -1,7 +1,7 @@
 import { createProgramController } from './program-controller.js';
 import { futurePrograms,programId } from './programs.js';
 import { gridLayout, cleanGrids } from './grid.js';
-import { Engine, parseDeck, COLORS, suggestPayment } from '../core/index.js';
+import { Engine, RuleError, parseDeck, COLORS, suggestPayment } from '../core/index.js';
 import { createRegistry } from '../rules/index.js';
 import { SessionStore } from '../ui/storage.js';
 import { createLab } from '../ui/labs.js';
@@ -345,7 +345,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
 }
 interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
 document.addEventListener('pointerdown',e=>{const zone=e.target.closest('[data-surface]')?.dataset.surface;if(zone)ui.activeZone=zone;});
-document.addEventListener('click',e=>{handleClick(e).catch(error=>{toast(error.message,true);console.error(error);});});
+document.addEventListener('click',e=>{handleClick(e).catch(error=>{toast(error.message,true);if(!(error instanceof RuleError))console.error(error);});});
 document.addEventListener('dragstart',e=>{
  const row=e.target.closest?.('[data-order-id]');if(row){ui.orderDrag=row.dataset.orderId;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',ui.orderDrag);return;}
  const el=e.target.closest?.('[data-deck-drag]');if(!el||ui.modal!=='deck')return;

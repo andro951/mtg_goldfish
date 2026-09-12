@@ -57,5 +57,6 @@
   "checkpoints/078-ui-integration-polish.patch": "f53c94922df05a705a077f707e1ee8df13177a7e3106d56d28c8de3bb2d993e2",
   "checkpoints/079-program-controls-and-order-captions.patch": "3e9b273c3ffdc75c9ea67081b47766c1f5c867c848dbdcf0fffb8b36573c7851",
   "checkpoints/080-sequence-priority-safety.patch": "65c021ab6338d4d4a13ba2d6d56a7129977e670abc505e56249fdee58fed0dce",
-  "checkpoints/081-audit-and-input-validation.patch": "23a59b9e4966bed4febdde1189b9bf389481eb1882e5667a4fad6b1405f1f685"
+  "checkpoints/081-audit-and-input-validation.patch": "23a59b9e4966bed4febdde1189b9bf389481eb1882e5667a4fad6b1405f1f685",
+  "checkpoints/082-program-input-validation.patch": "aa6885c5a21fccdf4d46f758ee8d42986fd9c07096e16b6f4eafcc26af077898"
 }

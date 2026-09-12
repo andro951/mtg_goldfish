@@ -174,3 +174,16 @@ test('an explicit Stop interrupts bounded repeat between complete atomic iterati
  let p; p=createProgramController({g,toast(){},changed(){if(p?.running?.completed===2)p.stop();}});p.reset({sequences:[seq]});
  const result=await p.repeat(seq.id,100);assert.equal(result.completed,2);assert.equal(g.cursor,2);assert.equal(g.object(id(g,'Grim Monolith')).tapped,false);roundTrip(g);
 });
+
+test('audit: Retreat does not offer a creature mode when no creature can be targeted',()=>{
+ const g=fixture({battlefield:['Retreat to Coralhelm'],hand:['Ancient Den']});g.act({type:'PLAY_LAND',id:id(g,'Ancient Den')});
+ assert.deepEqual(g.state.pending.options.map(o=>o.value),['scry']);choose(g,'scry');drain(g);roundTrip(g);
+});
+test('audit: Scaretiller preserves its optional hand mode when no graveyard land exists',()=>{
+ const g=fixture({battlefield:['Scaretiller','Urza, Lord High Artificer']});ability(g,'Urza, Lord High Artificer','artifact-mana',{tapped:[id(g,'Scaretiller')]});
+ assert.deepEqual(g.state.pending.options.map(o=>o.value),['hand']);choose(g,'hand');drain(g);roundTrip(g);
+});
+test('audit: Raft modes count legal targets, not just creatures behind shroud',()=>{
+ const g=fixture({battlefield:['Elven Raft-Steerer',{name:'Walking Atlas',owner:1,controller:1,props:{modifications:[{keywords:['Shroud']}]}}],hand:['Ancient Den']});
+ g.act({type:'PLAY_LAND',id:id(g,'Ancient Den')});assert.deepEqual(g.state.pending.options.map(o=>o.value),['untap']);choose(g,'untap');choose(g,[id(g,'Elven Raft-Steerer')]);drain(g);roundTrip(g);
+});

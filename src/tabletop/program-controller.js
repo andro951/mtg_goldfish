@@ -1,3 +1,4 @@
+import { RuleError } from '../core/index.js';
 import { captureStep, cleanPrograms, restorePrograms, preflightSequence, ruleMatches, eventSignals, PROGRAM_LIMIT, programId } from './programs.js';
 
 /** Runs only validated game intents at ordinary priority boundaries. Configuration
@@ -20,11 +21,11 @@ export function createProgramController(api) {
   function preflight(sequence){return preflightSequence(api.g,sequence,{beforeResolve(trial,top){
     if(!top)return;
     const e={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id};
-    if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new Error('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
+    if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new RuleError('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
   },afterBoundary(trial,events){
     const signals=eventSignals(trial,events);
     if(model.rules.some(r=>signals.some(e=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))&&(r.action!=='hold'||trial.state.stack.length))))
-      throw new Error('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
+      throw new RuleError('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
   }});}
   function execute(sequence) {
     const check=preflight(sequence);
@@ -93,23 +94,23 @@ export function createProgramController(api) {
     resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed(false);},
     stop(){if(running){if(running.stop)return;running.stop=true;changed(false);}else if(!model.paused)pause('Paused by you.');},
     startRecording(name) {
-      if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
+      if(!cleanBoundary()||running)throw new RuleError('Finish the current choice or sequence before recording.');
       recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed(false);
     },
     finishRecording(name,saved=false) {
-      if(!recording)throw new Error('No sequence is being recorded.');
-      if(!cleanBoundary())throw new Error('Finish the pending choice before saving the recording.');
-      if(!recording.steps.length)throw new Error('Perform at least one game action before saving.');
-      if(recording.steps.length>PROGRAM_LIMIT)throw new Error('The recording exceeds 256 steps.');
+      if(!recording)throw new RuleError('No sequence is being recorded.');
+      if(!cleanBoundary())throw new RuleError('Finish the pending choice before saving the recording.');
+      if(!recording.steps.length)throw new RuleError('Perform at least one game action before saving.');
+      if(recording.steps.length>PROGRAM_LIMIT)throw new RuleError('The recording exceeds 256 steps.');
       const sequence={id:programId('seq'),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
       model.sequences.push(sequence);recording=null;changed();return sequence;
     },
     cancelRecording(){recording=null;model.queue=[];changed(false);},
     async repeat(id,count=1) {
-      if(running||recording)throw new Error('Stop the current run or recording first.');
+      if(running||recording)throw new RuleError('Stop the current run or recording first.');
       const sequence=model.sequences.find(s=>s.id===id);
-      if(!sequence)throw new Error('Sequence not found.');
-      if(!Number.isInteger(count)||count<1||count>1000)throw new Error('Choose 1–1000 iterations. Each iteration is checked separately.');
+      if(!sequence)throw new RuleError('Sequence not found.');
+      if(!Number.isInteger(count)||count<1||count>1000)throw new RuleError('Choose 1–1000 iterations. Each iteration is checked separately.');
       const job=running={id,completed:0,count,stop:false};model.paused=false;model.pauseReason='';chain=0;changed(false);
       try {
         for(let i=0;i<count&&!job.stop;i++) {
@@ -125,14 +126,14 @@ export function createProgramController(api) {
       } finally {if(running===job)running=null;changed(false);}
     },
     preflight(id){return preflight(model.sequences.find(s=>s.id===id));},
-    saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new Error('Invalid rule.');
-      if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new Error('Choose a recorded sequence first.');
+    saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new RuleError('Invalid rule.');
+      if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new RuleError('Choose a recorded sequence first.');
       const old=model.rules.findIndex(r=>r.id===clean.id);if(old<0)model.rules.push(clean);else model.rules[old]=clean;changed();},
     toggleRule(id,enabled){const rule=model.rules.find(r=>r.id===id);if(rule){rule.enabled=enabled;changed();}},
     removeRule(id){model.rules=model.rules.filter(r=>r.id!==id);changed();},
     saveSequence(id,saved){const s=model.sequences.find(s=>s.id===id);if(s){s.saved=saved;changed();}},
     renameSequence(id,name){const s=model.sequences.find(s=>s.id===id);if(s&&name.trim()){s.name=name.trim().slice(0,120);changed();}},
-    removeSequence(id){if(model.rules.some(r=>r.sequenceId===id))throw new Error('Remove rules that use this sequence first.');model.sequences=model.sequences.filter(s=>s.id!==id);changed();},
+    removeSequence(id){if(model.rules.some(r=>r.sequenceId===id))throw new RuleError('Remove rules that use this sequence first.');model.sequences=model.sequences.filter(s=>s.id!==id);changed();},
     editStep(id,index,direction){const s=model.sequences.find(s=>s.id===id);if(!s)return;
       if(direction==='remove')s.steps.splice(index,1);else {const to=index+Number(direction);if(to>=0&&to<s.steps.length)[s.steps[index],s.steps[to]]=[s.steps[to],s.steps[index]];}changed();},
   };
