@@ -1,0 +1,106 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -15,9 +15,9 @@
+ const root=document.getElementById('app'),overlay=document.getElementById('overlay');
+ const floats=document.createElement('div');floats.id='floating-layer';document.body.append(floats);
+ const newSeed=()=>`astra-${new Date().toISOString().slice(0,10)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
+-let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,saveSequence=0,rendering=false,interactions;
++let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,modeTimer,saveSequence=0,rendering=false,interactions;
+ const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)positionPopups();});
+-const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,stackLabel:null,selected:new Set(),selectMode:false,
++const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,selected:new Set(),selectMode:false,
+  lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
+  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
+  noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null};
+@@ -31,12 +31,56 @@
+ function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),140);}
+ function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
+ function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
+-function useEngine(engine,{save=true,memo={}}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(saveTimer);g=engine;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
++function useEngine(engine,{save=true,memo={}}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+ function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
+ function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
+ function prepareChoice(){const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
+  if(key!==ui.pendingKey){ui.pendingKey=key;ui.choiceFilter='';ui.choice=p?.ordered?[...(p.candidates||choiceOptions(p).map(o=>o.value))]:[];ui.number=p?.min||0;ui.paymentEdited=false;}
+  if(['payment','effectPayment'].includes(p?.kind)&&!ui.paymentEdited)ui.payment=suggestPayment(p.cost,g.state.players[p.player||0],p.context)||{normal:{},tagged:[]};
++}
++function clearInspectorState(){ui.inspected=null;ui.inspectDefinition=null;ui.inspectOrigin=null;ui.inspectorActivation=null;ui.stackLabel=null;}
++function inspectorOrigin(id){const o=g.object(id);return o?{id:o.id,oid:o.oid,zone:o.zone}:null;}
++function sameOrigin(origin){const o=origin&&g.object(origin.id);return !!(o&&o.oid===origin.oid&&o.zone===origin.zone);}
++function abilitySingleUse(source,ability){
++  if(!source||!ability)return false;
++  if(ability.tap||ability.loyalty!=null)return true;
++  let costs=[];try{costs=typeof ability.costs==='function'?ability.costs(g,source,g.context(source)):ability.costs||[];}catch{}
++  return costs.some(cost=>cost?.self&&['sacrifice','exile','return'].includes(cost.kind));
++}
++function syncInspectorState(){
++  if(ui.inspected&&ui.inspectOrigin&&!sameOrigin(ui.inspectOrigin))clearInspectorState();
++  const activation=ui.inspectorActivation;if(!activation)return;
++  if(!sameOrigin(activation.origin)){clearInspectorState();return;}
++  const stillDraft=g.state.actionDraft?.kind==='ability'&&g.state.actionDraft?.source?.id===activation.origin.id;
++  const stillPending=stillDraft||g.state.pending?.source?.id===activation.origin.id;
++  if(stillPending)return;
++  const committed=g.history.slice(activation.cursor).some(entry=>(entry.actions||[]).some(action=>action.type==='ACTIVATE_ABILITY'&&action.id===activation.origin.id&&action.abilityId===activation.abilityId));
++  if(committed&&activation.singleUse)clearInspectorState();
++  else ui.inspectorActivation=null;
++}
++function draftIdentity(draft){
++  if(!draft)return null;
++  const sourceCardId=draft.sourceCardId||draft.stackObject?.sourceCardId||draft.context?.sourceCardId||g.object(draft.source)?.cardId;
++  const definition=g.draftDefinition(draft),mode=definition?.modePreference;
++  return sourceCardId&&definition&&mode?{draft,definition,mode,key:`${sourceCardId}/${definition.id}/${mode.key}`} : null;
++}
++function modePreferenceForDraft(){
++  const info=draftIdentity(g.state.actionDraft);if(!info)return null;
++  const value=prefs.modeDefaults?.[info.key]||'ASK';
++  return {...info,value};
++}
++function scheduleModeDefault(){
++  clearTimeout(modeTimer);const p=g.state.pending,info=modePreferenceForDraft();if(!p||p.kind!=='draft'||!info||p.key!==info.mode.key)return;
++  if(info.value==='ASK'||ui.modeBypass===info.key){if(ui.modeBypass===info.key)ui.modeBypass=null;return;}
++  const legal=(p.options||[]).some(option=>(typeof option==='object'?option.value:option)===info.value);if(!legal)return;
++  modeTimer=setTimeout(()=>{if(g.state.pending?.key===info.mode.key&&modePreferenceForDraft()?.value===info.value)run({type:'CHOOSE',value:info.value});},45);
+ }
+ function render(){if(!g||rendering)return;rendering=true;prepareChoice();syncInspectorState();const focus=focusSnapshot();
+  root.innerHTML=toolbarHTML(ctx())+`<div class="table-shell"><aside class="rail">${railHTML(ctx())}</aside><div class="rail-resizer" data-resize="rail" role="separator" tabindex="0" aria-orientation="vertical"></div>${tableHTML(ctx())}</div>${statusHTML(ctx())}`;
+@@ -45,7 +89,7 @@
+  positionPopups();rendering=false;requestAnimationFrame(()=>{if(!rendering){const c=byId('battlefield-viewport');if(c)interactions?.setViewport(c.clientWidth,c.clientHeight);}});
+  scheduleAutomatic();
++ scheduleModeDefault();
+ }
+@@ -83,7 +127,8 @@
+ function inspect(id,point){
+- if(ui.inspected===id){ui.inspected=null;ui.inspectDefinition=null;ui.stackLabel=null;render();return;}
+- ui.inspected=id;ui.inspectDefinition=null;ui.stackLabel=null;if(point)ui.lastPoint=point;render();
++ if(ui.inspected===id){clearInspectorState();render();return;}
++ ui.inspected=id;ui.inspectDefinition=null;ui.inspectOrigin=inspectorOrigin(id);ui.inspectorActivation=null;ui.stackLabel=null;if(point)ui.lastPoint=point;render();
+ }
+@@ -143,6 +188,18 @@
+  if(action==='inspect'){inspect(id,pointer);return;}
+  if(action==='close-inspector'){clearInspectorState();render();return;}
++ if(action==='mode-default'){
++   prefs.modeDefaults={...(prefs.modeDefaults||{}),[el.dataset.modeKey]:el.dataset.modeValue};savePreferences();render();return;
++ }
++ if(action==='revise-choice'){
++   const info=modePreferenceForDraft();if(info)ui.modeBypass=info.key;
++   run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});return;
++ }
+@@ -156,7 +213,13 @@
+  if(action==='ability'){
+-   run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});return;
++   const source=g.object(id),ability=g.abilities(source).find(a=>a.id===el.dataset.ability),fromInspector=ui.inspected===id&&!!ui.inspectOrigin;
++   const marker=fromInspector?{origin:{...ui.inspectOrigin},abilityId:el.dataset.ability,singleUse:abilitySingleUse(source,ability),cursor:g.cursor}:null;
++   const result=run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
++   if(result.ok&&marker){ui.inspectorActivation=marker;syncInspectorState();render();}
++   return;
+  }
+@@ -174,7 +237,7 @@
+  if(action==='stack-inspect'){
+    const entry=[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])].find(v=>v.id===el.dataset.stackId);if(!entry)return;
+-   ui.inspected=entry.source?.id||null;ui.inspectDefinition=entry.sourceCardId;ui.stackLabel=entry.label;render();return;
++   ui.inspected=entry.source?.id||null;ui.inspectDefinition=entry.sourceCardId;ui.inspectOrigin=ui.inspected?inspectorOrigin(ui.inspected):null;ui.inspectorActivation=null;ui.stackLabel=entry.label;render();return;
+  }
+@@ -310,7 +373,7 @@
+-window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},interactions,run,flushSave:saveNow,store,version:'1.2.0'};
++window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},interactions,run,flushSave:saveNow,store,version:'1.2.1'};
+*** End Patch
