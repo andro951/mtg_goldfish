@@ -7,7 +7,7 @@ import { SessionStore } from '../ui/storage.js';
 import { createLab } from '../ui/labs.js';
 import { h, saveDownload } from '../ui/components.js';
 import { choiceOptions } from '../ui/views.js';
-import { toolbar, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
+import { toolbar, programControls, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
 import { dialogs } from './dialogs.js';
 import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
 import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
@@ -26,7 +26,13 @@ const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,in
  noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null,ruleDraft:null,sequenceName:'',sequenceFuture:false,resolveRequested:false};
 const saveStatus={text:'Opening browser storage…',error:false};
 let programRender=0,modalRendering=false;
-const programs=createProgramController({get g(){return g;},toast,changed(){prefs.savedPrograms=futurePrograms(programs.model);savePreferences();if(!programRender)programRender=requestAnimationFrame(()=>{programRender=0;if(g&&!ui.gestureActive)render();});}});
+const programs=createProgramController({get g(){return g;},toast,changed(configuration=true){
+ if(configuration){prefs.savedPrograms=futurePrograms(programs.model);savePreferences();}else scheduleSave();
+ if(!programRender)programRender=requestAnimationFrame(()=>{programRender=0;if(!g)return;
+  const controls=document.querySelector('.program-tools');if(controls)controls.innerHTML=programControls(ctx());
+  if(['sequences','automation'].includes(ui.modal)&&!document.activeElement?.closest('input,select,textarea'))renderModal();
+ });
+}});
 const ctx=()=>({g,ui,prefs,registry,saveStatus,programs}),byId=id=>document.getElementById(id);
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
@@ -36,10 +42,10 @@ async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActiv
 function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
 function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
-function prepareChoice(){const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
+function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
  if(key!==ui.pendingKey){ui.pendingKey=key;ui.choiceFilter='';ui.choice=p?.ordered?[...(p.candidates||choiceOptions(p).map(o=>o.value))]:[];ui.number=p?.min||0;ui.paymentEdited=false;}
  if(['payment','effectPayment'].includes(p?.kind)&&!ui.paymentEdited)ui.payment=suggestPayment(p.cost,g.state.players[p.player||0],p.context)||{normal:{},tagged:[]};
 }
@@ -76,7 +82,7 @@ function modePreferenceForDraft(draft=g.state.actionDraft,pending=g.state.pendin
   if(!player&&(!meta||pending.key!==meta.key))return null;
   const sourceCardId=draft.sourceCardId||draft.stackObject?.sourceCardId||draft.context?.sourceCardId||g.object(draft.source)?.cardId;
   if(!sourceCardId)return null;
-  const field=player?pending.key:meta.key,key=`${sourceCardId}/${definition.id}/${field}`;
+  const field=player?pending.key:meta.key,key=`${sourceCardId}/${definition.id||'spell'}/${field}`;
   return {key,meta:player?{key:field}:meta,player,identity:draftIdentity(draft)};
 }
 function scheduleModeDefault(){
@@ -194,7 +200,10 @@ function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];
  if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1){ui.choice=[id];added=true;}else if(ui.choice.length<(p.max||1)){ui.choice.push(id);added=true;}else toast(`Choose at most ${p.max} cards.`,true);
  refreshSelection();
  if(added&&prefs.autoAccept&&(ui.choice.length===(p.max||1)||p.minTotalPower!=null)){
-   try{g.validateInput(p,ui.choice,g.state.actionDraft?.context||g.state.resolving?.context||{});choose([...ui.choice]);}catch{}
+   try{
+     if(p.kind==='draft'||p.kind==='effectChoice')g.validateInput(p,ui.choice,g.state.actionDraft?.context||g.state.resolving?.context||{});
+     choose([...ui.choice]);
+   }catch{}
  }
  return true;
 }
@@ -393,6 +402,7 @@ document.addEventListener('change',e=>{const el=e.target;try{
  if(el.id==='session-file')importFile(el.files[0]).catch(error=>toast(error.message,true));
  }catch(error){toast(error.message,true);}});
 document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement)e.target.parentElement.classList.add('image-failed');},true);
+document.addEventListener('submit',e=>{if(e.target.id==='rule-form'){e.preventDefault();e.target.querySelector('[data-action=rule-save]')?.click();}});
 document.addEventListener('keydown',e=>{
  const editing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable;
  if(e.key==='Escape'){e.preventDefault();clearTimeout(autoTimer);if(programs.running){programs.stop();return;}if(ui.modal){ui.modal=null;renderModal();autoResolve();}else if(g.state.pending)run({type:'CANCEL'});else closeInspector();return;}

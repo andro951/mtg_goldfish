@@ -64,11 +64,11 @@ export const actionMethods = {
     }
     if (type === 'LAYOUT') {
       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
-      for (const update of updates) {
+      for (const [slot, update] of updates.entries()) {
         const object = this.object(update.id);
         requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
         requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
-        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot: updates.indexOf(update)} : {}) };
+        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot} : {}) };
       }
       if (action.order) {
         requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
