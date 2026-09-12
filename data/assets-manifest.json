@@ -53,6 +53,12 @@
     "source": "https://cards.scryfall.io/normal/front/b/7/b768efa2-e56b-4a7e-ace8-d673f10e0714.jpg?1783941303",
     "printing": "b768efa2-e56b-4a7e-ace8-d673f10e0714"
   },
+  "assets/cards/a6f7f5c7-8832-40f8-803e-f181571422f8.jpg": {
+    "sha256": "d681dd9502a74f1f24a63123b8c2b97b60a532c607d7e623062ae3cec984a2dd",
+    "bytes": 102796,
+    "source": "https://cards.scryfall.io/normal/front/3/6/365b2234-c29d-42db-a8e0-80685a4b6434.jpg?1783932482",
+    "printing": "365b2234-c29d-42db-a8e0-80685a4b6434"
+  },
   "assets/cards/2bd111bb-ce02-414c-b5b7-e0e037d8d96b.jpg": {
     "sha256": "98e26f05fafbb786279200d5e43f2a5245f914531242130d3a8583e01d88c257",
     "bytes": 91072,
@@ -104,14 +110,14 @@
   "assets/cards/ee740c48-59cd-4fcc-b4a5-fe3dde1361d5.jpg": {
     "sha256": "0ac0650108a48b1b9eda1985a8a9c1360155c31fdde1d382d5676bfd7436f6b6",
     "bytes": 85360,
-    "source": "https://cards.scryfall.io/normal/front/a/7/a7caaf39-8f16-4f1d-bee6-a45674306319.jpg?1783926587",
-    "printing": "a7caaf39-8f16-4f1d-bee6-a45674306319"
+    "source": "https://cards.scryfall.io/normal/front/4/8/48fdadab-af27-46d3-bcf6-35e7affb1e43.jpg?1783915247",
+    "printing": "48fdadab-af27-46d3-bcf6-35e7affb1e43"
   },
   "assets/cards/88c78601-87f0-45e7-b2e0-e7ffcfb1cb70.jpg": {
     "sha256": "1d8465030c9cdf2ac46aabd9e2174fb0918c75134d220af0aef4a1cd35f293cb",
     "bytes": 61146,
-    "source": "https://cards.scryfall.io/normal/front/f/4/f4e87a11-b3b1-47b2-bd73-f4c78d6fbe6c.jpg?1783902813",
-    "printing": "f4e87a11-b3b1-47b2-bd73-f4c78d6fbe6c"
+    "source": "https://cards.scryfall.io/normal/front/e/8/e85f57c5-923a-4824-969e-53feddd78c3b.jpg?1783911528",
+    "printing": "e85f57c5-923a-4824-969e-53feddd78c3b"
   },
   "assets/cards/33c722cf-b4bf-431f-aefd-ee96241a7fbf.jpg": {
     "sha256": "b185635b5f864f3bb9ba36073fecacbec9f20914277a7a8ccf7b42edcfb5372a",
@@ -256,6 +262,12 @@
     "bytes": 108961,
     "source": "https://cards.scryfall.io/normal/front/a/5/a55c4d47-5252-40af-961d-c08bc688028a.jpg?1783933112",
     "printing": "a55c4d47-5252-40af-961d-c08bc688028a"
+  },
+  "assets/cards/4ece8767-a2e0-42fc-aadf-86a4ae863343.jpg": {
+    "sha256": "c3a1c363dd24e37ff463d271281522eb7e725f1ff7961b9967080c8a7c444220",
+    "bytes": 96525,
+    "source": "https://cards.scryfall.io/normal/front/0/d/0d9461c3-f545-4efb-926e-759961db0495.jpg?1783923713",
+    "printing": "0d9461c3-f545-4efb-926e-759961db0495"
   },
   "assets/cards/9fc28e1f-f4ea-4bf8-9442-a36dba3b3b29.jpg": {
     "sha256": "cdae40f000c789eb21d55cb414c99f8754a316855687c218628f49543613593f",
@@ -470,8 +482,8 @@
   "assets/cards/bf690282-125f-431c-a363-39f6772324c8.jpg": {
     "sha256": "faf0e8e282cc75c0ed8c475ea250b1fce74e716475523fbdfce5e45d7f92b70a",
     "bytes": 63339,
-    "source": "https://cards.scryfall.io/normal/front/c/f/cf455c08-adf5-486b-9661-d6c0099afce3.jpg?1783906793",
-    "printing": "cf455c08-adf5-486b-9661-d6c0099afce3"
+    "source": "https://cards.scryfall.io/normal/front/9/d/9d54ed64-573d-45cc-9d5c-94c5d0fc88ec.jpg?1783906082",
+    "printing": "9d54ed64-573d-45cc-9d5c-94c5d0fc88ec"
   },
   "assets/cards/c53ba31a-ba27-4e17-9a92-311acb1cab29.jpg": {
     "sha256": "a40b44d814d4e137a6af940ae6df75f3177adeb69c2931358e819edecefc6eff",
@@ -773,11 +785,29 @@
     "source": "https://cards.scryfall.io/normal/front/e/5/e51b48e9-a75a-4acd-9462-5e1ac2b0d803.jpg?1783926793",
     "printing": "e51b48e9-a75a-4acd-9462-5e1ac2b0d803"
   },
+  "assets/cards/354f2017-30d5-44dc-a9ab-a042c0f71c11.jpg": {
+    "sha256": "d3103c1434dc69d3400c86da093309bcaa7bafff0ef1ef26c65dbea38c0f36df",
+    "bytes": 90933,
+    "source": "https://cards.scryfall.io/normal/front/b/b/bb4ac08f-f6a5-49d6-91e9-38c4f217932b.jpg?1783916045",
+    "printing": "bb4ac08f-f6a5-49d6-91e9-38c4f217932b"
+  },
   "assets/cards/71d2a0fe-5426-4fa3-85a4-564c37184996.jpg": {
     "sha256": "0350b9d6fa423850f18e5b2a1a05f09e72d37092f7b815ed9d66001ddf4d52a5",
     "bytes": 98193,
     "source": "https://cards.scryfall.io/normal/front/e/5/e5b82177-3795-470a-abff-a4a936b27430.jpg?1783919717",
     "printing": "e5b82177-3795-470a-abff-a4a936b27430"
+  },
+  "assets/cards/92796d48-fe2a-4b62-9d9c-14b445406261.jpg": {
+    "sha256": "eb1555e54e4bc5f1785f7f78ee8dfe01d45db6a138501077af0f9cdcd47260d5",
+    "bytes": 92330,
+    "source": "https://cards.scryfall.io/normal/front/5/e/5eb01bef-8989-4b38-a303-0aafab1b33e5.jpg?1783923718",
+    "printing": "5eb01bef-8989-4b38-a303-0aafab1b33e5"
+  },
+  "assets/cards/0410f6f6-88f6-48e2-b301-7660c86317a1.jpg": {
+    "sha256": "1f1280937343032e4f7dd08c860841c3eb0e504f8138f657d2e8e5d5b4899899",
+    "bytes": 77367,
+    "source": "https://cards.scryfall.io/normal/front/8/3/83981313-ff55-4030-ac82-d6a3087cf675.jpg?1783919908",
+    "printing": "83981313-ff55-4030-ac82-d6a3087cf675"
   },
   "assets/cards/02f062f5-8012-4440-ac12-49fc49822106.jpg": {
     "sha256": "70df480c25f893cfde4c2007a6f3825e7bcbe46e4ff0adf7d5d955c3ccfc7575",
@@ -920,8 +950,8 @@
   "assets/cards/3c549374-6c37-42e0-8d88-a8555d46732d.jpg": {
     "sha256": "1a0c2601101c87095e924693db453ba39e80afd72467cba9b9ab4da482751ae2",
     "bytes": 81630,
-    "source": "https://cards.scryfall.io/normal/front/a/3/a3a684b7-27e0-4d9e-a064-9e03c6e50c89.jpg?1783926341",
-    "printing": "a3a684b7-27e0-4d9e-a064-9e03c6e50c89"
+    "source": "https://cards.scryfall.io/normal/front/1/7/1728ad2d-c8a6-49e4-85bb-29934fa26208.jpg?1783916665",
+    "printing": "1728ad2d-c8a6-49e4-85bb-29934fa26208"
   },
   "assets/cards/3c43efd6-b1a8-452c-ae20-9a936c3340ab.jpg": {
     "sha256": "b8941fba27950a702c9948f7b67cc829665bcc8008c13bef5f028e54e6074b48",
