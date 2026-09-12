@@ -1,7 +1,17 @@
 import { COLORS } from '../core/index.js';
 import { escapeHTML } from '../core/util.js';
 export const h = escapeHTML;
-export const asset = path => globalThis.ASTRA_IMAGES?.[path] || path;
+const assetURLs = new Map();
+export function asset(path) {
+  const embedded=globalThis.ASTRA_IMAGES?.[path];if(!embedded)return path;
+  if(assetURLs.has(path))return assetURLs.get(path);
+  // The cache is presentation-only. Game state and save files contain paths.
+  const match=/^data:([^;,]+);base64,(.*)$/.exec(embedded);
+  if(!match)return embedded;
+  const binary=atob(match[2]),bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const url=URL.createObjectURL(new Blob([bytes],{type:match[1]}));assetURLs.set(path,url);return url;
+}
 export const STEP_NAMES = {setup:'Opening hand',untap:'Untap',upkeep:'Upkeep',draw:'Draw',main1:'Main 1',beginCombat:'Combat',attackers:'Attack',damage:'Damage',endCombat:'End combat',main2:'Main 2',end:'End',cleanup:'Cleanup'};
 export const ZONE_NAMES = {battlefield:'Battlefield',graveyard:'Graveyard',exile:'Exile',workspace:'Look',outside:'Outside the game',hand:'Hand',command:'Command zone',libraryActive:'Library',libraryReserve:'Reserve',stackCards:'Stack'};
 export const logo = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 44 41H4L24 5ZM13 26h24M19 16h17" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';

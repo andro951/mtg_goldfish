@@ -1,5 +1,5 @@
 /** Presentation geometry. A card's anchor is its upright bottom-left corner.
- * Counter-clockwise tapping makes that same point its visual bottom-right.
+ * Clockwise tapping brings the physical bottom-right corner to that anchor.
  * Hover elevation NEVER participates in picking or persistent layer order. */
 export const CARD_W = 110;
 export const CARD_H = CARD_W * 88 / 63;
@@ -7,7 +7,7 @@ export const clamp = (n, min, max) => Math.min(max, Math.max(min, Number(n) || 0
 export const round = n => Math.round(n * 1000) / 1000;
 export function bounds(card, width = CARD_W, height = CARD_H) {
   return card.tapped
-    ? {left:card.x-height, top:card.y-width, right:card.x, bottom:card.y, width:height, height:width}
+    ? {left:card.x, top:card.y-width, right:card.x+height, bottom:card.y, width:height, height:width}
     : {left:card.x, top:card.y-height, right:card.x+width, bottom:card.y, width, height};
 }
 export const contains = (r,p) => p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom;
@@ -21,12 +21,14 @@ export function screenBounds(card, viewport, camera) {
     right:viewport.left+camera.x+r.right*z,bottom:viewport.top+camera.y+r.bottom*z,width:r.width*z,height:r.height*z};
 }
 export function canonicalHit(cards, point) {
-  return [...cards].sort((a,b)=>b.z-a.z||b.index-a.index).find(card=>contains(bounds(card),point))||null;
+  let found=null;
+  for(const card of cards)if(contains(bounds(card),point)&&(!found||card.z>found.z||(card.z===found.z&&card.index>found.index)))found=card;
+  return found;
 }
 export function anchorFromGrab(point, grab, tapped=false) {
   const width=tapped?CARD_H:CARD_W, height=tapped?CARD_W:CARD_H;
   const left=point.x-grab.x*width, top=point.y-grab.y*height;
-  return {x:round(left+(tapped?width:0)), y:round(top+height)};
+  return {x:round(left), y:round(top+height)};
 }
 export function zoomAt(camera, point, viewport, delta) {
   const world=worldPoint(point,viewport,camera), zoom=clamp(camera.zoom*Math.exp(-clamp(delta,-1000,1000)*.0015),.18,3);

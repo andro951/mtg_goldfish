@@ -55,7 +55,7 @@ export class Engine {
     return amount;
   }
   baseCharacteristics(object) {
-    const definition = this.definition(object), base = { ...clone(definition), id: object.id, oid: object.oid,
+    const definition = this.definition(object), base = { ...definition, id: object.id, oid: object.oid,
       types: [...definition.types], subtypes: [...definition.subtypes], supertypes: [...definition.supertypes],
       colors: [...definition.colors], keywords: [...definition.keywords], power: Number(definition.power) || 0,
       toughness: Number(definition.toughness) || 0, manaValue: Number(definition.manaValue) || 0 };
@@ -150,6 +150,7 @@ export class Engine {
   }
   perform(action) {
     if (!action || typeof action.type !== 'string') return { ok: false, error: { message: 'Invalid action.', code: 'INVALID_ACTION' } };
+    this.lastActionEvents = [];
     if (action?.type === 'UNDO') return this.undo();
     if (action?.type === 'REDO') return this.redo();
     const attemptBefore = clone(this.state), newTransaction = !this.transaction;
@@ -161,11 +162,13 @@ export class Engine {
       this.handleAction(action);
       this.settle();
       if (!this.state.pending && !this.state.actionDraft && !this.state.resolving) this.commitTransaction();
+      this.lastActionEvents = (this.transaction?.events || this.history[this.cursor-1]?.events || []).filter(e=>e.sequence>attemptBefore.eventSerial);
       this.notify(); return { ok: true, pending: clone(this.state.pending) };
     } catch (error) {
       this.state = attemptBefore; this.touch();
       if (newTransaction) this.transaction = null;
       else { this.transaction.intents.length = previousIntents; this.transaction.events.length = previousEvents; }
+      this.lastActionEvents = [];
       this.lastError = { message: error.message, code: error.code || 'ENGINE_ERROR', detail: error.detail || null };
       if (!(error instanceof RuleError)) console.error(error);
       this.notify(); return { ok: false, error: this.lastError };

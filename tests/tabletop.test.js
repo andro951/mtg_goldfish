@@ -8,7 +8,7 @@ import { Engine } from '../src/core/index.js';
 const close=(a,b)=>assert.ok(Math.abs(a-b)<.001,`${a} != ${b}`);
 test('upright and tapped footprints share one corner anchor',()=>{
  const u=bounds({x:400,y:300,tapped:false}),t=bounds({x:400,y:300,tapped:true});
- assert.equal(u.left,t.right);assert.equal(u.bottom,t.bottom);close(t.width,u.height);close(t.height,u.width);
+ assert.equal(u.left,t.left);assert.equal(u.bottom,t.bottom);close(t.width,u.height);close(t.height,u.width);
 });
 for(const tapped of [false,true])test(`normalized grab point survives drag at arbitrary scale (tapped=${tapped})`,()=>{
  const grab={x:.23,y:.67},point={x:-70.5,y:214.1},a=anchorFromGrab(point,grab,tapped),b=bounds({...a,tapped});

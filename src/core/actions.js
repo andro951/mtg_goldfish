@@ -67,7 +67,7 @@ export const actionMethods = {
         const object = this.object(update.id);
         requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
         requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
-        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}) };
+        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot: updates.indexOf(update)} : {}) };
       }
       if (action.order) {
         requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
@@ -433,6 +433,7 @@ export const actionMethods = {
     }
     const stackObject = { id: `s${this.state.nextStackId++}`, kind: draft.kind === 'spell' ? 'spell' : 'ability', source: draft.source, sourceCardId: draft.sourceCardId,
       abilityId: draft.abilityId || null, label, controller: 0, context: clone(draft.context), targets: clone(draft.targets), paid, permission: clone(draft.permission || null) };
+    if(draft.kind==='ability')this.record('ABILITY_ACTIVATED',{source:draft.source,abilityId:draft.abilityId});
     if (definition.mana && draft.kind === 'ability') {
       this.record('MANA_ABILITY_RESOLVED', { source: draft.source, label });
       const commands = definition.effect ? definition.effect(this, draft.context) : [];
