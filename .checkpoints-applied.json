@@ -21,5 +21,6 @@
   "checkpoints/051-tabletop-release-gates.patch": "eaee3e3fd8b016a5cd0db9c419367e15dff2034fe67af512558f7682cd0bab08",
   "checkpoints/052-tabletop-completion.patch": "2e6f25f46a518f51f316a4239c3b39caf1435ada5247fe93a2375e8ef8a5f820",
   "checkpoints/053-popup-image-layout.patch": "bedc9a9b928f4e91d4403d346b26e979a5d1b6fa6dd99ee436d8c5828f47d488",
-  "checkpoints/054-tabletop-development-docs.patch": "1430f3fbbc50342a3ebb402645ba1187d8669f9567fab6f6ce8400ad292dc2c2"
+  "checkpoints/054-tabletop-development-docs.patch": "1430f3fbbc50342a3ebb402645ba1187d8669f9567fab6f6ce8400ad292dc2c2",
+  "checkpoints/055-async-recovery-acceptance.patch": "7ef795a47c96bd17beb1d3df0edabd8df4f0b7709abeb0c855bccbbc0c113d62"
 }

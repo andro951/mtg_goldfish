@@ -22,8 +22,11 @@ def persistence(p):
  doc['stateChecksum']='corrupt';p.locator('#session-file').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':json.dumps(doc).encode()});p.wait_for_timeout(150);check('corrupted import leaves current game untouched',checksum(p)==expected)
  click(p,'verify-replay','.modal');check('replay verification succeeds from UI','Replay verified' in p.locator('#toast').inner_text());close(p)
  # Separate saves have genuinely different game states.
- before=state(p,'state.players[0].life');p.locator('[data-action=resource][data-player="0"][data-field=life][data-delta="-1"]').click();p.evaluate('astra.flushSave()');menu(p,'save');click(p,'restore-previous','.modal')
- check('previous autosave recovery restores a real previous state',state(p,'state.players[0].life')==before)
+ before=state(p,'state.players[0].life');p.locator('[data-action=resource][data-player="0"][data-field=life][data-delta="-1"]').click();p.evaluate('astra.flushSave()');menu(p,'save')
+ previous=p.evaluate('(async()=> (await astra.storage.get("previous"))?.session.currentState.players[0].life)()')
+ check('autosave retains the previous distinct game state',previous==before,{'expected':before,'previous':previous})
+ click(p,'restore-previous','.modal');p.locator('.modal').wait_for(state='detached')
+ check('previous autosave recovery restores a real previous state',state(p,'state.players[0].life')==before,{'expected':before,'actual':state(p,'state.players[0].life')})
 
 
 def responsive(p):
