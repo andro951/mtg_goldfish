@@ -203,6 +203,8 @@ def main() -> None:
 if __name__ == '__main__':
     try:
         main()
+        from import_table_art import main as import_table_art
+        import_table_art()
     except Exception as exc:
         print(f'Import failed: {exc}', file=sys.stderr)
         raise

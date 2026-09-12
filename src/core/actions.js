@@ -50,10 +50,16 @@ export const actionMethods = {
     if (type === 'LAYOUT') {
       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
       for (const update of updates) {
-        const object = this.object(update.id); requireRule(object && ['battlefield', 'graveyard'].includes(object.zone), 'Only cards already in battlefield or graveyard can be repositioned.');
-        object.location = { x: integer(Math.round(update.x), 0, 10000), y: integer(Math.round(update.y), 0, 10000) };
+        const object = this.object(update.id);
+        requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
+        requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
+        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}) };
       }
-      this.record('LAYOUT_CHANGED', { updates }); return;
+      if (action.order) {
+        requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
+        action.order.forEach((id,index)=>{const object=this.object(id);requireRule(object,'Missing layer object.');object.flags.tableZ=index;});
+      }
+      this.record('LAYOUT_CHANGED', { updates, order: action.order || null }); return;
     }
     if (type === 'RESERVE_ACCESS') {
       this.state.reserveAccess = !!action.enabled; this.record('HARNESS_RESERVE_ACCESS', { enabled: this.state.reserveAccess }); return;
@@ -136,6 +142,11 @@ export const actionMethods = {
     requireRule(land === c.types.includes('Land'), land ? 'This card is not a land.' : 'Lands are played, not cast.');
     const permissions = this.castingPermissions(source, land);
     requireRule(permissions.length, `You do not have permission to ${land ? 'play' : 'cast'} this card from ${source.zone}.`, 'NO_PERMISSION');
+    if (action.placement) {
+      const p=action.placement;
+      requireRule(Number.isFinite(p.x) && Number.isFinite(p.y) && Math.abs(p.x)<=100000 && Math.abs(p.y)<=100000 && Array.isArray(p.order), 'Invalid drop placement.');
+      source.flags.tablePlacement=clone(p);
+    }
     const context = this.context(source, { inputs: clone(action.inputs || {}), castX: action.x ?? action.inputs?.x ?? 0 });
     if (action.permission) context.inputs.permission = action.permission;
     if (action.x != null) context.inputs.x = action.x;
@@ -147,6 +158,11 @@ export const actionMethods = {
     requireRule(source.controller === 0 || (source.zone !== 'battlefield' && source.owner === 0), 'You do not control this ability.');
     const ability = this.abilities(source).find(a => a.id === action.abilityId);
     requireRule(ability, 'This ability is not available in the current zone.', 'ABILITY_UNAVAILABLE');
+    // Reject impossible tap-symbol costs before asking for colors or targets.
+    if (ability.tap) {
+      requireRule(!source.tapped, 'This permanent is already tapped.', 'TAP_COST');
+      requireRule(!this.isSick(source), 'This creature has summoning sickness.', 'SUMMONING_SICKNESS');
+    }
     const context = this.context(source, { inputs: clone(action.inputs || {}) });
     if (action.x != null) context.inputs.x = action.x;
     this.state.actionDraft = { kind: 'ability', source: ref(source), sourceCardId: context.sourceCardId, abilityId: ability.id, context, targets: [], autoPayment: action.payment === 'auto', payment: action.payment && action.payment !== 'auto' ? clone(action.payment) : null };

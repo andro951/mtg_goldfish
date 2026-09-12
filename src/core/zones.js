@@ -51,6 +51,7 @@ export const zoneMethods = {
         const target = this.state.zones[to]; if (proposal.position === 'bottom') target.push(object.id); else target.unshift(object.id);
         continue;
       }
+      const tablePlacement = clone(object.flags.tablePlacement || null);
       const wasCast = from === 'stackCards' && !!object.flags.cast;
       const castX = object.flags.castX || 0, prototype = clone(object.flags.prototype || null);
       const spawnCopy = object.token && from === 'workspace' ? clone(object.copy) : null;
@@ -59,6 +60,13 @@ export const zoneMethods = {
       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
       object.modifications = []; object.copy = spawnCopy; object.attacksThisTurn = 0; object.location = null;
       object.flags = { ...(object.token && (lki.flags.hasBeenOnBattlefield || from === 'battlefield') ? { hasBeenOnBattlefield: true, leftBattlefield: true } : {}), ...(proposal.flags || {}) };
+      if (tablePlacement && ['stackCards','battlefield'].includes(to)) {
+        if(to==='stackCards')object.flags.tablePlacement=tablePlacement;
+        else {
+          object.location={x:tablePlacement.x,y:tablePlacement.y,anchor:'corner-v2'};
+          tablePlacement.order.forEach((id,index)=>{const target=this.object(id);if(target)target.flags.tableZ=index;});
+        }
+      }
       if (to === 'battlefield') {
         object.enteredTurn = this.state.turnSerial; object.controlledSince = this.state.turnSerial;
         object.tapped = proposal.tapped; object.flags.cast = wasCast; object.flags.castX = castX;

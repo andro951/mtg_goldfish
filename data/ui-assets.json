@@ -1,0 +1,8 @@
+{
+  "assets/card-back.jpg": {
+    "source": "https://upload.wikimedia.org/wikipedia/en/a/aa/Magic_the_gathering-card_back.jpg",
+    "sha256": "3e925ff9812bd8b5ffa7feb2c363fa5e873659ef76fe603620d9af4ef31ec553",
+    "bytes": 82213,
+    "credit": "Magic: The Gathering card back; Wizards of the Coast. Low-resolution reference image, not licensed for commercial reproduction."
+  }
+}
