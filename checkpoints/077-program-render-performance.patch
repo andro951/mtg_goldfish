@@ -1,0 +1,88 @@
+--- a/src/tabletop/program-controller.js
++++ b/src/tabletop/program-controller.js
+@@ -4,14 +4,17 @@
+  * is data, never executable code; automatic chains and repetitions are bounded. */
+ export function createProgramController(api) {
+   let model=cleanPrograms(), recording=null, running=null, busy=false, chain=0;
+-  const changed=()=>api.changed?.();
++  const changed=(configuration=true)=>api.changed?.(configuration);
+   const cleanBoundary=()=>!api.g.state.pending&&!api.g.state.actionDraft&&!api.g.state.resolving&&!api.g.transaction;
+-  const pause=reason=>{model.paused=true;model.pauseReason=reason;changed();};
++  const pause=reason=>{model.paused=true;model.pauseReason=reason;changed(false);};
+   const remember=key=>{model.seen.push(key);if(model.seen.length>5000)model.seen.splice(0,model.seen.length-5000);};
+   const ruleKey=(r,e)=>`${r.id}/${e.event}/${e.stackId||e.serial}`;
+   function observe(events) {
+-    if(recording)return;
+-    model.queue.push(...eventSignals(api.g,events));
++    if(recording||!model.rules.some(r=>r.enabled&&r.event!=='beforeResolve'))return;
++    // Conditions are evaluated at priority, but unrelated events need no queue,
++    // preference serialization, or second full-table render.
++    const relevant=e=>model.rules.some(r=>r.enabled&&r.event===e.event&&(!r.cardId||r.cardId===e.cardId)&&(!r.abilityId||r.abilityId===e.abilityId)&&(r.scope!=='stack'||r.stackIds.includes(e.stackId)));
++    model.queue.push(...eventSignals(api.g,events).filter(relevant));
+     if(model.queue.length>200){model.queue.length=200;pause('Automation queue limit reached. Review rules, then resume.');}
+   }
+@@ -49,13 +52,14 @@
+           if(model.paused){model.queue.unshift(event);break;}
+         }
+       }
+-    } finally {busy=false;changed();}
++    } finally {busy=false;}
+   }
+   function beforeResolve() {
+     pump();if(model.paused||!cleanBoundary())return false;
+     const top=api.g.state.stack.at(-1);if(!top)return false;
+     const event={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id,source:top.source};
+     for(const rule of model.rules)if(ruleMatches(api.g,rule,event)) {
++      if(api.g.state.stack.at(-1)?.id!==top.id)return false;
+       applyRule(rule,event);
+       if(model.paused||!cleanBoundary())return false;
+     }
+@@ -71,21 +75,22 @@
+       if(!result.ok)return;
+       if(['UNDO','REDO','CANCEL'].includes(action.type)) {
+         if(recording){recording=null;api.toast('Recording stopped because the action was undone or cancelled. Re-record the intended line.');}
+-        model.queue=[];model.seen=[];model.paused=false;model.pauseReason='';changed();return;
++        model.queue=[];model.seen=[];model.paused=false;model.pauseReason='';changed(false);return;
+       }
+       if(recording&&step) {
+         recording.steps.push(step);
++        changed(false);
+         if(recording.steps.length>=PROGRAM_LIMIT)api.toast('Recording reached 256 steps. Finish or cancel the current decision, then save.');
+       }
+       observe(api.g.lastActionEvents||[]);pump();
+     },
+     pump,beforeResolve,
+-    resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed();},
+-    stop(){if(running)running.stop=true;else pause('Paused by you.');changed();},
++    resume(){chain=0;model.paused=false;model.pauseReason='';pump();changed(false);},
++    stop(){if(running)running.stop=true;else pause('Paused by you.');changed(false);},
+     startRecording(name) {
+       if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
+-      recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed();
++      recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed(false);
+     },
+@@ -97,20 +102,20 @@
+       model.sequences.push(sequence);recording=null;changed();return sequence;
+     },
+-    cancelRecording(){recording=null;model.queue=[];changed();},
++    cancelRecording(){recording=null;model.queue=[];changed(false);},
+     async repeat(id,count=1) {
+       if(running||recording)throw new Error('Stop the current run or recording first.');
+       const sequence=model.sequences.find(s=>s.id===id);
+       if(!sequence)throw new Error('Sequence not found.');
+       if(!Number.isInteger(count)||count<1||count>1000)throw new Error('Choose 1–1000 iterations. Each iteration is checked separately.');
+-      const job=running={id,completed:0,count,stop:false};model.paused=false;model.pauseReason='';chain=0;changed();
++      const job=running={id,completed:0,count,stop:false};model.paused=false;model.pauseReason='';chain=0;changed(false);
+       try {
+         for(let i=0;i<count&&!job.stop;i++) {
+           const result=execute(sequence);
+           if(!result.ok){pause(`Stopped before iteration ${i+1}: ${result.error}`);break;}
+-          job.completed++;changed();
++          job.completed++;changed(false);
+           // Process configured holds between iterations, never during a payment.
+@@ -118,5 +123,5 @@
+         }
+         return {completed:job.completed,requested:count,reason:model.pauseReason||(job.stop?'Stopped by you.':'')};
+-      } finally {if(running===job)running=null;changed();}
++      } finally {if(running===job)running=null;changed(false);}
+     },
