@@ -12,13 +12,13 @@
   "reproducibleBuilds": [
     {
       "path": "index.html",
-      "bytes": 967703,
-      "sha256": "dcc776803d81a27f05b371079986b38753c4e52bbe14c01076bbc1f20f32ed03"
+      "bytes": 967707,
+      "sha256": "4dc6b51ab7595ff65a32c95249866e6ccf38c6627448d4518cef7d95c78816e1"
     },
     {
       "path": "Astra-standalone.html",
-      "bytes": 23468212,
-      "sha256": "41df0b1be4076d527f9ad6c35933ca011641fb8f951f88fb74468d4a52b2945e"
+      "bytes": 23468216,
+      "sha256": "8663c3a8b69887e155caad88a947508b29e76f60dce8d534b8c9b0c838f2245c"
     }
   ],
   "archive": "dist/AstraSimulator.zip",

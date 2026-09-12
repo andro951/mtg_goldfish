@@ -4,8 +4,8 @@
   "modules": 34,
   "candidateCards": 160,
   "definitions": 175,
-  "htmlBytes": 23468212,
-  "sha256": "41df0b1be4076d527f9ad6c35933ca011641fb8f951f88fb74468d4a52b2945e",
+  "htmlBytes": 23468216,
+  "sha256": "8663c3a8b69887e155caad88a947508b29e76f60dce8d534b8c9b0c838f2245c",
   "runtimeDependencies": [],
   "networkRequired": false
 }
