@@ -1,0 +1,132 @@
+--- a/src/rules/landfall.js
++++ b/src/rules/landfall.js
+@@ -50,14 +50,14 @@
+   register(registry, 'Retreat to Coralhelm', { triggers: [landfall('retreat', 'Tap/untap a creature or scry', (g, ctx) => ctx.inputs.mode === 'scry' ? [{ op: 'scry', count: 1 }] : tapChoice(), {
+     modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'creature', label: 'Creature' }, { value: 'scry', label: 'Scry' }] },
+-    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Retreat’s mode', options: [{ value: 'creature', label: 'You may tap or untap target creature' }, { value: 'scry', label: 'Scry 1' }] },
++    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Retreat’s mode', options: [...(g.count({ zones: ['battlefield'], creature: true, target: true }, ctx) ? [{ value: 'creature', label: 'You may tap or untap target creature' }] : []), { value: 'scry', label: 'Scry 1' }] },
+       ...(ctx.inputs.mode === 'creature' ? [target({ zones: ['battlefield'], creature: true })] : [])],
+   })] });
+-  const raftModes = (g, controller = 0) => [
+-    ...(g.count({ creature: true, controller: 'opponent' }, { controller }) ? [{ value: 'tap', label: 'Tap target creature an opponent controls' }] : []),
+-    ...(g.count({ creature: true, controller: 'you' }, { controller }) ? [{ value: 'untap', label: 'Untap target creature you control' }] : []),
++  const raftModes = (g, ctx) => [
++    ...(g.count({ creature: true, controller: 'opponent', target: true }, ctx) ? [{ value: 'tap', label: 'Tap target creature an opponent controls' }] : []),
++    ...(g.count({ creature: true, controller: 'you', target: true }, ctx) ? [{ value: 'untap', label: 'Untap target creature you control' }] : []),
+   ];
+   register(registry, 'Elven Raft-Steerer', { triggers: [landfall('steer', 'Tap an opposing creature or untap your creature', (g, ctx) => [{ op: ctx.inputs.mode, ids: '$input.target' }], {
+     modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'tap', label: 'Tap opponent' }, { value: 'untap', label: 'Untap yours' }] },
+-    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: raftModes(g, s.controller) },
++    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: raftModes(g, ctx) },
+       ...(ctx.inputs.mode ? [target({ zones: ['battlefield'], creature: true, controller: ctx.inputs.mode === 'tap' ? 'opponent' : 'you' })] : [])],
+   })] });
+@@ -66,5 +66,5 @@
+   register(registry, 'Scaretiller', { triggers: [{ id: 'tiller', label: 'Put a land from hand or return a land from graveyard', event: 'BECAME_TAPPED', test: (g, s, e) => sameRef(s, e.object),
+     modePreference: { key: 'mode', label: 'Tapped trigger mode', options: [{ value: 'hand', label: 'Hand land' }, { value: 'graveyard', label: 'Graveyard land' }] },
+-    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Scaretiller’s mode', options: [{ value: 'hand', label: 'You may put a land from hand onto the battlefield tapped' }, { value: 'graveyard', label: 'Return target land from your graveyard tapped' }] },
++    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Scaretiller’s mode', options: [{ value: 'hand', label: 'You may put a land from hand onto the battlefield tapped' }, ...(g.count({ ...GY, land: true, target: true }, ctx) ? [{ value: 'graveyard', label: 'Return target land from your graveyard tapped' }] : [])] },
+       ...(ctx.inputs.mode === 'graveyard' ? [target({ ...GY, land: true })] : [])],
+     effect: (g, ctx) => ctx.inputs.mode === 'graveyard' ? [move('$input.target', 'battlefield', { tapped: true })] : handLand(true),
+--- a/tools/import_cards.py
++++ b/tools/import_cards.py
+@@ -137,8 +137,10 @@
+     previous = {} if not cards_path.exists() else {c['id']: c for c in json.loads(cards_path.read_text(encoding='utf-8'))}
+     # Only related tokens/meld results, not unrelated cards named in a printing's parts.
+-    related = {p['uri'] for raw in list(snapshots.values()) for p in raw.get('all_parts', []) if p.get('component') in ('token', 'meld_result')}
++    related = {normalize(p['name']): p['uri'] for raw in list(snapshots.values()) for p in raw.get('all_parts', []) if p.get('component') in ('token', 'meld_result')}
+     known_prints = {r['id'] for r in snapshots.values()}
+-    for uri in sorted(related):
+-        if uri.rsplit('/', 1)[-1] not in known_prints:
++    for name, uri in sorted(related.items()):
++        # Related printings may differ while referring to the same token. Keep
++        # the already pinned definition instead of silently repinning every CI run.
++        if name not in snapshots and uri.rsplit('/', 1)[-1] not in known_prints:
+             raw = json.loads(request(uri))
+             snapshots[normalize(raw['name'])] = raw
+@@ -169,5 +171,5 @@
+             assets[path] = {'sha256': hashlib.sha256(content).hexdigest(), 'bytes': len(content), 'source': url, 'printing': raw['id']}
+         prev = previous.get(oracle_id, {})
+-        rulings = prev.get('rulings')
++        rulings = None if args.refresh else prev.get('rulings')
+         if rulings is None:
+             rulings = [] if args.no_rulings or not raw.get('rulings_uri') else json.loads(request(raw['rulings_uri']))['data']
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -62,2 +62,4 @@
+ /* Clockwise around the physical bottom-right, shifted to the upright left anchor. */
+ .card-position.tapped{transform-origin:bottom right;transform:translateX(-110px) rotate(90deg)}
++
++.ordering-window .choice-row>.ordinal{flex:0 0 24px}.ordering-window .choice-row>.order-label{flex:1;text-align:left}
+--- a/src/tabletop/program-views.js
++++ b/src/tabletop/program-views.js
+@@ -11,9 +11,9 @@
+   const model=programs.model,r=ui.ruleDraft;
+   const name=id=>registry.has(id)?registry.get(id).name:'Any card';
+-  const abilityLabel=r=>{const m=r.cardId?registry.module(r.cardId):{};return [...(m.activated||[]),...(m.triggers||[])].find(a=>a.id===r.abilityId)?.label||r.abilityId;};
++  const abilityLabel=r=>{const m=r.cardId&&registry.has(r.cardId)?registry.module(r.cardId):{};return [...(m.activated||[]),...(m.triggers||[])].find(a=>a.id===r.abilityId)?.label||r.abilityId;};
+   const cards=[['','Any card'],...registry.list().filter(c=>c.candidate).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name])];
+   let editor='';
+   if(r) {
+-    const module=r.cardId?registry.module(r.cardId):{};
++    const module=r.cardId&&registry.has(r.cardId)?registry.module(r.cardId):{};
+     const abilities=[['','Any spell / ability'],...(module.activated||[]).map(a=>[a.id,a.label||a.id]),...(module.triggers||[]).map(a=>[a.id,a.label||a.id])];
+     const scopes=r.editing?[['game','Rest of this game'],['future','This and future games'],...(r.scope==='stack'?[['stack',`Selected stack objects (${r.stackIds.length})`]]:[])]:r.stackContext?[['one','This stack object only'],['current','All matching objects currently on stack'],['game','All matching objects for this game'],['future','This and future games']]:[['future','This and future games'],['game','This game only']];
+--- a/src/tabletop/program-controller.js
++++ b/src/tabletop/program-controller.js
+@@ -1,2 +1,3 @@
++import { RuleError } from '../core/index.js';
+ import { captureStep, cleanPrograms, restorePrograms, preflightSequence, ruleMatches, eventSignals, PROGRAM_LIMIT, programId } from './programs.js';
+ 
+@@ -21,9 +22,9 @@
+     if(!top)return;
+     const e={event:'beforeResolve',cardId:top.sourceCardId,abilityId:top.abilityId||'',stackId:top.id};
+-    if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new Error('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
++    if(model.rules.some(r=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))))throw new RuleError('A configured before-resolution shortcut would interrupt this recorded line. Resolve that object separately or temporarily disable that rule.');
+   },afterBoundary(trial,events){
+     const signals=eventSignals(trial,events);
+     if(model.rules.some(r=>signals.some(e=>ruleMatches(trial,r,e)&&!model.seen.includes(ruleKey(r,e))&&(r.action!=='hold'||trial.state.stack.length))))
+-      throw new Error('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
++      throw new RuleError('A configured player rule would run before the next recorded step. Split the line at this priority boundary or temporarily disable that rule.');
+   }});}
+   function execute(sequence) {
+@@ -94,12 +95,12 @@
+     stop(){if(running){if(running.stop)return;running.stop=true;changed(false);}else if(!model.paused)pause('Paused by you.');},
+     startRecording(name) {
+-      if(!cleanBoundary()||running)throw new Error('Finish the current choice or sequence before recording.');
++      if(!cleanBoundary()||running)throw new RuleError('Finish the current choice or sequence before recording.');
+       recording={name:name||'New sequence',steps:[]};model.queue=[];model.paused=false;model.pauseReason='';changed(false);
+     },
+     finishRecording(name,saved=false) {
+-      if(!recording)throw new Error('No sequence is being recorded.');
+-      if(!cleanBoundary())throw new Error('Finish the pending choice before saving the recording.');
+-      if(!recording.steps.length)throw new Error('Perform at least one game action before saving.');
+-      if(recording.steps.length>PROGRAM_LIMIT)throw new Error('The recording exceeds 256 steps.');
++      if(!recording)throw new RuleError('No sequence is being recorded.');
++      if(!cleanBoundary())throw new RuleError('Finish the pending choice before saving the recording.');
++      if(!recording.steps.length)throw new RuleError('Perform at least one game action before saving.');
++      if(recording.steps.length>PROGRAM_LIMIT)throw new RuleError('The recording exceeds 256 steps.');
+       const sequence={id:programId('seq'),name:(name||recording.name).slice(0,120),steps:recording.steps,saved:!!saved};
+       model.sequences.push(sequence);recording=null;changed();return sequence;
+@@ -107,8 +108,8 @@
+     cancelRecording(){recording=null;model.queue=[];changed(false);},
+     async repeat(id,count=1) {
+-      if(running||recording)throw new Error('Stop the current run or recording first.');
++      if(running||recording)throw new RuleError('Stop the current run or recording first.');
+       const sequence=model.sequences.find(s=>s.id===id);
+-      if(!sequence)throw new Error('Sequence not found.');
+-      if(!Number.isInteger(count)||count<1||count>1000)throw new Error('Choose 1–1000 iterations. Each iteration is checked separately.');
++      if(!sequence)throw new RuleError('Sequence not found.');
++      if(!Number.isInteger(count)||count<1||count>1000)throw new RuleError('Choose 1–1000 iterations. Each iteration is checked separately.');
+       const job=running={id,completed:0,count,stop:false};model.paused=false;model.pauseReason='';chain=0;changed(false);
+       try {
+@@ -126,6 +127,6 @@
+     },
+     preflight(id){return preflight(model.sequences.find(s=>s.id===id));},
+-    saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new Error('Invalid rule.');
+-      if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new Error('Choose a recorded sequence first.');
++    saveRule(rule){const clean=cleanPrograms({rules:[rule]}).rules[0];if(!clean)throw new RuleError('Invalid rule.');
++      if(clean.action!=='hold'&&!model.sequences.some(s=>s.id===clean.sequenceId))throw new RuleError('Choose a recorded sequence first.');
+       const old=model.rules.findIndex(r=>r.id===clean.id);if(old<0)model.rules.push(clean);else model.rules[old]=clean;changed();},
+     toggleRule(id,enabled){const rule=model.rules.find(r=>r.id===id);if(rule){rule.enabled=enabled;changed();}},
+@@ -133,5 +134,5 @@
+     saveSequence(id,saved){const s=model.sequences.find(s=>s.id===id);if(s&&name.trim()){s.name=name.trim().slice(0,120);changed();}},
