@@ -1,0 +1,125 @@
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -134,3 +134,3 @@
+       if (!zoneMatches || (rule.test && !rule.test(this, source, object, land))) continue;
+-      permissions.push({ id: `${source.id}:${source.oid}:${rule.id}`, label: rule.label, method: rule.method || 'normal', provider: ref(source), ruleId: rule.id, additionalCosts: clone(list(rule.additionalCosts, this, source, this.context(object))) });
++      permissions.push({ id: `${source.id}:${source.oid}:${rule.id}`, label: rule.label, method: rule.method || 'normal', provider: ref(source), ruleId: rule.id, additionalCosts: clone(list(rule.additionalCosts, this, source, this.context(object))), ...(rule.oncePerTurn?{onceKey:`permission:${source.id}:${source.oid}:${rule.id}`}:{}) });
+     }
+@@ -318,4 +318,3 @@
+         const spec = this.materializeInput(specRaw, draft.context), value = draft.context.inputs[spec.key];
+-        if (spec.type === 'player') draft.targets.push({ key: spec.key, player: value });
+-        else for (const id of asArray(value)) draft.targets.push({ key: spec.key, ref: ref(this.object(id)), selector: clone(spec.selector || {}) });
++        draft.targets.push(...this.targetRecords(spec,value,draft.context));
+       }
+@@ -324,3 +323,3 @@
+       if (draft.kind === 'land') {
+-        this.state.landPlaysUsed++; this.record('LAND_PLAYED', { source: draft.source, permission: draft.permission.id, playsUsed: this.state.landPlaysUsed, allowance: this.landAllowance() });
++        this.state.landPlaysUsed++; this.emit('LAND_PLAYED', { source: draft.source, controller:0, permission: draft.permission.id, playsUsed: this.state.landPlaysUsed, allowance: this.landAllowance() });
+         this.state.actionDraft = null; this.moveBatch([{ id: draft.source, to: 'battlefield', cause: 'play-land', controller: 0 }]); return;
+@@ -430,2 +429,5 @@
+       const source = this.object(draft.source.id); source.flags.cast = true; source.flags.castX = draft.context.castX;
++      if(draft.permission?.escape)source.flags.escaped=true;
++      if(draft.permission?.warp)source.flags.warped=true;
++      if(draft.permission?.onceKey)this.state.turnCounts[draft.permission.onceKey]=1;
+       draft.source = ref(source); draft.context.source = ref(source);
+@@ -444,3 +446,3 @@
+       this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
+-      if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id });
++      if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id, manaSources:clone(draft.context.spentManaSources||[]), castSnapshot:this.lastKnown(this.object(draft.source)) });
+     }
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -105,3 +105,3 @@
+         const destination = cmd.to || 'graveyard', cause = command.op === 'move' ? cmd.cause || 'effect' : command.op;
+-        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, attachedTo: cmd.attachedTo })), context);
++        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, face:cmd.face, attachedTo: cmd.attachedTo })), context);
+         if (command.key) context.vars[command.key] = clone(changes || []); return;
+@@ -202,3 +202,3 @@
+         this.state.pending = { kind: 'castWindow', label: cmd.label || 'Cast a spell without paying its mana cost?', candidates: ids, min: 0, max: 1,
+-          optional: true, ids, method: cmd.method || 'free', cost: cmd.cost, source: context.source };
++          optional: true, ids, method: cmd.method || 'free', cost: cmd.cost, source: context.source, resultKey:command.key||null };
+         return;
+@@ -269,2 +269,3 @@
+       this.state.pending = null;
++      if(pending.resultKey)frame.context.vars[pending.resultKey]=ids.length>0;
+       if (ids.length) {
+--- a/src/core/events.js
++++ b/src/core/events.js
+@@ -5,2 +5,4 @@
+     this.touch();
++    if(type==='SPELL_CAST')this.state.turnCounts[`spells:${detail.controller}`]=(this.state.turnCounts[`spells:${detail.controller}`]||0)+1;
++    if(type==='DRAW'&&detail.abstract){const k=`draw:${detail.player}:${this.state.turnSerial}:${this.state.activePlayer}`;this.state.turnCounts[k]=(this.state.turnCounts[k]||0)+1;detail.first=this.state.turnCounts[k]===1;detail.amount=1;}
+     const event = this.record(type, detail);
+@@ -20,3 +22,4 @@
+         let multiplier = 1;
+-        for (const doubling of this.objects('battlefield')) {
++        const doublers=['LEAVE','DIED','SACRIFICED'].includes(type)&&previousSources.length?previousSources:this.objects('battlefield');
++        for (const doubling of doublers) {
+           const rule = this.module(doubling).triggerMultiplier;
+@@ -116,3 +119,4 @@
+     const context = clone(object.context || {});
+-    const legalTargets = (object.targets || []).filter(t => t.player != null ? !this.state.players[t.player].lost && !this.playerProtected(t.player, object.controller) :
++    const legalTargets = (object.targets || []).filter(t => t.player != null ? !this.state.players[t.player].lost && !this.playerProtected(t.player, object.controller) : t.stackId ?
++      this.state.stack.some(s=>s.id===t.stackId&&(!t.spellOnly||s.kind==='spell')&&(!t.opponent||s.controller!==object.controller)) :
+       this.object(t.ref) && this.matches(this.object(t.ref), t.selector, { ...context, controller: object.controller }));
+@@ -123,5 +127,4 @@
+     }
+-    for (const target of object.targets || []) if (target.key && target.player == null) {
+-      const validForKey = legalTargets.filter(t => t.key === target.key).map(t => t.ref.id);
+-      context.inputs[target.key] = validForKey;
++    for (const target of object.targets || []) if (target.key && (target.player==null||target.encoded)) {
++      context.inputs[target.key]=legalTargets.filter(t=>t.key===target.key).map(t=>t.stackId?'stack:'+t.stackId:t.player!=null?'player:'+t.player:t.ref.id);
+     }
+@@ -130,3 +133,3 @@
+     if (object.kind === 'trigger') definition = this.triggerDefinition(object);
+-    else if (object.kind === 'ability') definition = (this.registry.module(object.sourceCardId).activated || []).find(a => a.id === object.abilityId);
++    else if (object.kind === 'ability') definition = this.abilityDefinition(object.sourceCardId,object.abilityId,object.context?.sourceSnapshot);
+     else definition = this.registry.module(object.sourceCardId).spell || {};
+--- a/src/core/index.js
++++ b/src/core/index.js
+@@ -1 +1,2 @@
++import { installExpandedEngine } from './expanded-core.js';
+ import { sequenceMethods } from './sequences.js';
+@@ -8,2 +9,3 @@
+ Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods);
++installExpandedEngine(Engine);
+ export { Engine };
+--- a/src/core/phases.js
++++ b/src/core/phases.js
+@@ -133,3 +133,3 @@
+     for (const attacker of entries) {
+-      const object = this.object(attacker.id); object.attacksThisTurn++; object.flags.attacking = { player: attacker.player, combatId: this.state.currentExtraCombat?.id || `normal-${this.state.turnSerial}` };
++      const object = this.object(attacker.id); object.attacksThisTurn++; this.state.turnCounts[`attacked:0:${attacker.player}`]=1; object.flags.attacking = { player: attacker.player, combatId: this.state.currentExtraCombat?.id || `normal-${this.state.turnSerial}` };
+     }
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -21,2 +21,3 @@
+         if (module.entersTapped) proposal.tapped = true;
++        if (module.entryTapped) proposal.tapped=!!module.entryTapped(this,object,context);
+         const replacements = beforeSources.flatMap(source => (this.module(source).replacements || []).map(rule => ({ source, rule })))
+@@ -38,2 +39,3 @@
+       }
++      if(object.flags.unearthed&&proposal.from==='battlefield'&&proposal.to!=='exile'){proposal.to='exile';this.record('REPLACEMENT_APPLIED',{rule:'unearth',object:ref(object),destination:'exile'});}
+       if (proposal.from === 'battlefield' && proposal.to === 'graveyard' && (object.counters.finality || 0) > 0) {
+@@ -55,2 +57,3 @@
+       const wasCast = from === 'stackCards' && !!object.flags.cast;
++      const castFlags={...(object.flags.escaped?{escaped:true}:{}),...(object.flags.warped?{warped:true}:{})};
+       const castX = object.flags.castX || 0, prototype = clone(object.flags.prototype || null);
+@@ -58,3 +61,3 @@
+       const meldParts = clone(object.flags.meldParts || null);
+-      object.oid++; object.zone = to; object.controller = proposal.controller ?? object.owner;
++      object.oid++; object.face=proposal.face??0; object.zone = to; object.controller = proposal.controller ?? object.owner;
+       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
+@@ -70,2 +73,3 @@
+       if (to === 'battlefield') {
++        if(wasCast)Object.assign(object.flags,castFlags);
+         object.enteredTurn = this.state.turnSerial; object.controlledSince = this.state.turnSerial;
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -1 +1,2 @@
++import { installExpanded } from './expanded.js';
+ import { ACCEPTED_CARDS } from './accepted-cards.js';
+@@ -28,2 +29,3 @@
+   }
++  installExpanded(registry);
+   return registry;
