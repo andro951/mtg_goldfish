@@ -4,7 +4,7 @@
   "checks": [
     "portable folder contains only the delivered HTML",
     "single file starts while browser is offline",
-    "all 175 local images are embedded",
+    "all 175 card images and the real Magic back are embedded",
     "every embedded image decodes successfully",
     "portable UI records a real game action offline",
     "portable file restores its saved game after reload",
