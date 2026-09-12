@@ -59,5 +59,6 @@
   "checkpoints/080-sequence-priority-safety.patch": "65c021ab6338d4d4a13ba2d6d56a7129977e670abc505e56249fdee58fed0dce",
   "checkpoints/081-audit-and-input-validation.patch": "23a59b9e4966bed4febdde1189b9bf389481eb1882e5667a4fad6b1405f1f685",
   "checkpoints/082-program-input-validation.patch": "aa6885c5a21fccdf4d46f758ee8d42986fd9c07096e16b6f4eafcc26af077898",
-  "checkpoints/083-program-browser-fixtures-and-release-gates.patch": "22225d4ef6bf6189c9ef877545e1178199520ecfb842e65730abae699bbab1ca"
+  "checkpoints/083-program-browser-fixtures-and-release-gates.patch": "22225d4ef6bf6189c9ef877545e1178199520ecfb842e65730abae699bbab1ca",
+  "checkpoints/084-player-program-documentation.patch": "d5b75e7bbe4d439dcdc78590a018e89e74ac3af7ebeedf544d9e14718252cd2a"
 }

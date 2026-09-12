@@ -1,4 +1,4 @@
-# Astra 1.2 — The Goldfish Lab
+# Astra 1.3 — The Goldfish Lab
 
 A compact, offline, rules-aware Magic testing table for the supplied **160-card candidate pool**. The battlefield fills the window; other controls appear only when needed.
 
@@ -30,7 +30,7 @@ Click a card to inspect it, then click that same card again to close inspection.
 
 Multicolor mana sources show a small popup of **only their legal mana symbols**. Click a symbol to add that color. There is no extra confirmation. Sources with one color do not need a color chooser. A tapped source cannot produce another mana prompt; an unavailable ability is not silently granted.
 
-Tapped cards really rotate sideways. The upright bottom-left corner stays fixed and becomes the sideways bottom-right corner. Untapping requires the appropriate game effect or turn step; a second click is not a free untap.
+Tapped cards rotate **clockwise**. The card’s physical original bottom-right corner moves to the exact position of its upright bottom-left corner; its sideways footprint extends to the right of that anchor. Untapping requires the appropriate game effect or turn step; a second click is not a free untap.
 
 When casting, choose a legal play permission, target, mode or additional cost as necessary. The payment window allocates mana already in your pool. It never automatically taps sources. You can still click your lands and artifacts for mana while payment is waiting. A nested color choice returns to the original payment. Escape cancels that unfinished nested activation without discarding mana from sources already activated during the payment.
 
@@ -55,6 +55,38 @@ Simultaneous trigger ordering is displayed in **resolution order**: the first ro
 The eye / **Look** workspace is for temporary multi-card effects such as inspecting, revealing or ordering several library cards. Its icon exists only while that workspace exists, and a completed workspace closes automatically. It is not the top-card display. A legal top-card viewing permission instead replaces the library back with the actual top card automatically.
 
 The left rail shows library and reserve count badges, a hand-count icon and a land-play icon with hover text. Compact rows track mana, life, energy, poison and opponent life. OP1/OP2/OP3 on the toolbar advance to those opponents and highlight the active opponent. **Next turn** and **Your next turn** are adjacent. Phase navigation processes intervening game steps and pauses for relevant stack objects and choices.
+
+## Reusable graveyard and exile grids
+
+New arrivals occupy the first free slot in the zone’s grid array. Dragging a card out detaches that card from the grid immediately, freeing its slot for the next arrival; the detached card stays where you placed it. The grid icon in the zone header returns **all** cards to the grid and updates their actual positions. Grid reset, manual positions, and undo/redo work together. Detached slots and positions are included in session exports and autosaves.
+
+## Player defaults and faster choices
+
+Cards such as **Codex Shredder** expose **Ask / You / OP1 / OP2 / OP3** in their inspector. **Choose once** ignores that default for one activation without erasing it. A **Player** button in a later pending cost/choice can return to that activation’s target-player selection. Illegal or unavailable player choices are never forced by a saved preference.
+
+**Settings → Auto-accept completed selections** can skip the confirmation after a single target or after selecting the full required number of cards. It also checks sufficient crew power. Variable-count choices still let you decide when to stop. The setting is also available in card-selection windows. Undo still reverses the complete activation, including its costs.
+
+Trigger and library ordering windows are resizable using the lower-right grip or arrow keys while that grip is focused. Drag rows directly, use single arrows for one position, or use **⇈ / ⇊** for top/bottom. Trigger rows are displayed first-to-resolve first; library rows are top-card first. Window size is remembered.
+
+## Sequences and loops
+
+The **circular-arrow toolbar button** opens Sequences. Choose **Record a sequence**, perform the legal line on your table, then open Sequences again and save it. Include every required cost, target, mode, and payment choice. Automatic stack resolution and player rules pause during recording; use Resolve explicitly for effects that belong in the recording. A recording must finish outside a pending decision.
+
+**Once** runs the complete line once. **Repeat** attempts the chosen number of iterations. Each iteration is simulated and validated before any real costs are paid. If a required card, target, mana payment, or stack object is wrong, that iteration does not start. A failed late command also rolls back the whole iteration. Completed iterations are separate undoable actions. **Stop** or Escape stops between complete iterations.
+
+A sequence is saved for **this game only** by default, including the game’s autosave/export. Tick **Save for future games** to retain it for new tests. You can rename it, reorder/remove recorded steps, check legality without executing, or delete it. Cross-game card bindings require unambiguous matching cards; the app does not guess between indistinguishable copies.
+
+The recorder is a bounded shortcut, not an arbitrary scripting language. It records legal card actions, explicit resolutions and choices, not debug commands or manual mana/life adjustments. Limits are 256 commands per line and 1,000 iterations per request. A configured priority shortcut inside a longer atomic line makes preflight stop with an explanation; split the line at that boundary or temporarily disable that shortcut rather than silently skipping it.
+
+## Conditional actions and priority stops
+
+The **lightning toolbar button** opens Player automations. Nothing is configured by default. Create a rule by choosing its event, card, optional ability, action, conditions, and lifetime. Conditions can require **all** or **any** of the listed cards to be present, absent, or untapped under your control. Rules can hold priority, run a recorded sequence, or run it then hold. A hold only occurs while something remains on the stack. Enabled checkboxes toggle rules without deleting them.
+
+For **Grinding Station → Urza**: record Urza’s artifact-mana activation with Grinding Station as the tap cost. Then create a rule **After an effect resolves → Grinding Station → untap → Run that sequence**, conditioned on controlling Urza. The engine rechecks the whole sequence; it will not tap an already-tapped Station or act without Urza. For a priority stop instead, choose **When a permanent untaps → Grinding Station → Hold priority**, with an **Any** condition group containing Urza and Clock of Omens.
+
+Each stack card has a small **↪ shortcut button**. It can create a sequence or priority stop **before** or **after** that spell/effect resolves, scoped to **that item**, **all matching items currently on the stack**, **all matches for this game**, or **future games**. Current-stack rules store those item IDs, so new copies are not accidentally included. This supports tapping a creature through Urza just before a Raft-Steerer effect untaps it, or acting immediately after that effect finishes.
+
+Player rules run only at clean priority boundaries, after mandatory choices and the current resolving effect finish. A failed automatic sequence pauses automation with its reason rather than partially executing. A 100-rule automatic-chain limit prevents self-triggering shortcuts from freezing the application. Resume is explicit after a stop. Future-game rules retain any referenced sequence automatically; unsaved unrelated game sequences do not leak into the next game.
 
 ## Start, save and recover
 
