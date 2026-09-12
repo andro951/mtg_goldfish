@@ -1,0 +1,37 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -284,6 +369,7 @@
+ });
+-document.addEventListener('dragend',()=>{if(!ui.deckDrag)return;ui.deckDrag=null;clearDeckDragVisuals();});
++document.addEventListener('dragend',()=>{ui.orderDrag=null;if(!ui.deckDrag)return;ui.deckDrag=null;clearDeckDragVisuals();});
+ document.addEventListener('input',e=>{const el=e.target;
++ if(el.id==='sequence-name')ui.sequenceName=el.value;
+  if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
+- if(el.id==='card-search'){ui.cardFilter=el.value;renderModal();}if(el.id==='choice-filter'){ui.choiceFilter=el.value;render();}
++ if(el.id==='card-search'){ui.cardFilter=el.value;renderModal();}if(el.id==='choice-filter'){ui.choiceFilter=el.value;const q=el.value.toLowerCase();for(const card of floats.querySelectorAll('.decision-gallery [data-card]')){const d=g.definition(card.dataset.card);card.hidden=!`${d.name} ${d.typeLine}`.toLowerCase().includes(q);}}
+  if(el.dataset.payment){ui.payment||={normal:{},tagged:[]};ui.payment.normal[el.dataset.payment]=Number(el.value);ui.paymentEdited=true;}
+@@ -292,3 +378,9 @@
+ document.addEventListener('change',e=>{const el=e.target;try{
++ if(el.closest('#rule-form')){const cardChange=el.id==='rule-card';readRuleForm();if(cardChange&&ui.ruleDraft){ui.ruleDraft.abilityId='';requestAnimationFrame(()=>{if(ui.ruleDraft)renderModal();});}return;}
++ if(el.dataset.ruleToggle){programs.toggleRule(el.dataset.ruleToggle,el.checked);return;}
++ if(el.dataset.sequenceSaved){programs.saveSequence(el.dataset.sequenceSaved,el.checked);return;}
++ if(el.dataset.sequenceName){programs.renameSequence(el.dataset.sequenceName,el.value);return;}
++ if(el.id==='sequence-future'){ui.sequenceFuture=el.checked;return;}
+  if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
++ if(el.dataset.autoAccept!==undefined){prefs.autoAccept=el.checked;savePreferences();}
+  if(el.dataset.policy)run({type:'SET_OPTIONAL',key:el.dataset.policy,value:el.value});
+@@ -305,3 +397,3 @@
+  const editing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable;
+- if(e.key==='Escape'){e.preventDefault();clearTimeout(autoTimer);if(ui.modal){ui.modal=null;renderModal();autoResolve();}else if(g.state.pending)run({type:'CANCEL'});else closeInspector();return;}
++ if(e.key==='Escape'){e.preventDefault();clearTimeout(autoTimer);if(programs.running){programs.stop();return;}if(ui.modal){ui.modal=null;renderModal();autoResolve();}else if(g.state.pending)run({type:'CANCEL'});else closeInspector();return;}
+  if(e.key==='Tab'&&ui.modal){const list=[...overlay.querySelectorAll('button:not(:disabled),input:not(:disabled),select,textarea,[tabindex="0"]')].filter(el=>el.offsetParent!==null),first=list[0],last=list.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
+@@ -314,3 +406,3 @@
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.1'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.3.0'};
+ async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
+@@ -318,3 +410,3 @@
+  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
+- useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView});
++ useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms});
+ }
