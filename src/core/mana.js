@@ -50,11 +50,20 @@ export function suggestPayment(cost, player, context = {}) {
     if (!(exact || any)) return null;
     use(exact || any);
   }
-  for (let n = 0; n < cost.generic; n++) {
-    const bucket = buckets.find(b => b.available > 0);
-    if (!bucket) return null;
-    use(bucket);
+  // Reserve all specifically required symbols first. For the generic portion,
+  // prefer real colorless mana, then the largest eligible remaining color pool.
+  // Ties are deterministic; restricted mana is used first within the same color.
+  const totals = Object.fromEntries(COLORS.map(c => [c, sum(buckets.filter(b => b.color === c).map(b => b.available))]));
+  const genericOrder = ['C', ...COLORS.filter(c => c !== 'C').sort((a, b) => totals[b] - totals[a] || COLORS.indexOf(a) - COLORS.indexOf(b))];
+  let remaining = cost.generic;
+  for (const color of genericOrder) for (const bucket of buckets.filter(b => b.color === color)) {
+    const amount = Math.min(remaining, bucket.available);
+    if (amount <= 0) continue;
+    bucket.available -= amount; remaining -= amount;
+    if (bucket.id) { const found = tagged.find(t => t.id === bucket.id); if (found) found.amount += amount; else tagged.push({ id: bucket.id, amount }); }
+    else normal[color] += amount;
   }
+  if (remaining) return null;
   if (player.life < cost.life) return null;
   return { normal, tagged };
 }
