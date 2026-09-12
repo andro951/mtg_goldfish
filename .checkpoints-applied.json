@@ -35,5 +35,7 @@
   "checkpoints/061-core-choice-ordering.patch": "46889e14da1191f683ec5299bb3782b003f035ce2e21008f0f1744ad6b8b0430",
   "checkpoints/062-inspector-preferences.json": "af2fbcc1d91018307167d2fd2157af2e14754ccd6a6f3b217f2484bdacee590b",
   "checkpoints/063-inspector-view.patch": "36ca604815adbf779a19963156e9281dfef435e5ec043821ee8da83ffde52802",
-  "checkpoints/064a-inspector-controller.patch": "6c0fbce30835c7f1defe0484f3893fe2a59f91a9b0c0409deda567131d8faf5b"
+  "checkpoints/064a-inspector-controller.patch": "6c0fbce30835c7f1defe0484f3893fe2a59f91a9b0c0409deda567131d8faf5b",
+  "checkpoints/064b-inspector-controller.patch": "f6c0cc25712fccd4df353d8a3a255f3e0243ab936001533ebb876430fc85f111",
+  "checkpoints/064c-inspector-controller.patch": "d0d10d2138c88011c72d0fb3de3973ff105a26bda218046ad6e12c75c44616f4"
 }

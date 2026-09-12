@@ -145,18 +145,18 @@ function render(){if(!g||rendering)return;rendering=true;try{
  renderModal(false);size();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
  restoreFocus(focus);interactions?.refreshHover();
- }finally{rendering=false;}}
+ }finally{rendering=false;}scheduleModeDefault();}
 function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(name==='deck')auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
 function autoResolve(){clearTimeout(autoTimer);if(!g||g.state.settings.holdPriority||g.state.pending||g.state.actionDraft||!g.state.stack.length)return;
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}if(g.state.settings.holdPriority||g.state.pending||!g.state.stack.length)return;const result=g.perform({type:'RESOLVE_TOP'});if(!result.ok)toast(result.error.message,true);else autoResolve();},200);}
 function run(action){clearTimeout(autoTimer);const result=g.perform(action);if(!result.ok)toast(result.error.message,true);
  else {if(byId('toast')?.classList.contains('error'))byId('toast').remove();if(!['UNDO','REDO'].includes(action.type))autoResolve();}return result;}
 function atPoint(point){if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y)){ui.lastPoint=point;if(!prefs.popups.decision&&!g?.state.pending)delete ui.popupPositions.decision;}}
-function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;ui.inspected=same?null:id;ui.inspectDefinition=null;ui.stackLabel=null;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
+function inspect(id,point){atPoint(point);const same=ui.inspected===id&&!ui.inspectDefinition;if(same)clearInspectorState();else{ui.inspected=id;ui.inspectDefinition=null;ui.inspectOrigin=inspectorOrigin(id);ui.inspectorActivation=null;ui.stackLabel=null;}if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();}
 function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];if(!ids.includes(id)||p.ordered)return false;
  if(ui.choice.includes(id))ui.choice=ui.choice.filter(x=>x!==id);else if((p.max||1)===1)ui.choice=[id];else if(ui.choice.length<(p.max||1))ui.choice.push(id);else toast(`Choose at most ${p.max} cards.`,true);render();return true;}
 function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&selectChoice(id))return;
- if(ui.inspected===id){ui.inspected=null;ui.stackLabel=null;render();return;}
+ if(ui.inspected===id){clearInspectorState();render();return;}
  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
  const o=g.object(id);if(!o)return;const p=g.state.pending;
  if(o.zone==='battlefield'&&!o.tapped&&!g.isSick(o)&&(!p||['payment','effectPayment'].includes(p.kind))){
@@ -164,7 +164,7 @@ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&sele
  }
  inspect(id,point);
 }
-function choose(value){return run({type:'CHOOSE',value,remember:!!byId('remember-choice')?.checked});}
+function choose(value){const identity=draftIdentity();const result=run({type:'CHOOSE',value,remember:!!byId('remember-choice')?.checked});if(result.ok&&identity&&ui.modeBypass===identity&&!g.state.actionDraft)ui.modeBypass=null;return result;}
 function auditDeck(){const parsed=parseDeck(ui.deckText),report=registry.report(parsed.records),errors=parsed.errors.map(e=>`Line ${e.line}: ${e.message}`);let construction=null;if(!errors.length&&!report.missing.length)try{construction=Engine.create(registry,parsed.records,'deck-audit').state.initialDeck;}catch(e){errors.push(e.message);}
  const accepted=report.accepted&&!errors.length,lines=[...errors,...report.missing.map(r=>`MISSING: ${r.quantity} ${r.name}`),...report.partial.map(r=>`PARTIAL: ${r.name} — ${r.notes}`),...report.duplicates.map(r=>`DUPLICATE (preserved): ${r.quantity} ${r.name}`)];
  return ui.deckReport={...report,accepted,errors,records:parsed.records,construction,summary:accepted?`Ready: ${construction.fixedLands} lands + ${construction.selectedNonlands} selected nonlands; ${construction.reserveOrder.length} reserve cards.`:'Resolve the deck issues below.',details:lines.join('\n')||'Every card has registered rules.'};}
@@ -178,7 +178,7 @@ async function importFile(file){if(!file)return;if(file.size>50*1024*1024)throw 
 function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=fitCamera(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
 function arrange(){const zone=prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield',el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
  const result=run({type:'LAYOUT',anchor:'corner-v2',order:ids,updates:ids.map((id,i)=>({id,x:CARD_H+10+(i%columns)*(CARD_W+12),y:CARD_H+14+Math.floor(i/columns)*(CARD_H+16)}))});if(result.ok)fit(zone);}
-function closeInspector(){ui.inspected=null;ui.inspectDefinition=null;ui.stackLabel=null;render();}
+function closeInspector(){clearInspectorState();render();}
 async function handleClick(event){const el=event.target.closest('[data-action]');if(!el)return;const action=el.dataset.action,id=el.dataset.id;
  // Table pointer gestures own mouse picking. Keyboard activation and decision
  // galleries still use native button clicks.
@@ -205,7 +205,18 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='fit')return fit(el.dataset.zone);if(action==='arrange')return arrange();
  if(action==='select-mode'){ui.selectMode=!ui.selectMode;if(!ui.selectMode)ui.selected.clear();render();return;}
  if(action==='cast')return run({type:g.characteristics(id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id});
- if(action==='ability')return run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});if(action==='plot')return run({type:'SPECIAL_ACTION',id,special:'plot'});
+ if(action==='ability'){
+  const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
+  if(ui.inspected===id&&source&&ability)ui.inspectorActivation={origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor};
+  return run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
+ }
+ if(action==='revise-choice'){ui.modeBypass=draftIdentity();return run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});}
+ if(action==='mode-default'){
+  const key=el.dataset.modeKey,value=el.dataset.modeValue;prefs.modeDefaults||={};
+  if(value==='ASK')delete prefs.modeDefaults[key];else prefs.modeDefaults[key]=value;
+  savePreferences();render();return;
+ }
+ if(action==='plot')return run({type:'SPECIAL_ACTION',id,special:'plot'});
  if(action==='cancel')return run({type:'CANCEL'});
  if(action==='confirm-choice')return choose([...ui.choice]);if(action==='confirm-number')return choose(Number(byId('number-choice').value));
  if(action==='suggest-payment'){ui.paymentEdited=false;ui.payment=suggestPayment(g.state.pending.cost,g.state.players[g.state.pending.player||0],g.state.pending.context)||{normal:{},tagged:[]};render();return;}
@@ -214,7 +225,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='option'){const p=g.state.pending,value=choiceOptions(p)[Number(el.dataset.option)].value;if((p.max||1)>1){ui.choice=ui.choice.includes(value)?ui.choice.filter(v=>v!==value):[...ui.choice,value];render();return;}return choose(value);}
  if(action==='order'){const from=Number(el.dataset.index),to=from+Number(el.dataset.direction);if(to>=0&&to<ui.choice.length)[ui.choice[from],ui.choice[to]]=[ui.choice[to],ui.choice[from]];render();return;}
  if(action==='stack-inspect'){const entries=[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])],entry=entries.find(v=>v.id===el.dataset.stackId);if(!entry)return;
- const source=g.object(entry.source);ui.inspected=source?.id||null;ui.inspectDefinition=source?null:entry.sourceCardId;ui.stackLabel=entry.label;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();return;}
+ const source=g.object(entry.source);ui.inspected=source?.id||null;ui.inspectDefinition=source?null:entry.sourceCardId;ui.inspectOrigin=source?inspectorOrigin(source.id):null;ui.inspectorActivation=null;ui.stackLabel=entry.label;if(!prefs.popups.inspector)delete ui.popupPositions.inspector;render();return;}
  if(action==='note'){const text=ui.noteText;ui.noteText='';const result=run({type:'NOTE',text});if(!result.ok)ui.noteText=text;renderModal();return;}
  if(action==='start-new'){ui.seed=byId('new-seed').value.trim()||newSeed();const report=auditDeck();if(!report.accepted){ui.modal='deck';renderModal();return toast('The deck needs attention before starting.',true);}useEngine(newEngine(Engine.create(registry,report.records,ui.seed)));toast('New seeded test.');return;}
  if(action==='start-lab'){useEngine(newEngine(createLab(registry,data.pool,el.dataset.lab)));fit('battlefield');return;}
@@ -298,7 +309,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.0'};
+window.astra={get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.2.1'};
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
