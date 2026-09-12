@@ -1,0 +1,75 @@
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -42,2 +42,2 @@
+     if (type === 'SET_SETTING') {
+-      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree'].includes(action.key), 'Unknown setting.');
++      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
+--- a/src/core/deck.js
++++ b/src/core/deck.js
+@@ -74,2 +74,2 @@
+-    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, debug: false, firstMulliganFree: true },
++    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true },
+     mulligans: 0, notes: [], diagnostics: [], manualAssistance: [], status: 'playing',
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -43,2 +43,2 @@
+ function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
+-function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
++function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
+@@ -174,2 +174,3 @@
+ function run(action,user=true){
++ if(user&&['ADJUST_MANA','ADJUST_PLAYER','MANUAL_DAMAGE'].includes(action.type)&&!g.state.settings.manualControls){toast('Enable Manual controls in Settings to adjust resources.',true);return {ok:false,error:{code:'MANUAL_CONTROLS_OFF',message:'Manual controls are disabled.'}};}
+  clearTimeout(autoTimer);if(user)programs.userAction();
+@@ -392,2 +393,2 @@
+  if(el.id==='sequence-future'){ui.sequenceFuture=el.checked;return;}
+- if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
++ if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -75,1 +75,5 @@
++  if(ui.modal==='settings'){
++    body=`<label class="setting-row"><input type="checkbox" data-setting="manualControls" ${s.settings.manualControls?'checked':''}><span><strong>Manual controls</strong><small>Off by default. Show manual mana, life, energy, poison and opponent adjustments. Rules-generated changes remain automatic.</small></span></label>`+body;
++    if(!s.settings.manualControls)body=body.replace(/<input([^>]*data-player-field[^>]*)>/g,'<input disabled$1>');
++  }
+   const extraClass=ui.modal==='deck'?'deck-editor-modal':'';
+--- a/src/tabletop/preferences.js
++++ b/src/tabletop/preferences.js
+@@ -4,2 +4,2 @@
+ export function defaultPreferences(){return {version:2,sidebarWidth:100,handHeight:155,dockWidth:290,dock:null,
+-  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
++  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,manualControls:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
+@@ -11,2 +11,2 @@
+   p.dock=['graveyard','exile','workspace','outside'].includes(value.dock)?value.dock:null;
+-  for(const key of ['holdPriority','reserveAccess','orderTriggers','autoAccept'])if(typeof value[key]==='boolean')p[key]=value[key];
++  for(const key of ['holdPriority','reserveAccess','orderTriggers','autoAccept','manualControls'])if(typeof value[key]==='boolean')p[key]=value[key];
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -65,1 +65,5 @@
+ .ordering-window .choice-row>.ordinal{flex:0 0 24px}.ordering-window .choice-row>.order-label{flex:1;text-align:left}
++
++/* Read-only resource totals reserve no invisible space for manual controls. */
++.mana-row.read-only,.total-row.read-only{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:1px 4px}
++.mana-row.read-only>b,.total-row.read-only>b{min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
+--- a/src/tabletop/views.js
++++ b/src/tabletop/views.js
+@@ -10,2 +10,2 @@
+-export function toolbar({g,ui,prefs,programs}){
++function fullToolbar({g,ui,prefs,programs}){
+   const s=g.state;
+@@ -19,2 +19,2 @@
+-export function sidebar({g,ui,prefs}){
++function editableSidebar({g,ui,prefs}){
+   const s=g.state,p=s.players[0],top=g.canSeeTop()?g.top():null;
+@@ -95,1 +95,12 @@
+ }
++
++// Read-only totals are the normal view; manual overrides are explicitly opt-in.
++export function sidebar(ctx){
++ const html=editableSidebar(ctx);if(ctx.g.state.settings.manualControls)return html;
++ return html.replace(/<button\b[^>]*data-action="(?:mana|resource|clear-mana)"[^>]*>[\s\S]*?<\/button>/g,'')
++   .replaceAll('class="mana-row"','class="mana-row read-only"').replaceAll('class="total-row"','class="total-row read-only"');
++}
++export function toolbar(ctx){
++ const html=fullToolbar(ctx);if(ctx.g.state.settings.manualControls)return html;
++ return html.replace(/<button\b[^>]*data-dialog="damage"[^>]*>[\s\S]*?<\/button>/g,'');
++}
