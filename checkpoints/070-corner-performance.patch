@@ -1,0 +1,119 @@
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -67,7 +67,7 @@
+         const object = this.object(update.id);
+         requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
+         requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
+-        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}) };
++        object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot: updates.indexOf(update)} : {}) };
+       }
+       if (action.order) {
+         requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
+@@ -433,6 +433,7 @@
+     }
+     const stackObject = { id: `s${this.state.nextStackId++}`, kind: draft.kind === 'spell' ? 'spell' : 'ability', source: draft.source, sourceCardId: draft.sourceCardId,
+       abilityId: draft.abilityId || null, label, controller: 0, context: clone(draft.context), targets: clone(draft.targets), paid, permission: clone(draft.permission || null) };
++    if(draft.kind==='ability')this.record('ABILITY_ACTIVATED',{source:draft.source,abilityId:draft.abilityId});
+     if (definition.mana && draft.kind === 'ability') {
+       this.record('MANA_ABILITY_RESOLVED', { source: draft.source, label });
+       const commands = definition.effect ? definition.effect(this, draft.context) : [];
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -55,7 +55,7 @@
+     return amount;
+   }
+   baseCharacteristics(object) {
+-    const definition = this.definition(object), base = { ...clone(definition), id: object.id, oid: object.oid,
++    const definition = this.definition(object), base = { ...definition, id: object.id, oid: object.oid,
+       types: [...definition.types], subtypes: [...definition.subtypes], supertypes: [...definition.supertypes],
+       colors: [...definition.colors], keywords: [...definition.keywords], power: Number(definition.power) || 0,
+       toughness: Number(definition.toughness) || 0, manaValue: Number(definition.manaValue) || 0 };
+@@ -150,6 +150,7 @@
+   }
+   perform(action) {
+     if (!action || typeof action.type !== 'string') return { ok: false, error: { message: 'Invalid action.', code: 'INVALID_ACTION' } };
++    this.lastActionEvents = [];
+     if (action?.type === 'UNDO') return this.undo();
+     if (action?.type === 'REDO') return this.redo();
+     const attemptBefore = clone(this.state), newTransaction = !this.transaction;
+@@ -161,11 +162,13 @@
+       this.handleAction(action);
+       this.settle();
+       if (!this.state.pending && !this.state.actionDraft && !this.state.resolving) this.commitTransaction();
++      this.lastActionEvents = (this.transaction?.events || this.history[this.cursor-1]?.events || []).filter(e=>e.sequence>attemptBefore.eventSerial);
+       this.notify(); return { ok: true, pending: clone(this.state.pending) };
+     } catch (error) {
+       this.state = attemptBefore; this.touch();
+       if (newTransaction) this.transaction = null;
+       else { this.transaction.intents.length = previousIntents; this.transaction.events.length = previousEvents; }
++      this.lastActionEvents = [];
+       this.lastError = { message: error.message, code: error.code || 'ENGINE_ERROR', detail: error.detail || null };
+       if (!(error instanceof RuleError)) console.error(error);
+       this.notify(); return { ok: false, error: this.lastError };
+--- a/src/tabletop/geometry.js
++++ b/src/tabletop/geometry.js
+@@ -1,5 +1,5 @@
+ /** Presentation geometry. A card's anchor is its upright bottom-left corner.
+- * Counter-clockwise tapping makes that same point its visual bottom-right.
++ * Clockwise tapping brings the physical bottom-right corner to that anchor.
+  * Hover elevation NEVER participates in picking or persistent layer order. */
+ export const CARD_W = 110;
+ export const CARD_H = CARD_W * 88 / 63;
+@@ -7,7 +7,7 @@
+ export const round = n => Math.round(n * 1000) / 1000;
+ export function bounds(card, width = CARD_W, height = CARD_H) {
+   return card.tapped
+-    ? {left:card.x-height, top:card.y-width, right:card.x, bottom:card.y, width:height, height:width}
++    ? {left:card.x, top:card.y-width, right:card.x+height, bottom:card.y, width:height, height:width}
+     : {left:card.x, top:card.y-height, right:card.x+width, bottom:card.y, width, height};
+ }
+ export const contains = (r,p) => p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom;
+@@ -21,12 +21,14 @@
+     right:viewport.left+camera.x+r.right*z,bottom:viewport.top+camera.y+r.bottom*z,width:r.width*z,height:r.height*z};
+ }
+ export function canonicalHit(cards, point) {
+-  return [...cards].sort((a,b)=>b.z-a.z||b.index-a.index).find(card=>contains(bounds(card),point))||null;
++  let found=null;
++  for(const card of cards)if(contains(bounds(card),point)&&(!found||card.z>found.z||(card.z===found.z&&card.index>found.index)))found=card;
++  return found;
+ }
+ export function anchorFromGrab(point, grab, tapped=false) {
+   const width=tapped?CARD_H:CARD_W, height=tapped?CARD_W:CARD_H;
+   const left=point.x-grab.x*width, top=point.y-grab.y*height;
+-  return {x:round(left+(tapped?width:0)), y:round(top+height)};
++  return {x:round(left), y:round(top+height)};
+ }
+ export function zoomAt(camera, point, viewport, delta) {
+   const world=worldPoint(point,viewport,camera), zoom=clamp(camera.zoom*Math.exp(-clamp(delta,-1000,1000)*.0015),.18,3);
+--- a/src/ui/components.js
++++ b/src/ui/components.js
+@@ -1,7 +1,17 @@
+ import { COLORS } from '../core/index.js';
+ import { escapeHTML } from '../core/util.js';
+ export const h = escapeHTML;
+-export const asset = path => globalThis.ASTRA_IMAGES?.[path] || path;
++const assetURLs = new Map();
++export function asset(path) {
++  const embedded=globalThis.ASTRA_IMAGES?.[path];if(!embedded)return path;
++  if(assetURLs.has(path))return assetURLs.get(path);
++  // The cache is presentation-only. Game state and save files contain paths.
++  const match=/^data:([^;,]+);base64,(.*)$/.exec(embedded);
++  if(!match)return embedded;
++  const binary=atob(match[2]),bytes=new Uint8Array(binary.length);
++  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
++  const url=URL.createObjectURL(new Blob([bytes],{type:match[1]}));assetURLs.set(path,url);return url;
++}
+ export const STEP_NAMES = {setup:'Opening hand',untap:'Untap',upkeep:'Upkeep',draw:'Draw',main1:'Main 1',beginCombat:'Combat',attackers:'Attack',damage:'Damage',endCombat:'End combat',main2:'Main 2',end:'End',cleanup:'Cleanup'};
+ export const ZONE_NAMES = {battlefield:'Battlefield',graveyard:'Graveyard',exile:'Exile',workspace:'Look',outside:'Outside the game',hand:'Hand',command:'Command zone',libraryActive:'Library',libraryReserve:'Reserve',stackCards:'Stack'};
+ export const logo = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 44 41H4L24 5ZM13 26h24M19 16h17" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+--- a/tests/tabletop.test.js
++++ b/tests/tabletop.test.js
+@@ -8,7 +8,7 @@
+ const close=(a,b)=>assert.ok(Math.abs(a-b)<.001,`${a} != ${b}`);
+ test('upright and tapped footprints share one corner anchor',()=>{
+  const u=bounds({x:400,y:300,tapped:false}),t=bounds({x:400,y:300,tapped:true});
+- assert.equal(u.left,t.right);assert.equal(u.bottom,t.bottom);close(t.width,u.height);close(t.height,u.width);
++ assert.equal(u.left,t.left);assert.equal(u.bottom,t.bottom);close(t.width,u.height);close(t.height,u.width);
+ });
+ for(const tapped of [false,true])test(`normalized grab point survives drag at arbitrary scale (tapped=${tapped})`,()=>{
+  const grab={x:.23,y:.67},point={x:-70.5,y:214.1},a=anchorFromGrab(point,grab,tapped),b=bounds({...a,tapped});
