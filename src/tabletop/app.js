@@ -41,7 +41,7 @@ function exported(){return {...g.exportSession(),uiLayout:cleanPreferences(prefs
 async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}const seq=saveSequence,doc=exported();try{const at=await store.save(doc);if(seq===saveSequence){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}}catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}}
 function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
 function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
-function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
+function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
 function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
@@ -172,6 +172,7 @@ function autoResolve(){
  autoTimer=setTimeout(()=>{if(ui.gestureActive||ui.modal){autoResolve();return;}run({type:'RESOLVE_TOP'},false);},160);
 }
 function run(action,user=true){
+ if(user&&['ADJUST_MANA','ADJUST_PLAYER','MANUAL_DAMAGE'].includes(action.type)&&!g.state.settings.manualControls){toast('Enable Manual controls in Settings to adjust resources.',true);return {ok:false,error:{code:'MANUAL_CONTROLS_OFF',message:'Manual controls are disabled.'}};}
  clearTimeout(autoTimer);if(user)programs.userAction();
  if(programs.running&&user&&!['UNDO','CANCEL'].includes(action.type)){toast('Stop the running sequence before taking another action.',true);return {ok:false};}
  if(programs.running&&user)programs.stop();
@@ -390,7 +391,7 @@ document.addEventListener('change',e=>{const el=e.target;try{
  if(el.dataset.sequenceSaved){programs.saveSequence(el.dataset.sequenceSaved,el.checked);return;}
  if(el.dataset.sequenceName){programs.renameSequence(el.dataset.sequenceName,el.value);return;}
  if(el.id==='sequence-future'){ui.sequenceFuture=el.checked;return;}
- if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
+ if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
  if(el.dataset.autoAccept!==undefined){prefs.autoAccept=el.checked;savePreferences();}
  if(el.dataset.policy)run({type:'SET_OPTIONAL',key:el.dataset.policy,value:el.value});
  if(el.id==='reserve-access'){run({type:'RESERVE_ACCESS',enabled:el.checked});prefs.reserveAccess=el.checked;savePreferences();}

@@ -10418,6 +10418,63 @@
     "candidate": true
   },
   {
+    "id": "bb549594-35f6-4ac6-9f1f-cfb35784d99e",
+    "key": "germ",
+    "name": "Germ",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Token Creature — Germ",
+    "types": [
+      "Creature"
+    ],
+    "subtypes": [
+      "Germ"
+    ],
+    "supertypes": [],
+    "oracleText": "",
+    "colors": [
+      "B"
+    ],
+    "colorIdentity": [
+      "B"
+    ],
+    "keywords": [],
+    "power": "0",
+    "toughness": "0",
+    "loyalty": null,
+    "defense": null,
+    "layout": "token",
+    "faces": [],
+    "image": "assets/cards/bb549594-35f6-4ac6-9f1f-cfb35784d99e.jpg",
+    "backImage": null,
+    "printId": "377d9749-3d78-4a33-93d1-2e673f6e2e28",
+    "set": "tznc",
+    "collectorNumber": "4",
+    "source": "https://scryfall.com/card/tznc/4/germ?utm_source=api",
+    "rulings": [],
+    "related": [
+      {
+        "object": "related_card",
+        "id": "65c65445-1016-4fd3-963e-1c9eb252d4a6",
+        "component": "token",
+        "name": "Phyrexian Germ",
+        "type_line": "Token Creature — Phyrexian Germ",
+        "uri": "https://api.scryfall.com/cards/65c65445-1016-4fd3-963e-1c9eb252d4a6"
+      },
+      {
+        "object": "related_card",
+        "id": "377d9749-3d78-4a33-93d1-2e673f6e2e28",
+        "component": "token",
+        "name": "Germ",
+        "type_line": "Token Creature — Germ",
+        "uri": "https://api.scryfall.com/cards/377d9749-3d78-4a33-93d1-2e673f6e2e28"
+      }
+    ],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-12T22:36:23.363994+00:00",
+    "candidate": false
+  },
+  {
     "id": "01591d42-4ef8-471d-beda-d31186bba6a6",
     "key": "gerrard-s-hourglass-pendant",
     "name": "Gerrard's Hourglass Pendant",
@@ -14015,6 +14072,184 @@
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:31:58.652886+00:00",
     "candidate": true
+  },
+  {
+    "id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+    "key": "mishra-lost-to-phyrexia",
+    "name": "Mishra, Lost to Phyrexia",
+    "manaCost": "",
+    "manaValue": 7.0,
+    "typeLine": "Legendary Artifact Creature — Phyrexian Artificer",
+    "types": [
+      "Artifact",
+      "Creature"
+    ],
+    "subtypes": [
+      "Phyrexian",
+      "Artificer"
+    ],
+    "supertypes": [
+      "Legendary"
+    ],
+    "oracleText": "Whenever Mishra enters or attacks, choose three —\n• Target opponent discards two cards.\n• Mishra deals 3 damage to any target.\n• Destroy target artifact or planeswalker.\n• Creatures you control gain menace and trample until end of turn.\n• Creatures you don't control get -1/-1 until end of turn.\n• Create two tapped Powerstone tokens.",
+    "colors": [
+      "B",
+      "R"
+    ],
+    "colorIdentity": [
+      "B",
+      "R"
+    ],
+    "keywords": [],
+    "power": "9",
+    "toughness": "9",
+    "loyalty": null,
+    "defense": null,
+    "layout": "meld",
+    "faces": [],
+    "image": "assets/cards/3989308a-4c0f-493a-b38f-cb4f5019dfe7.jpg",
+    "backImage": null,
+    "printId": "75544351-dbb0-46d3-bddd-627c40753e8d",
+    "set": "pbro",
+    "collectorNumber": "163bs",
+    "source": "https://scryfall.com/card/pbro/163bs/mishra-lost-to-phyrexia?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "When a pair of cards are melded, the result is a single creature that's represented by two cards. If the melded creature dies, both cards are put into your graveyard. As it leaves the battlefield, both of those cards are turned face up again. If the cards are put on the top or bottom of your library, you choose their relative order."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "One card in each pair of meld cards has an ability that instructs you to exile the two cards and meld them. If you control more than one object with one of those names, you select one object with that name to exile."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "When two cards are exiled and melded, they each leave the battlefield, then return together as one new object with no relation to either of the objects that left the battlefield. Counters, Auras, Equipment, and other effects that affected those two cards don't affect the melded permanent."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "Only two cards belonging to the same meld pair can be melded. Tokens, cards that aren't meld cards, or meld cards that don't form a meld pair can't be melded. If an effect instructs a player to meld cards that can't be melded, those cards remain in exile."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "While a meld card is in any zone other than the battlefield, it has only the characteristics of its front face. The same is true while it's on the battlefield with its front face up."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "While a melded permanent is on the battlefield, it has only the characteristics of its combined back face. Any effects that modify how the new object enters the battlefield will consider only the combined back face."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "Note that the permanent represented by the combined back faces has a color indicator."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "The mana value of a melded permanent is the sum of the mana values of its front faces. A creature that becomes a copy of a melded permanent has only the characteristics of that combined back face, and its mana value is 0."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "A player prompted to name a card may name the combined back face, and each player has the right to know that combined back face's characteristics at all times."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "If an effect moves a melded permanent to a new zone and then affects \"that card,\" it affects both cards."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "In the Commander variant, a meld card's color identity is determined only by the mana costs and mana symbols in the rules text of its front face. No symbols or rules text of the permanent it melds into are considered."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "Powerstone tokens are a kind of predefined token. Each one has the artifact subtype \"Powerstone\" and the ability \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\""
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "You can use the {C} added by a Powerstone token on anything that isn't a nonartifact spell. This includes paying costs to activate abilities of both artifact and nonartifact permanents, paying ward costs, and so on."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+        "source": "wotc",
+        "published_at": "2022-10-14",
+        "comment": "Although all the cards in The Brothers' War that create Powerstone tokens create a tapped Powerstone token, entering the battlefield tapped isn't part of the token's definition. Notably, if you create a token that is a copy of a Powerstone token, the token copy won't enter the battlefield tapped."
+      }
+    ],
+    "related": [
+      {
+        "object": "related_card",
+        "id": "534b042b-1b86-4fc9-be3c-0d0f8c46d881",
+        "component": "meld_part",
+        "name": "Phyrexian Dragon Engine",
+        "type_line": "Artifact Creature — Phyrexian Dragon",
+        "uri": "https://api.scryfall.com/cards/534b042b-1b86-4fc9-be3c-0d0f8c46d881"
+      },
+      {
+        "object": "related_card",
+        "id": "6e55f2cf-418c-4956-945e-aaa211971135",
+        "component": "meld_part",
+        "name": "Mishra, Claimed by Gix",
+        "type_line": "Legendary Creature — Phyrexian Human Artificer",
+        "uri": "https://api.scryfall.com/cards/6e55f2cf-418c-4956-945e-aaa211971135"
+      },
+      {
+        "object": "related_card",
+        "id": "75544351-dbb0-46d3-bddd-627c40753e8d",
+        "component": "meld_result",
+        "name": "Mishra, Lost to Phyrexia",
+        "type_line": "Legendary Artifact Creature — Phyrexian Artificer",
+        "uri": "https://api.scryfall.com/cards/75544351-dbb0-46d3-bddd-627c40753e8d"
+      },
+      {
+        "object": "related_card",
+        "id": "d45fe4b6-aeaf-4f84-b660-c7b482ed8512",
+        "component": "token",
+        "name": "Powerstone",
+        "type_line": "Token Artifact — Powerstone",
+        "uri": "https://api.scryfall.com/cards/d45fe4b6-aeaf-4f84-b660-c7b482ed8512"
+      }
+    ],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-12T22:36:24.411467+00:00",
+    "candidate": false
   },
   {
     "id": "33ee23bc-6327-4a54-a704-dfd83be36bb5",

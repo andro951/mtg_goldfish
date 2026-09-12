@@ -131,7 +131,7 @@ export const phaseMethods = {
     }
     this.state.attackersDeclared = true;
     for (const attacker of entries) {
-      const object = this.object(attacker.id); object.attacksThisTurn++; object.flags.attacking = { player: attacker.player, combatId: this.state.currentExtraCombat?.id || `normal-${this.state.turnSerial}` };
+      const object = this.object(attacker.id); object.attacksThisTurn++; this.state.turnCounts[`attacked:0:${attacker.player}`]=1; object.flags.attacking = { player: attacker.player, combatId: this.state.currentExtraCombat?.id || `normal-${this.state.turnSerial}` };
     }
     this.touch();
     this.tapObjects(entries.filter(a => !this.characteristics(a.id).keywords.includes('Vigilance')).map(a => a.id), true, 'attack');

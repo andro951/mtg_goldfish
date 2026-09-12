@@ -57277,5 +57277,314 @@
       "cardmarket": "https://www.cardmarket.com/en/Magic/Products/Search?referrer=scryfall&searchString=Treefolk&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
       "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Treefolk&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
     }
+  },
+  "germ": {
+    "object": "card",
+    "id": "377d9749-3d78-4a33-93d1-2e673f6e2e28",
+    "oracle_id": "bb549594-35f6-4ac6-9f1f-cfb35784d99e",
+    "multiverse_ids": [],
+    "name": "Germ",
+    "lang": "en",
+    "released_at": "2020-09-25",
+    "uri": "https://api.scryfall.com/cards/377d9749-3d78-4a33-93d1-2e673f6e2e28",
+    "scryfall_uri": "https://scryfall.com/card/tznc/4/germ?utm_source=api",
+    "layout": "token",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T07:54:09Z",
+    "image_uris": {
+      "small": "https://cards.scryfall.io/small/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.jpg?1783929249",
+      "normal": "https://cards.scryfall.io/normal/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.jpg?1783929249",
+      "large": "https://cards.scryfall.io/large/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.jpg?1783929249",
+      "png": "https://cards.scryfall.io/png/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.png?1783929249",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.jpg?1783929249",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.jpg?1783929249",
+      "thumb": "https://cards.scryfall.io/thumb/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.webp?1783929249",
+      "grid": "https://cards.scryfall.io/grid/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.webp?1783929249",
+      "display": "https://cards.scryfall.io/display/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.webp?1783929249",
+      "art": "https://cards.scryfall.io/art/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.webp?1783929249",
+      "crop": "https://cards.scryfall.io/crop/front/3/7/377d9749-3d78-4a33-93d1-2e673f6e2e28.webp?1783929249"
+    },
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Token Creature — Germ",
+    "oracle_text": "",
+    "power": "0",
+    "toughness": "0",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "65c65445-1016-4fd3-963e-1c9eb252d4a6",
+        "component": "token",
+        "name": "Phyrexian Germ",
+        "type_line": "Token Creature — Phyrexian Germ",
+        "uri": "https://api.scryfall.com/cards/65c65445-1016-4fd3-963e-1c9eb252d4a6"
+      },
+      {
+        "object": "related_card",
+        "id": "377d9749-3d78-4a33-93d1-2e673f6e2e28",
+        "component": "token",
+        "name": "Germ",
+        "type_line": "Token Creature — Germ",
+        "uri": "https://api.scryfall.com/cards/377d9749-3d78-4a33-93d1-2e673f6e2e28"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "not_legal",
+      "timeless": "not_legal",
+      "gladiator": "not_legal",
+      "pioneer": "not_legal",
+      "modern": "not_legal",
+      "legacy": "not_legal",
+      "pauper": "not_legal",
+      "vintage": "not_legal",
+      "penny": "not_legal",
+      "commander": "not_legal",
+      "oathbreaker": "not_legal",
+      "standardbrawl": "not_legal",
+      "brawl": "not_legal",
+      "competitivebrawl": "not_legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "not_legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "paper"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": false,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": true,
+    "variation": false,
+    "set_id": "cfb7e832-fe79-4b5c-ba3d-2d59009525e7",
+    "set": "tznc",
+    "set_name": "Zendikar Rising Commander Tokens",
+    "set_type": "token",
+    "set_uri": "https://api.scryfall.com/sets/cfb7e832-fe79-4b5c-ba3d-2d59009525e7",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atznc&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/tznc?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/377d9749-3d78-4a33-93d1-2e673f6e2e28/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Abb549594-35f6-4ac6-9f1f-cfb35784d99e&unique=prints",
+    "collector_number": "4",
+    "digital": false,
+    "rarity": "common",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "artist": "Igor Kieryluk",
+    "artist_ids": [
+      "9c3e9d17-509f-485c-9360-46d897ce716b"
+    ],
+    "illustration_id": "285432ed-cd72-4c1b-aa86-fa6945f5a5c1",
+    "border_color": "black",
+    "frame": "2015",
+    "full_art": true,
+    "textless": false,
+    "booster": false,
+    "story_spotlight": false,
+    "prices": {
+      "usd": null,
+      "usd_foil": null,
+      "usd_etched": null,
+      "eur": null,
+      "eur_foil": null,
+      "tix": null
+    },
+    "related_uris": {
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DGerm",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DGerm",
+      "edhrec": "https://edhrec.com/route/?cc=Germ"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fmagic%2Fproduct%3FproductLineName%3Dmagic%26q%3DGerm%26view%3Dgrid",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products/Search?referrer=scryfall&searchString=Germ&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Germ&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    }
+  },
+  "mishra, lost to phyrexia": {
+    "object": "card",
+    "id": "75544351-dbb0-46d3-bddd-627c40753e8d",
+    "oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+    "multiverse_ids": [],
+    "name": "Mishra, Lost to Phyrexia",
+    "lang": "en",
+    "released_at": "2022-11-18",
+    "uri": "https://api.scryfall.com/cards/75544351-dbb0-46d3-bddd-627c40753e8d",
+    "scryfall_uri": "https://scryfall.com/card/pbro/163bs/mishra-lost-to-phyrexia?utm_source=api",
+    "layout": "meld",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T05:17:19Z",
+    "image_uris": {
+      "small": "https://cards.scryfall.io/small/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.jpg?1783919839",
+      "normal": "https://cards.scryfall.io/normal/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.jpg?1783919839",
+      "large": "https://cards.scryfall.io/large/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.jpg?1783919839",
+      "png": "https://cards.scryfall.io/png/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.png?1783919839",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.jpg?1783919839",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.jpg?1783919839",
+      "thumb": "https://cards.scryfall.io/thumb/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.webp?1783919839",
+      "grid": "https://cards.scryfall.io/grid/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.webp?1783919839",
+      "display": "https://cards.scryfall.io/display/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.webp?1783919839",
+      "art": "https://cards.scryfall.io/art/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.webp?1783919839",
+      "crop": "https://cards.scryfall.io/crop/front/7/5/75544351-dbb0-46d3-bddd-627c40753e8d.webp?1783919839"
+    },
+    "mana_cost": "",
+    "cmc": 7.0,
+    "type_line": "Legendary Artifact Creature — Phyrexian Artificer",
+    "oracle_text": "Whenever Mishra enters or attacks, choose three —\n• Target opponent discards two cards.\n• Mishra deals 3 damage to any target.\n• Destroy target artifact or planeswalker.\n• Creatures you control gain menace and trample until end of turn.\n• Creatures you don't control get -1/-1 until end of turn.\n• Create two tapped Powerstone tokens.",
+    "power": "9",
+    "toughness": "9",
+    "colors": [
+      "B",
+      "R"
+    ],
+    "color_indicator": [
+      "B",
+      "R"
+    ],
+    "color_identity": [
+      "B",
+      "R"
+    ],
+    "keywords": [],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "534b042b-1b86-4fc9-be3c-0d0f8c46d881",
+        "component": "meld_part",
+        "name": "Phyrexian Dragon Engine",
+        "type_line": "Artifact Creature — Phyrexian Dragon",
+        "uri": "https://api.scryfall.com/cards/534b042b-1b86-4fc9-be3c-0d0f8c46d881"
+      },
+      {
+        "object": "related_card",
+        "id": "6e55f2cf-418c-4956-945e-aaa211971135",
+        "component": "meld_part",
+        "name": "Mishra, Claimed by Gix",
+        "type_line": "Legendary Creature — Phyrexian Human Artificer",
+        "uri": "https://api.scryfall.com/cards/6e55f2cf-418c-4956-945e-aaa211971135"
+      },
+      {
+        "object": "related_card",
+        "id": "75544351-dbb0-46d3-bddd-627c40753e8d",
+        "component": "meld_result",
+        "name": "Mishra, Lost to Phyrexia",
+        "type_line": "Legendary Artifact Creature — Phyrexian Artificer",
+        "uri": "https://api.scryfall.com/cards/75544351-dbb0-46d3-bddd-627c40753e8d"
+      },
+      {
+        "object": "related_card",
+        "id": "d45fe4b6-aeaf-4f84-b660-c7b482ed8512",
+        "component": "token",
+        "name": "Powerstone",
+        "type_line": "Token Artifact — Powerstone",
+        "uri": "https://api.scryfall.com/cards/d45fe4b6-aeaf-4f84-b660-c7b482ed8512"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "not_legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "paper"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": false,
+    "finishes": [
+      "foil"
+    ],
+    "oversized": false,
+    "promo": true,
+    "reprint": true,
+    "variation": false,
+    "set_id": "7e8b0464-6ce5-4184-abc7-3de544eebc6a",
+    "set": "pbro",
+    "set_name": "The Brothers' War Promos",
+    "set_type": "promo",
+    "set_uri": "https://api.scryfall.com/sets/7e8b0464-6ce5-4184-abc7-3de544eebc6a",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Apbro&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/pbro?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/75544351-dbb0-46d3-bddd-627c40753e8d/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A3989308a-4c0f-493a-b38f-cb4f5019dfe7&unique=prints",
+    "collector_number": "163bs",
+    "digital": false,
+    "rarity": "mythic",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "artist": "Chris Rahn",
+    "artist_ids": [
+      "7742047e-0f80-4c0f-a530-d07460165e86"
+    ],
+    "illustration_id": "42a0eb70-23c1-4064-8441-3a1d9e71f703",
+    "border_color": "black",
+    "frame": "2015",
+    "frame_effects": [
+      "legendary"
+    ],
+    "full_art": false,
+    "textless": false,
+    "booster": false,
+    "story_spotlight": false,
+    "promo_types": [
+      "datestamped",
+      "prerelease"
+    ],
+    "prices": {
+      "usd": null,
+      "usd_foil": null,
+      "usd_etched": null,
+      "eur": null,
+      "eur_foil": null,
+      "tix": null
+    },
+    "related_uris": {
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DMishra%252C%2BLost%2Bto%2BPhyrexia",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DMishra%252C%2BLost%2Bto%2BPhyrexia",
+      "edhrec": "https://edhrec.com/route/?cc=Mishra%2C+Lost+to+Phyrexia"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fmagic%2Fproduct%3FproductLineName%3Dmagic%26q%3DMishra%252C%2BLost%2Bto%2BPhyrexia%26view%3Dgrid",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products/Search?referrer=scryfall&searchString=Mishra%2C+Lost+to+Phyrexia&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Mishra%2C+Lost+to+Phyrexia&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    }
   }
 }

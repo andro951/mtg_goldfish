@@ -3,6 +3,8 @@ import { clone, ref, sameRef, asArray, unique, requireRule } from './util.js';
 export const eventMethods = {
   emit(type, detail = {}, previousSources = []) {
     this.touch();
+    if(type==='SPELL_CAST')this.state.turnCounts[`spells:${detail.controller}`]=(this.state.turnCounts[`spells:${detail.controller}`]||0)+1;
+    if(type==='DRAW'&&detail.abstract){const k=`draw:${detail.player}:${this.state.turnSerial}:${this.state.activePlayer}`;this.state.turnCounts[k]=(this.state.turnCounts[k]||0)+1;detail.first=this.state.turnCounts[k]===1;detail.amount=1;}
     const event = this.record(type, detail);
     const current = Object.values(this.state.instances).filter(o => o.zone !== 'void');
     const sources = [...current, ...previousSources].filter((o, i, all) => all.findIndex(p => sameRef(p, o)) === i);
@@ -18,7 +20,8 @@ export const eventMethods = {
         if ((trigger.oncePerBatch || trigger.oncePerTurn) && this.state.triggerCounts[countKey]) continue;
         if (trigger.oncePerBatch || trigger.oncePerTurn) this.state.triggerCounts[countKey] = 1;
         let multiplier = 1;
-        for (const doubling of this.objects('battlefield')) {
+        const doublers=['LEAVE','DIED','SACRIFICED'].includes(type)&&previousSources.length?previousSources:this.objects('battlefield');
+        for (const doubling of doublers) {
           const rule = this.module(doubling).triggerMultiplier;
           if (rule && rule(this, doubling, event, source)) multiplier += 1;
         }
@@ -114,21 +117,21 @@ export const eventMethods = {
     requireRule(this.state.stack.length, 'The stack is empty.');
     const object = this.state.stack.pop();
     const context = clone(object.context || {});
-    const legalTargets = (object.targets || []).filter(t => t.player != null ? !this.state.players[t.player].lost && !this.playerProtected(t.player, object.controller) :
+    const legalTargets = (object.targets || []).filter(t => t.player != null ? !this.state.players[t.player].lost && !this.playerProtected(t.player, object.controller) : t.stackId ?
+      this.state.stack.some(s=>s.id===t.stackId&&(!t.spellOnly||s.kind==='spell')&&(!t.opponent||s.controller!==object.controller)) :
       this.object(t.ref) && this.matches(this.object(t.ref), t.selector, { ...context, controller: object.controller }));
     if ((object.targets || []).length && !legalTargets.length) {
       this.record('FIZZLED', { stackId: object.id, label: object.label, reason: 'All targets are illegal.' });
       if (object.kind === 'spell') this.moveBatch([{ id: object.source.id, to: 'graveyard', cause: 'countered-by-rules' }]);
       return;
     }
-    for (const target of object.targets || []) if (target.key && target.player == null) {
-      const validForKey = legalTargets.filter(t => t.key === target.key).map(t => t.ref.id);
-      context.inputs[target.key] = validForKey;
+    for (const target of object.targets || []) if (target.key && (target.player==null||target.encoded)) {
+      context.inputs[target.key]=legalTargets.filter(t=>t.key===target.key).map(t=>t.stackId?'stack:'+t.stackId:t.player!=null?'player:'+t.player:t.ref.id);
     }
     context.legalTargets = legalTargets; context.stackId = object.id;
     let definition;
     if (object.kind === 'trigger') definition = this.triggerDefinition(object);
-    else if (object.kind === 'ability') definition = (this.registry.module(object.sourceCardId).activated || []).find(a => a.id === object.abilityId);
+    else if (object.kind === 'ability') definition = this.abilityDefinition(object.sourceCardId,object.abilityId,object.context?.sourceSnapshot);
     else definition = this.registry.module(object.sourceCardId).spell || {};
     if (!definition) throw new Error(`No effect registered for ${object.label}`);
     if (definition.interveningIf && !definition.interveningIf(this, context)) {

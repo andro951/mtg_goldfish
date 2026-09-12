@@ -19,6 +19,7 @@ export const zoneMethods = {
       if (proposal.to === 'battlefield') {
         const module = this.module(object);
         if (module.entersTapped) proposal.tapped = true;
+        if (module.entryTapped) proposal.tapped=!!module.entryTapped(this,object,context);
         const replacements = beforeSources.flatMap(source => (this.module(source).replacements || []).map(rule => ({ source, rule })))
           .filter(({ source, rule }) => rule.match(this, source, object, proposal, context));
         for (const effect of this.state.effects.filter(e => e.kind === 'landsEnterTapped' && e.controller === (move.controller ?? object.owner)))
@@ -36,6 +37,7 @@ export const zoneMethods = {
         }
         if (context.entryOverrides?.[object.id] != null) proposal.tapped = context.entryOverrides[object.id];
       }
+      if(object.flags.unearthed&&proposal.from==='battlefield'&&proposal.to!=='exile'){proposal.to='exile';this.record('REPLACEMENT_APPLIED',{rule:'unearth',object:ref(object),destination:'exile'});}
       if (proposal.from === 'battlefield' && proposal.to === 'graveyard' && (object.counters.finality || 0) > 0) {
         proposal.to = 'exile'; this.record('REPLACEMENT_APPLIED', { rule: 'finality-counter', object: ref(object), destination: 'exile' });
       }
@@ -53,10 +55,11 @@ export const zoneMethods = {
       }
       const tablePlacement = clone(object.flags.tablePlacement || null);
       const wasCast = from === 'stackCards' && !!object.flags.cast;
+      const castFlags={...(object.flags.escaped?{escaped:true}:{}),...(object.flags.warped?{warped:true}:{})};
       const castX = object.flags.castX || 0, prototype = clone(object.flags.prototype || null);
       const spawnCopy = object.token && from === 'workspace' ? clone(object.copy) : null;
       const meldParts = clone(object.flags.meldParts || null);
-      object.oid++; object.zone = to; object.controller = proposal.controller ?? object.owner;
+      object.oid++; object.face=proposal.face??0; object.zone = to; object.controller = proposal.controller ?? object.owner;
       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
       object.modifications = []; object.copy = spawnCopy; object.attacksThisTurn = 0; object.location = null;
       object.flags = { ...(object.token && (lki.flags.hasBeenOnBattlefield || from === 'battlefield') ? { hasBeenOnBattlefield: true, leftBattlefield: true } : {}), ...(proposal.flags || {}) };
@@ -68,6 +71,7 @@ export const zoneMethods = {
         }
       }
       if (to === 'battlefield') {
+        if(wasCast)Object.assign(object.flags,castFlags);
         object.enteredTurn = this.state.turnSerial; object.controlledSince = this.state.turnSerial;
         object.tapped = proposal.tapped; object.flags.cast = wasCast; object.flags.castX = castX;
         if (prototype) object.flags.prototype = prototype;

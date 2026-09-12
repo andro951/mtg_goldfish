@@ -40,7 +40,7 @@ export const actionMethods = {
       this.state.optionalPreferences[key] = value; this.record('OPTIONAL_POLICY', { key, value }); return;
     }
     if (type === 'SET_SETTING') {
-      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree'].includes(action.key), 'Unknown setting.');
+      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
     }
     if (type === 'NOTE') {
@@ -132,7 +132,7 @@ export const actionMethods = {
       if (land ? !rule.land : !rule.spell) continue;
       const zoneMatches = rule.zone === object.zone || (rule.zone === 'libraryActive' && object.zone === 'libraryReserve' && this.canAccessReserve());
       if (!zoneMatches || (rule.test && !rule.test(this, source, object, land))) continue;
-      permissions.push({ id: `${source.id}:${source.oid}:${rule.id}`, label: rule.label, method: rule.method || 'normal', provider: ref(source), ruleId: rule.id, additionalCosts: clone(list(rule.additionalCosts, this, source, this.context(object))) });
+      permissions.push({ id: `${source.id}:${source.oid}:${rule.id}`, label: rule.label, method: rule.method || 'normal', provider: ref(source), ruleId: rule.id, additionalCosts: clone(list(rule.additionalCosts, this, source, this.context(object))), ...(rule.oncePerTurn?{onceKey:`permission:${source.id}:${source.oid}:${rule.id}`}:{}) });
     }
     for (const effect of this.state.effects.filter(e => e.kind === 'permission')) {
       if (effect.controller !== 0 || (land ? effect.land === false : effect.spell === false)) continue;
@@ -316,13 +316,12 @@ export const actionMethods = {
       draft.targets = [];
       for (const specRaw of after.filter(s => s.target || s.selector?.target)) {
         const spec = this.materializeInput(specRaw, draft.context), value = draft.context.inputs[spec.key];
-        if (spec.type === 'player') draft.targets.push({ key: spec.key, player: value });
-        else for (const id of asArray(value)) draft.targets.push({ key: spec.key, ref: ref(this.object(id)), selector: clone(spec.selector || {}) });
+        draft.targets.push(...this.targetRecords(spec,value,draft.context));
       }
       if (draft.kind === 'trigger') return this.putPreparedTrigger(draft);
       this.validateDraft(draft);
       if (draft.kind === 'land') {
-        this.state.landPlaysUsed++; this.record('LAND_PLAYED', { source: draft.source, permission: draft.permission.id, playsUsed: this.state.landPlaysUsed, allowance: this.landAllowance() });
+        this.state.landPlaysUsed++; this.emit('LAND_PLAYED', { source: draft.source, controller:0, permission: draft.permission.id, playsUsed: this.state.landPlaysUsed, allowance: this.landAllowance() });
         this.state.actionDraft = null; this.moveBatch([{ id: draft.source, to: 'battlefield', cause: 'play-land', controller: 0 }]); return;
       }
       const quote = this.quoteDraft(draft); draft.quote = quote;
@@ -428,6 +427,9 @@ export const actionMethods = {
     if (draft.kind === 'spell') {
       this.moveBatch([{ id: draft.source, to: 'stackCards', cause: 'cast' }]);
       const source = this.object(draft.source.id); source.flags.cast = true; source.flags.castX = draft.context.castX;
+      if(draft.permission?.escape)source.flags.escaped=true;
+      if(draft.permission?.warp)source.flags.warped=true;
+      if(draft.permission?.onceKey)this.state.turnCounts[draft.permission.onceKey]=1;
       draft.source = ref(source); draft.context.source = ref(source);
       if (draft.permission?.commander) this.state.commanderCasts[source.cardId] = (this.state.commanderCasts[source.cardId] || 0) + 1;
       this.touch();
@@ -442,7 +444,7 @@ export const actionMethods = {
     } else {
       this.state.stack.push(stackObject);
       this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
-      if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id });
+      if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id, manaSources:clone(draft.context.spentManaSources||[]), castSnapshot:this.lastKnown(this.object(draft.source)) });
     }
     if (this.state.castParent) {
       this.state.resolving = this.state.castParent; this.state.castParent = null; this.state.castWindow = null;

@@ -103,7 +103,7 @@ export const effectMethods = {
       case 'move': case 'sacrifice': case 'destroy': case 'discard': {
         const ids = command.selector ? this.select(cmd.selector, context) : this.effectIds(command.ids, context);
         const destination = cmd.to || 'graveyard', cause = command.op === 'move' ? cmd.cause || 'effect' : command.op;
-        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, attachedTo: cmd.attachedTo })), context);
+        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, face:cmd.face, attachedTo: cmd.attachedTo })), context);
         if (command.key) context.vars[command.key] = clone(changes || []); return;
       }
       case 'tap': case 'untap': {
@@ -200,7 +200,7 @@ export const effectMethods = {
         const ids = this.effectIds(command.ids, context).filter(id => !this.characteristics(id).types.includes('Land'));
         if (!ids.length) return;
         this.state.pending = { kind: 'castWindow', label: cmd.label || 'Cast a spell without paying its mana cost?', candidates: ids, min: 0, max: 1,
-          optional: true, ids, method: cmd.method || 'free', cost: cmd.cost, source: context.source };
+          optional: true, ids, method: cmd.method || 'free', cost: cmd.cost, source: context.source, resultKey:command.key||null };
         return;
       }
       case 'enterSpell': {
@@ -267,6 +267,7 @@ export const effectMethods = {
       const ids = asArray(value).filter(v => v !== 'skip' && v != null);
       requireRule(ids.length <= 1 && ids.every(id => pending.ids.includes(id)), 'Choose one of the offered spells, or decline.');
       this.state.pending = null;
+      if(pending.resultKey)frame.context.vars[pending.resultKey]=ids.length>0;
       if (ids.length) {
         this.state.castParent = frame; this.state.resolving = null;
         this.state.castWindow = { cards: ids.map(id => ref(this.object(id))), method: pending.method, cost: pending.cost, label: pending.label };

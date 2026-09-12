@@ -62,5 +62,8 @@
   "checkpoints/083-program-browser-fixtures-and-release-gates.patch": "22225d4ef6bf6189c9ef877545e1178199520ecfb842e65730abae699bbab1ca",
   "checkpoints/084-player-program-documentation.patch": "d5b75e7bbe4d439dcdc78590a018e89e74ac3af7ebeedf544d9e14718252cd2a",
   "checkpoints/085-development-notes.patch": "41f0b1187024ea5ab3d07f90146749be9924036e173df941ba6f1ac159eb3412",
-  "checkpoints/086-expanded-registry-import.patch": "3ba50fca137fba7e8fd4882615e375ae01bda9f44ff30cf7723cec0e2bf2ddfb"
+  "checkpoints/086-expanded-registry-import.patch": "3ba50fca137fba7e8fd4882615e375ae01bda9f44ff30cf7723cec0e2bf2ddfb",
+  "checkpoints/087-manual-resource-controls.patch": "5e00a4f0b0a5beff1f5becfeffdaa7c760a52e636fa0c4e3f7fdd02e83c9bcbc",
+  "checkpoints/088-expanded-engine.json": "09f9ac851d0e45d0a38d7de3214d24e301e2a052d721e9d0ebf3590c8f4b057b",
+  "checkpoints/089-core-wiring.patch": "80df84e696cb85ae9702323edc37521c62dc8a75031877d58e80f68d16a1551e"
 }
