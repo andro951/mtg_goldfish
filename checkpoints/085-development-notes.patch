@@ -1,0 +1,23 @@
+--- a/docs/DEVELOPMENT.md
++++ b/docs/DEVELOPMENT.md
+@@ -8,3 +8,3 @@
+ 
+-`src/tabletop` is the delivered 1.1 UI: its app controller, geometry, pointer interactions, popup views, symbol-only mana palette and preferences. `src/ui` supplies shared dialogs, selectors, browser persistence and prepared laboratory fixtures; its original app controller is historical and is not bundled. DOM and image data do not belong in game state. `window.ASTRA_IMAGES` is an optional presentation cache used by the single-file edition; canonical definitions retain compact local image paths even when an image is displayed from an embedded data URI.
++`src/tabletop` is the delivered 1.3 UI: its app controller, geometry, pointer interactions, popup views, symbol-only mana palette and preferences. `src/ui` supplies shared dialogs, selectors, browser persistence and prepared laboratory fixtures; its original app controller is historical and is not bundled. DOM and image data do not belong in game state. `window.ASTRA_IMAGES` is an optional presentation cache used by the single-file edition; canonical definitions retain compact local image paths even when an image is displayed from an embedded data URI.
+ 
+@@ -54,3 +54,3 @@
+ 
+-A card's `corner-v2` layout anchor is its upright bottom-left corner. A -90-degree rotation leaves that point at the tapped bottom-right corner. Old top-left layout coordinates are migrated for display. Zone moves and casts carry a pending placement through the core action; the UI does not force-move a card to make a drag look successful.
++A card's `corner-v2` layout anchor is its upright bottom-left corner. A +90-degree rotation about the physical bottom-right, translated left by one card width, brings that corner to the anchor; the tapped footprint extends right from it. Old top-left layout coordinates are migrated for display. Zone moves and casts carry a pending placement through the core action; the UI does not force-move a card to make a drag look successful.
+ 
+@@ -60,3 +60,3 @@
+ 
+-The 1.1 interface retains rules-pack/session compatibility with 1.0. Future incompatible rules-state changes must still bump the rules-pack identifier. New games default to no held priority and explicit reserve access enabled; imported games keep their settings. The ordinary core API remains independent of those interface defaults.
++The 1.3 interface retains the existing rules-pack/session identifier; compatible old sessions import with new UI features disabled unless configured. Future incompatible rules-state changes must still bump the rules-pack identifier. New games default to no held priority and explicit reserve access enabled; imported games keep their settings. The ordinary core API remains independent of those interface defaults.
+ 
+@@ -75 +75,5 @@
+ CI preserves incoming source checkpoints before tests and packages its workspace even on failure. A failure artifact is useful for recovery but **is not a validated release**. Release status requires the full workflow to pass and the archive manifest to verify.
++
++## Player programs and interaction audit
++
++See `docs/1.3-AUDIT.md` and the new `programs.test.js`, `ui_acceptance_programs.py`, and `ui_acceptance_performance.py` suites. Program definitions live in the session’s `playerPrograms` extension; opted-in future configuration lives in `uiLayout.savedPrograms`. `tableGrids` preserves detached-zone slot arrays. These are data-only presentation/player preferences, while `RUN_SEQUENCE` uses a single reversible engine transaction and is reproduced by engine history.
