@@ -1,0 +1,102 @@
+--- a/src/tabletop/views.js
++++ b/src/tabletop/views.js
+@@ -61,6 +61,6 @@
+   return `<section class="opening-prompt" aria-label="Opening hand"><span>Opening hand${g.state.mulligans?' · mulligan '+g.state.mulligans:''}</span>${button('Mulligan','mulligan')}${button('Keep','keep','','primary')}</section>`;
+ }
+ export function menuBody({g,saveStatus}){
+-  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck pool','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide']];
++  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck editor','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide']];
+   return `<div class="app-menu-grid">${items.map(([label,name])=>button(label,'dialog',`data-dialog="${name}"`)).join('')}</div><div class="menu-undo">${button('Undo','undo',!g.cursor&&!g.transaction?'disabled':'')}${button('Redo','redo',g.cursor>=g.history.length||g.transaction?'disabled':'')}<small>Backspace: undo · Esc: cancel</small></div><label class="menu-preference"><input type="checkbox" data-setting="holdPriority" ${g.state.settings.holdPriority?'checked':''}> Hold priority</label><p class="save-status ${saveStatus.error?'error':''}" id="save-status">${h(saveStatus.text)}</p>`;
+ }
+--- a/tests/ui_acceptance_menus.py
++++ b/tests/ui_acceptance_menus.py
+@@ -5,12 +5,26 @@
+  click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 160 candidates',p.locator('.registry-card').count()==160)
+  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
+  p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))
+- shot(p,'07-card-registry.png');close(p);menu(p,'deck');click(p,'validate-deck','.modal');check('original deck validates and preserves duplicates',p.evaluate('astra.ui.deckReport.accepted') and 'DUPLICATE' in p.locator('.modal-body').inner_text())
+- p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel');click(p,'validate-deck','.modal');check('unsupported deck names are reported explicitly',not p.evaluate('astra.ui.deckReport.accepted') and 'MISSING' in p.locator('.modal-body').inner_text())
++ shot(p,'07-card-registry.png');close(p);menu(p,'deck')
++ check('visual deck editor exposes all 160 supported cards',p.locator('.deck-browser-card').count()==160)
++ check('deck editor opens with supplied section counts',p.locator('[data-deck-drop=main] b').inner_text()=='119' and p.locator('[data-deck-drop=command] b').inner_text()=='1' and p.locator('[data-deck-drop=outside] b').inner_text()=='41');shot(p,'10-deck-editor.png')
++ p.locator('#deck-search').fill('Mox Opal');check('deck search filters the supported database live',p.locator('.deck-browser-card').count()==1 and p.locator('#deck-search').input_value()=='Mox Opal')
++ p.locator('.deck-browser-card').first.drag_to(p.locator('[data-deck-drop=outside]'))
++ check('dragging database card into Outside adds one and selects that section',p.evaluate('astra.ui.deckTab')=='outside' and p.locator('[data-deck-drop=outside] b').inner_text()=='42' and p.locator('.deck-entry').filter(has_text='Mox Opal').count()==1)
++ qty=p.locator('.deck-entry').filter(has_text='Mox Opal').locator('[data-deck-qty]');qty.fill('2');qty.press('Tab')
++ check('deck quantity input updates physical copy count',p.locator('[data-deck-drop=outside] b').inner_text()=='43')
++ p.locator('.deck-entry').filter(has_text='Mox Opal').drag_to(p.locator('[data-deck-drop=main]'))
++ check('dragging a deck entry between sections moves all copies',p.evaluate('astra.ui.deckTab')=='main' and p.locator('[data-deck-drop=main] b').inner_text()=='121' and p.locator('[data-deck-drop=outside] b').inner_text()=='41')
++ p.locator('.deck-entry').filter(has_text='Mox Opal').drag_to(p.locator('[data-deck-drop=remove]'));check('dragging a deck entry to Remove deletes every copy in that section',p.locator('[data-deck-drop=main] b').inner_text()=='118' and p.locator('.deck-entry').filter(has_text='Mox Opal').count()==0)
++ p.locator('#deck-search').fill('');p.locator('#deck-type').select_option('Land');check('deck type filter shows only supported lands',p.locator('.deck-browser-card').count()>20)
++ p.locator('#deck-type').select_option('');p.locator('#deck-color').select_option('M');check('deck color filter finds multicolor cards',p.locator('.deck-browser-card').count()>0)
++ p.locator('#deck-color').select_option('');p.locator('#deck-sort').select_option('mv');check('deck sort control updates without losing the editor',p.locator('.deck-editor-modal').is_visible())
++ p.locator('.deck-advanced summary').click();p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel\n// Outside the Game\n');click(p,'deck-apply-text','.modal')
++ check('advanced paste reports unsupported names instead of silently accepting them',not p.evaluate('astra.ui.deckReport.accepted') and p.locator('.deck-live-status.needs-work').count()==1)
+  if not args.memory:
+   with p.expect_download() as d:click(p,'export-report','.modal')
+   d.value.save_as(OUT/'missing-test.json');check('missing card report downloads as JSON',json.loads((OUT/'missing-test.json').read_text())['missing'])
+- click(p,'restore-pool','.modal');click(p,'validate-deck','.modal');check('restore candidate pool recovers valid deck',p.evaluate('astra.ui.deckReport.accepted'));close(p)
++ click(p,'restore-pool','.modal');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
+  for name in ['guide','settings','log','notes','save']:
+   menu(p,name);check(f'{name} hidden menu opens and closes',p.locator('.modal').is_visible());close(p)
+  menu(p,'settings');check('card-size slider removed; geometry controls replace it',p.locator('#card-size,input[type=range]').count()==0)
+@@ -28,7 +42,7 @@
+  for i in [1,2,3]:
+   p.locator(f'[data-action=resource][data-player="{i}"][data-delta="1"]').click();p.locator(f'[data-action=resource][data-player="{i}"][data-delta="-1"]').click()
+  check('all compact opponent life controls work',all(state(p,f'state.players[{i}].life')==40 for i in [1,2,3]))
+- menu(p,'notes');start=state(p,'state.notes.length');p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Backspace');check('Backspace edits text without undoing game',p.locator('#note-text').input_value()=='Line tested <b>literal</b');click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
++ menu(p,'notes');start=state(p,'state.notes.length');cursor=state(p,'cursor');p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Backspace');check('Backspace edits text without undoing game',p.locator('#note-text').input_value()=='Line tested <b>literal</b' and state(p,'cursor')==cursor);click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
+  menu(p,'log');p.locator('.log-entry summary').first.click();check('action-log entry expands to events',p.locator('.log-entry[open] pre').is_visible());close(p)
+  menu(p);click(p,'undo','.modal');check('Menu Undo is operational',state(p,'state.notes.length')==start);click(p,'redo','.modal');check('Menu Redo is operational',state(p,'state.notes.length')==start+1);close(p)
+  menu(p,'guide');p.keyboard.press('Escape');check('Escape closes modal and restores table interaction',p.locator('.modal').count()==0 and not p.evaluate('document.getElementById("app").inert'))
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -34,13 +34,13 @@
+   if not args.memory and not args.groups:
+    context=b.new_context();p=context.new_page()
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.1.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.2.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+    context.close()
+   b.close()
+ finally:
+  if server:server.terminate();server.wait(timeout=5)
+-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.1.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.2.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+ print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
+ raise SystemExit(bool(failures or errors or requests))
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -30,7 +30,7 @@
+         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
+         page.goto(destination.as_uri())
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.1.0')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.2.0')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+         check('all 175 card images and the real Magic back are embedded', count == 176)
+         image_report = page.evaluate('''async () => {
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -1,7 +1,7 @@
+ from ui_acceptance_support import *
+ 
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.1.0')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.2.0')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
+  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -71,7 +71,7 @@
+ browser = browser_report('test-results/browser.json')
+ portable = browser_report('test-results/portable.json')
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.1.0', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser.get('uiVersion') == '1.2.0', 'The tested UI must be the compact tabletop, not the retired interface.')
+ require(browser['checksPassed'] >= 180, 'Browser regression suite is incomplete.')
+ 
+ builds = []
