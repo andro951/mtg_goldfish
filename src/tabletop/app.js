@@ -15,9 +15,9 @@ const data=window.ASTRA_DATA,registry=createRegistry(data.cards),store=new Sessi
 const root=document.getElementById('app'),overlay=document.getElementById('overlay');
 const floats=document.createElement('div');floats.id='floating-layer';document.body.append(floats);
 const newSeed=()=>`astra-${new Date().toISOString().slice(0,10)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
-let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,saveSequence=0,rendering=false,interactions;
+let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,modeTimer,saveSequence=0,rendering=false,interactions;
 const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)positionPopups();});
-const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,stackLabel:null,selected:new Set(),selectMode:false,
+const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,selected:new Set(),selectMode:false,
  lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
  noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null};
@@ -31,12 +31,56 @@ async function saveNow(){if(!g)return;clearTimeout(saveTimer);const seq=saveSequ
 function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),140);}
 function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={}}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(saveTimer);g=engine;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={}}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
 function prepareChoice(){const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
  if(key!==ui.pendingKey){ui.pendingKey=key;ui.choiceFilter='';ui.choice=p?.ordered?[...(p.candidates||choiceOptions(p).map(o=>o.value))]:[];ui.number=p?.min||0;ui.paymentEdited=false;}
  if(['payment','effectPayment'].includes(p?.kind)&&!ui.paymentEdited)ui.payment=suggestPayment(p.cost,g.state.players[p.player||0],p.context)||{normal:{},tagged:[]};
+}
+function clearInspectorState(){ui.inspected=null;ui.inspectDefinition=null;ui.inspectOrigin=null;ui.inspectorActivation=null;ui.stackLabel=null;}
+function inspectorOrigin(id){const o=g.object(id);return o?{id:o.id,oid:o.oid,zone:o.zone}:null;}
+function sameOrigin(origin){const o=origin&&g.object(origin.id);return !!(o&&o.oid===origin.oid&&o.zone===origin.zone);}
+function abilitySingleUse(source,ability){
+  if(!source||!ability)return false;
+  if(ability.tap||ability.loyalty!=null)return true;
+  let costs=[];try{costs=typeof ability.costs==='function'?ability.costs(g,source,g.context(source)):ability.costs||[];}catch{}
+  return costs.some(cost=>cost?.self&&['sacrifice','exile','return'].includes(cost.kind));
+}
+function syncInspectorState(){
+  if(ui.inspected&&ui.inspectOrigin&&!sameOrigin(ui.inspectOrigin))clearInspectorState();
+  const activation=ui.inspectorActivation;if(!activation)return;
+  if(!sameOrigin(activation.origin)){clearInspectorState();return;}
+  const stillDraft=g.state.actionDraft?.kind==='ability'&&g.state.actionDraft?.source?.id===activation.origin.id;
+  if(!g.transaction&&!stillDraft){
+    const committed=g.cursor>activation.cursor;
+    if(committed&&activation.singleUse)clearInspectorState();
+    else ui.inspectorActivation=null;
+  }
+}
+function draftIdentity(draft=g.state.actionDraft){
+  if(!draft)return null;
+  if(draft.kind==='trigger')return `trigger/${draft.stackObject?.id||''}/${draft.source?.id||''}:${draft.source?.oid||''}/${draft.abilityId||draft.stackObject?.abilityId||''}`;
+  return `${draft.kind}/${draft.source?.id||''}:${draft.source?.oid||''}/${draft.abilityId||''}`;
+}
+function modePreferenceForDraft(draft=g.state.actionDraft,pending=g.state.pending){
+  if(!draft||pending?.kind!=='draft')return null;
+  const definition=g.draftDefinition(draft),meta=definition?.modePreference;
+  if(!meta||pending.key!==meta.key)return null;
+  const sourceCardId=draft.sourceCardId||draft.stackObject?.sourceCardId||draft.context?.sourceCardId||g.object(draft.source)?.cardId;
+  if(!sourceCardId)return null;
+  const key=`${sourceCardId}/${definition.id}/${meta.key}`;
+  return {key,meta,identity:draftIdentity(draft)};
+}
+function scheduleModeDefault(){
+  clearTimeout(modeTimer);const pending=g.state.pending,draft=g.state.actionDraft,info=modePreferenceForDraft(draft,pending);if(!info)return;
+  const value=prefs.modeDefaults?.[info.key];if(!value||value==='ASK'||ui.modeBypass===info.identity)return;
+  const legal=(pending.options||[]).some(option=>(typeof option==='object'?option.value:option)===value);if(!legal)return;
+  const signature=JSON.stringify([info.identity,pending.key,pending.options]);
+  modeTimer=setTimeout(()=>{const now=modePreferenceForDraft();if(!now||now.identity!==info.identity||ui.modeBypass===info.identity)return;
+    if(JSON.stringify([now.identity,g.state.pending?.key,g.state.pending?.options])!==signature)return;
+    run({type:'CHOOSE',value});
+  },45);
 }
 function makeLayouts(){
  const visibleWidth=Math.max(220,innerWidth-prefs.sidebarWidth-(prefs.dock?prefs.dockWidth:0));
@@ -90,6 +134,7 @@ function positionPopups(){
 }
 function renderModal(preserve=true){const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0,nested=new Map(preserve?[...overlay.querySelectorAll('[data-modal-scroll]')].map(el=>[el.dataset.modalScroll,[el.scrollLeft,el.scrollTop]]):[]);overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;for(const el of overlay.querySelectorAll('[data-modal-scroll]')){const pos=nested.get(el.dataset.modalScroll);if(pos){el.scrollLeft=pos[0];el.scrollTop=pos[1];}}restoreFocus(focus);}}
 function render(){if(!g||rendering)return;rendering=true;try{
+ syncInspectorState();
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
  if(prefs.dock==='workspace'&&!g.state.lookWorkspace?.ids?.length)prefs.dock=null;
