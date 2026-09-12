@@ -6,6 +6,8 @@ import { installLandfall } from './landfall.js';
 
 import { installTutorsRecursion } from './tutors-recursion.js';
 
+import { installLibraryEngines } from './library-engines.js';
+
 export function createRegistry(definitions) {
   const registry = new CardRegistry(definitions);
   installCommonHandlers(registry);
@@ -13,5 +15,6 @@ export function createRegistry(definitions) {
   installManaEngines(registry);
   installLandfall(registry);
   installTutorsRecursion(registry);
+  installLibraryEngines(registry);
   return registry;
 }
