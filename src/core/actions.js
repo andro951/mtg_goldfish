@@ -198,7 +198,7 @@ export const actionMethods = {
     specs.push(...list(definition.inputs, this, source, context));
     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
       if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
-      specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true });
+      specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
     }
     return specs;
   },

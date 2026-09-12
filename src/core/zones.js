@@ -64,6 +64,7 @@ export const zoneMethods = {
         object.tapped = proposal.tapped; object.flags.cast = wasCast; object.flags.castX = castX;
         if (prototype) object.flags.prototype = prototype;
         if (object.token) object.flags.hasBeenOnBattlefield = true;
+        if (proposal.copy) object.copy = clone(proposal.copy);
         const module = this.module(object), definition = this.definition(object);
         if (definition.types.includes('Planeswalker')) object.counters.loyalty = Number(definition.loyalty) || 0;
         if (module.entersCounters) Object.assign(object.counters, typeof module.entersCounters === 'function' ? module.entersCounters(this, object) : module.entersCounters);
@@ -81,17 +82,21 @@ export const zoneMethods = {
       this.state.provenance.push({ ...clone(change), turnSerial: this.state.turnSerial });
       changes.push(change);
       if (meldParts && from === 'battlefield') {
-        object.flags.meldParts = meldParts;
-        // The merged object represents two physical cards. Both leave together.
+        // A merged permanent leaves once, but both physical cards get zone
+        // histories so later this-turn recursion can find either front face.
         for (const partId of meldParts.filter(id => id !== object.id)) {
           const part = this.state.instances[partId];
-          if (part && part.zone === 'exile') {
-            this.state.zones.exile.splice(this.state.zones.exile.indexOf(partId), 1);
+          if (part && part.zone === 'workspace' && part.flags.meldedInto === object.id) {
+            const beforeRef = ref(part);
+            this.state.zones.workspace.splice(this.state.zones.workspace.indexOf(partId), 1);
             part.zone = to; part.oid++; part.tapped = false; part.counters = {}; part.flags = {}; part.copy = null;
+            part.lastMove = { from: 'battlefield', to, cause: proposal.cause, turnSerial: this.state.turnSerial, batchId, oid: part.oid };
             this.state.zones[to].push(part.id);
+            const component = { id: part.id, from: 'battlefield', to, cause: proposal.cause, batchId, beforeRef, afterRef: ref(part), lki: clone(lki), componentOnly: true };
+            this.state.provenance.push({ ...clone(component), turnSerial: this.state.turnSerial }); changes.push(component);
           }
         }
-        object.copy = null; delete object.flags.meldParts;
+        object.copy = null;
       }
     }
     this.touch(); this.state.activeLibraryBoundary = this.state.zones.libraryActive.length;
@@ -99,7 +104,7 @@ export const zoneMethods = {
     if (changes.length) this.emit('ZONE_BATCH', { batchId, changes }, beforeSources);
     for (const change of changes) {
       this.emit('ZONE_CHANGE', { batchId, change }, beforeSources);
-      if (change.from === 'battlefield') {
+      if (change.from === 'battlefield' && !change.componentOnly) {
         this.emit('LEAVE', { batchId, change }, beforeSources);
         if (change.cause === 'sacrifice') this.emit('SACRIFICED', { batchId, change }, beforeSources);
         if (change.to === 'graveyard' && change.lki.characteristics.types.includes('Creature')) this.emit('DIED', { batchId, change }, beforeSources);

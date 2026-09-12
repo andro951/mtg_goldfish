@@ -103,7 +103,7 @@ export const effectMethods = {
       case 'move': case 'sacrifice': case 'destroy': case 'discard': {
         const ids = command.selector ? this.select(cmd.selector, context) : this.effectIds(command.ids, context);
         const destination = cmd.to || 'graveyard', cause = command.op === 'move' ? cmd.cause || 'effect' : command.op;
-        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, attachedTo: cmd.attachedTo })), context);
+        const changes = this.moveBatch(ids.map(id => ({ id, to: destination, cause, from: cmd.from, tapped: cmd.tapped, controller: cmd.controller, counters: cmd.counters, flags: cmd.flags, modifications: cmd.modifications, copy: cmd.copy, attachedTo: cmd.attachedTo })), context);
         if (command.key) context.vars[command.key] = clone(changes || []); return;
       }
       case 'tap': case 'untap': {

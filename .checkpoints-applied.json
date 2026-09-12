@@ -3,5 +3,6 @@
   "checkpoints/032-tutors-recursion.json": "79716182a4b48ce11403001065d2600ea4ec2198ee2313180b9d42f98ea97e81",
   "checkpoints/033-layers-and-miracle.patch": "e33bb662fe23b6e3606831400268ba7710a471cca7afd2c9a08a6e27fdb3c28b",
   "checkpoints/034-library-registry.patch": "242c8d316594730921bd6fa2fac92c982651a06ea42b627be531a0c1ad8b7a04",
-  "checkpoints/035-artifact-registry.patch": "f38d3e276e8e96090c56ab793537edd2825aaab858583b47c6e16d4d4b8132d2"
+  "checkpoints/035-artifact-registry.patch": "f38d3e276e8e96090c56ab793537edd2825aaab858583b47c6e16d4d4b8132d2",
+  "checkpoints/036-special-core.patch": "a9fb2321ecd9eb02abd177d065239971e3d491da9dd61584533d29bd7c5c0761"
 }

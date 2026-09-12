@@ -38,7 +38,7 @@ export const eventMethods = {
     return object;
   },
   triggerDefinition(stackObject) {
-    if (stackObject.program) return { id: stackObject.abilityId, effect: () => clone(stackObject.program), inputs: [] };
+    if (stackObject.program) return { id: stackObject.abilityId, effect: () => clone(stackObject.program), inputs: stackObject.inputSpecs || [] };
     return (this.registry.module(stackObject.sourceCardId).triggers || []).find(t => t.id === stackObject.abilityId);
   },
   settle() {

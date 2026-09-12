@@ -129,6 +129,11 @@ export class Engine {
     if (object.characteristics && object.definition) return clone(object);
     return { ...clone(object), characteristics: clone(this.characteristics(object)), definition: clone(this.definition(object)) };
   }
+  lastKnownFor(reference, fallback = null) {
+    const current = this.object(reference);
+    if (current) return this.lastKnown(current);
+    return [...this.state.provenance].reverse().find(c => sameRef(c.beforeRef, reference))?.lki || fallback;
+  }
   randomShuffle(ids, reason = 'shuffle') {
     const start = this.state.rng.count, result = shuffled(ids, this.state.rng);
     this.record('RANDOM_RESULT', { reason, beforeCount: start, afterCount: this.state.rng.count, result }); return result;

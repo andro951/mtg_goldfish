@@ -95,7 +95,7 @@ export const phaseMethods = {
       if (this.state.extraCombatActive && this.state.currentExtraCombat?.untapCreatures) this.tapObjects(this.controlled(player).filter(o => this.characteristics(o).types.includes('Creature')).map(o => o.id), false, 'extra-combat');
       this.emit('COMBAT_BEGAN', { player, extra: this.state.extraCombatActive });
       for (const emblem of this.state.emblems.filter(e => e.trigger === 'combat' && e.controller === player)) this.queueTrigger({ controller: player, source: null, sourceCardId: emblem.sourceCardId, abilityId: emblem.abilityId,
-        label: emblem.label, program: clone(emblem.program), context: { controller: player, source: null, sourceCardId: emblem.sourceCardId, vars: {}, inputs: {}, event: { player, step, turnSerial: this.state.turnSerial } } });
+        label: emblem.label, program: clone(emblem.program), inputSpecs: clone(emblem.inputs || []), context: { controller: player, source: null, sourceCardId: emblem.sourceCardId, vars: {}, inputs: {}, event: { player, step, turnSerial: this.state.turnSerial } } });
     } else if (step === 'end') {
       this.emit('END_STEP', { player });
       const due = this.state.delayed.filter(d => d.when === 'nextEnd' || (d.when === 'yourEnd' && d.controller === player));

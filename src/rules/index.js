@@ -10,6 +10,8 @@ import { installLibraryEngines } from './library-engines.js';
 
 import { installArtifactMechanics } from './artifact-mechanics.js';
 
+import { installSpecialMechanics } from './special-mechanics.js';
+
 export function createRegistry(definitions) {
   const registry = new CardRegistry(definitions);
   installCommonHandlers(registry);
@@ -19,5 +21,6 @@ export function createRegistry(definitions) {
   installTutorsRecursion(registry);
   installLibraryEngines(registry);
   installArtifactMechanics(registry);
+  installSpecialMechanics(registry);
   return registry;
 }
