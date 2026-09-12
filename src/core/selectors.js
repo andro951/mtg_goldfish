@@ -37,7 +37,7 @@ export function matches(engine, idOrObject, selector = {}, context = {}) {
   if (selector.faceDown != null && !!object.flags.faceDown !== selector.faceDown) return false;
   if (!compare(c.manaValue, selector.manaValue) || !compare(c.power, selector.power) || !compare(c.toughness, selector.toughness)) return false;
   if (selector.keyword && !c.keywords.includes(selector.keyword)) return false;
-  if (selector.manaAbility && !engine.abilities(object).some(a => a.mana)) return false;
+  if (selector.manaAbility && !(engine.module(object).activated || []).some(a => a.mana)) return false;
   if (selector.samePlayerAs) {
     const prior = context.inputs?.[selector.samePlayerAs];
     const previous = engine.state.instances[asArray(prior)[0]?.id || asArray(prior)[0]];

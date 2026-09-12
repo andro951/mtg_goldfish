@@ -111,7 +111,12 @@ export class Engine {
     if (modification.baseToughness != null) c.toughness = modification.baseToughness;
     c.power += modification.power || 0; c.toughness += modification.toughness || 0;
   }
-  isSick(object) { return this.characteristics(object).types.includes('Creature') && object.controlledSince >= this.state.turnSerial && !this.characteristics(object).keywords.includes('Haste'); }
+  isSick(object) {
+    // Control must be continuous since the beginning of THAT controller's
+    // most recent turn, not merely since the previous player's turn.
+    const beginning = this.state.lastTurnBegan?.[object.controller] ?? 1;
+    return this.characteristics(object).types.includes('Creature') && object.controlledSince >= beginning && !this.characteristics(object).keywords.includes('Haste');
+  }
   isSorceryTime(controller = 0) { return this.state.activePlayer === controller && ['main1', 'main2'].includes(this.state.step) && !this.state.stack.length && !this.state.resolving && this.state.priorityHolder === controller; }
   abilities(objectOrId) {
     const object = typeof objectOrId === 'string' ? this.object(objectOrId) : objectOrId;
@@ -122,7 +127,10 @@ export class Engine {
     return { source: ref(source), sourceCardId: source?.copy?.rulesId || source?.cardId || null,
       sourceSnapshot: source ? this.lastKnown(source) : null, controller: source?.controller ?? 0, inputs: {}, vars: {}, ...clone(extra) };
   }
-  lastKnown(object) { return { ...clone(object), characteristics: clone(this.characteristics(object)), definition: clone(this.definition(object)) }; }
+  lastKnown(object) {
+    if (object.characteristics && object.definition) return clone(object);
+    return { ...clone(object), characteristics: clone(this.characteristics(object)), definition: clone(this.definition(object)) };
+  }
   randomShuffle(ids, reason = 'shuffle') {
     const start = this.state.rng.count, result = shuffled(ids, this.state.rng);
     this.record('RANDOM_RESULT', { reason, beforeCount: start, afterCount: this.state.rng.count, result }); return result;

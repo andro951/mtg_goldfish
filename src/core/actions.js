@@ -12,7 +12,9 @@ export const actionMethods = {
     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
     if (type === 'CANCEL') {
       requireRule(this.state.pending?.optional || this.state.actionDraft?.kind !== 'trigger', 'A mandatory trigger or effect cannot be cancelled.');
-      if (this.state.pending?.kind === 'effect' && this.state.pending.optional) return this.acceptChoice([], action);
+      if (this.state.pending?.optional && ['effect', 'castWindow'].includes(this.state.pending.kind)) return this.acceptChoice([], action);
+      if (this.state.pending?.kind === 'optional') return this.acceptChoice('NO', action);
+      if (this.state.pending?.kind === 'effectPayment') return this.acceptChoice('decline', action);
       requireRule(this.transaction, 'No action is in progress.');
       const before = clone(this.transaction.before); this.transaction = null; this.state = before; this.touch(); return;
     }
@@ -57,7 +59,7 @@ export const actionMethods = {
     }
     if (type.startsWith('DEBUG_')) return this.debugAction(action);
     if (this.state.pending || this.state.actionDraft) {
-      if (type === 'ACTIVATE_ABILITY' && this.state.pending?.kind === 'payment') return this.beginPaymentManaAbility(action);
+      if (type === 'ACTIVATE_ABILITY' && ['payment', 'effectPayment'].includes(this.state.pending?.kind)) return this.beginPaymentManaAbility(action);
       requireRule(false, 'Finish the highlighted choice before taking another action.', 'CHOICE_PENDING');
     }
     requireRule(!this.state.resolving, 'An effect is still resolving.');
@@ -129,6 +131,7 @@ export const actionMethods = {
   beginCardAction(action) {
     const source = this.object(action.id); requireRule(source, 'Card not found.');
     const land = action.type === 'PLAY_LAND', c = this.characteristics(source);
+    requireRule(this.module(source).status && this.module(source).status !== 'unsupported', 'This card does not yet have a rules implementation.', 'UNSUPPORTED_CARD');
     requireRule(land === c.types.includes('Land'), land ? 'This card is not a land.' : 'Lands are played, not cast.');
     const permissions = this.castingPermissions(source, land);
     requireRule(permissions.length, `You do not have permission to ${land ? 'play' : 'cast'} this card from ${source.zone}.`, 'NO_PERMISSION');
@@ -187,6 +190,10 @@ export const actionMethods = {
       if (this.definition(source).manaCost.includes('{X}') && draft.permission?.method !== 'free') specs.push({ key: 'x', type: 'number', label: 'Choose X', min: 0, max: 10000 });
       if (this.definition(source).manaCost.includes('/P}') && draft.permission?.method === 'normal') specs.push({ key: 'phyrexian', type: 'option', label: 'Phyrexian mana', options: [{ value: 'mana', label: 'Pay colored mana' }, { value: 'life', label: 'Pay 2 life instead' }] });
     }
+    if (draft.kind === 'ability') {
+      const mana = typeof definition.cost === 'function' ? definition.cost(this, source, context) : definition.cost || '';
+      if (mana.includes('/P}')) specs.push({ key: 'phyrexian', type: 'option', label: 'Phyrexian mana', options: [{ value: 'mana', label: 'Pay colored mana' }, { value: 'life', label: 'Pay 2 life instead' }] });
+    }
     specs.push(...list(definition.inputs, this, source, context));
     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
       if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
@@ -211,10 +218,15 @@ export const actionMethods = {
       if (spec.ordered && spec.candidates && spec.min === spec.candidates.length) requireRule(ids.every(id => spec.candidates.includes(id)), 'Invalid ordering.');
       if (spec.candidates) requireRule(ids.every(id => spec.candidates.includes(id)), 'That card is not in this selection.');
       if (spec.sumManaValue != null) requireRule(ids.reduce((n, id) => n + this.characteristics(id).manaValue, 0) <= spec.sumManaValue, 'Combined mana value exceeds the allowed total.');
+      if (spec.minTotalPower != null) {
+        const total = ids.reduce((n, id) => n + Math.max(0, this.characteristics(id).power + (spec.crew ? this.module(this.object(id)).crewBonus || 0 : 0)), 0);
+        requireRule(total >= spec.minTotalPower, `Selected creatures need at least ${spec.minTotalPower} total power.`, 'CREW_POWER');
+      }
       return ids;
     }
     const choices = asArray(value);
     requireRule(choices.length >= (spec.min ?? 1) && choices.length <= (spec.max ?? 1), 'Choose the required number of options.');
+    requireRule(unique(choices).length === choices.length, 'An option cannot be chosen twice.');
     requireRule(choices.every(v => (spec.options || []).some(o => (typeof o === 'object' ? o.value : o) === v)), 'That option is not available.');
     return spec.max > 1 || spec.ordered ? choices : choices[0];
   },
@@ -278,6 +290,7 @@ export const actionMethods = {
       requireRule(draft.permission?.instant || flash || this.isSorceryTime(), 'This spell requires your main phase and an empty stack.', 'TIMING');
       if (draft.permission?.plot) requireRule(this.isSorceryTime(), 'Plotted spells may only be cast as a sorcery.', 'TIMING');
     } else if (draft.kind === 'ability') {
+      requireRule(!definition.available || definition.available(this, source), 'This ability is no longer available.', 'ABILITY_UNAVAILABLE');
       if (definition.sorcery || definition.loyalty != null) requireRule(this.isSorceryTime(), 'Activate this ability only as a sorcery.', 'TIMING');
       if (definition.loyalty != null) {
         const used = source.flags.loyaltyTurn === this.state.turnSerial ? source.flags.loyaltyUsed || 0 : 0;
@@ -390,7 +403,11 @@ export const actionMethods = {
     const source = this.object(action.id), ability = source && this.abilities(source).find(a => a.id === action.abilityId);
     requireRule(ability?.mana, 'Only mana abilities may be activated while paying.');
     requireRule(!this.state.paymentParent, 'Finish the current mana ability first.');
-    this.state.paymentParent = { draft: this.state.actionDraft, pending: this.state.pending };
+    if (this.state.pending.kind === 'effectPayment') {
+      requireRule(!this.state.effectPaymentParent, 'Finish the current mana ability first.');
+      this.state.effectPaymentParent = { frame: this.state.resolving, pending: this.state.pending };
+      this.state.resolving = null;
+    } else this.state.paymentParent = { draft: this.state.actionDraft, pending: this.state.pending };
     this.state.actionDraft = null; this.state.pending = null; this.beginAbility(action);
   },
   acceptChoice(value, action = {}) {

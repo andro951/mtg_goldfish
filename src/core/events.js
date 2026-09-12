@@ -20,7 +20,7 @@ export const eventMethods = {
         let multiplier = 1;
         for (const doubling of this.objects('battlefield')) {
           const rule = this.module(doubling).triggerMultiplier;
-          if (rule && rule(this, doubling, event, source)) multiplier++;
+          if (rule && rule(this, doubling, event, source)) multiplier *= 2;
         }
         for (let i = 0; i < multiplier; i++) this.queueTrigger({
           source: ref(source), sourceCardId: context.sourceCardId, controller: source.controller,

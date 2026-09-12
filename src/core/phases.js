@@ -57,6 +57,7 @@ export const phaseMethods = {
     for (let attempts = 0; attempts < 4; attempts++) { next = (next + 1) % 4; if (!this.state.players[next].lost) break; }
     this.state.activePlayer = next; this.state.priorityHolder = next === 0 ? 0 : 0;
     this.state.turnSerial++; if (next === 0) this.state.turnNumber++;
+    this.state.lastTurnBegan ||= [1, 0, 0, 0]; this.state.lastTurnBegan[next] = this.state.turnSerial;
     this.state.controllerTurns ||= [1, 0, 0, 0]; this.state.controllerTurns[next]++;
     if (next === 0) this.state.landPlaysUsed = 0;
     this.state.turnCounts = {}; this.state.triggerCounts = {};

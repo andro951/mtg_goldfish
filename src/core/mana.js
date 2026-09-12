@@ -29,6 +29,7 @@ export function restrictionAllows(tag, context = {}) {
   if (!tag.restriction) return true;
   if (tag.restriction === 'artifactSpell') return context.kind === 'spell' && context.types?.includes('Artifact');
   if (tag.restriction === 'notNonartifactSpell') return context.kind !== 'spell' || context.types?.includes('Artifact');
+  if (tag.restriction === 'artifactSpellOrAbility') return ['spell', 'ability'].includes(context.kind) && context.types?.includes('Artifact');
   if (tag.restriction === 'creatureSpell') return context.kind === 'spell' && context.types?.includes('Creature');
   return false;
 }

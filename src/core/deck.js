@@ -62,7 +62,7 @@ export function createGameState(registry, inputRecords, seed = 'astra', options 
     fixedLands: lands.length, selectedNonlands: needed, commanderIds: [...commanders], outsideIds: [...outside], records: clone(records) };
   const state = {
     schemaVersion: 1, version: VERSION, rulesPack: RULES_PACK, seed: String(seed), rng, nextId: serial, nextStackId: 1, nextBatchId: 1,
-    initialDeck, turnNumber: 1, turnSerial: 1, activePlayer: 0, priorityHolder: 0, step: 'setup', started: false,
+    initialDeck, turnNumber: 1, turnSerial: 1, lastTurnBegan: [1, 0, 0, 0], activePlayer: 0, priorityHolder: 0, step: 'setup', started: false,
     zones, instances, stack: [], pendingTriggers: [], pending: null, resolving: null, actionDraft: null,
     activeLibraryBoundary: zones.libraryActive.length, reserveAccess: false, reserveReached: false,
     landPlaysUsed: 0, commanderCasts: {}, players: Array.from({ length: 4 }, (_, index) => ({
