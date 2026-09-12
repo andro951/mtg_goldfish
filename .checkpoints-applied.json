@@ -23,5 +23,13 @@
   "checkpoints/053-popup-image-layout.patch": "bedc9a9b928f4e91d4403d346b26e979a5d1b6fa6dd99ee436d8c5828f47d488",
   "checkpoints/054-tabletop-development-docs.patch": "1430f3fbbc50342a3ebb402645ba1187d8669f9567fab6f6ce8400ad292dc2c2",
   "checkpoints/055-async-recovery-acceptance.patch": "7ef795a47c96bd17beb1d3df0edabd8df4f0b7709abeb0c855bccbbc0c113d62",
-  "checkpoints/052-visual-deck-editor.patch": "1d9370ad12cbde96ccb2dc6e80d4884b41ab5f5af49bb06ae8bead85616afae1"
+  "checkpoints/052-visual-deck-editor.patch": "1d9370ad12cbde96ccb2dc6e80d4884b41ab5f5af49bb06ae8bead85616afae1",
+  "checkpoints/054-deck-editor-dialogs.json": "0791e8fc3ab5f78af581998bdc3884e8e2e3bfe71b29482e74b9d48c1609d9de",
+  "checkpoints/055-deck-editor-styles.json": "9101381c494ac45c6778178c7fb2de10f449cb76ed16663d7477cc2c0e755c87",
+  "checkpoints/056-deck-editor-views.json": "28e9dff6f989736eb74aa4da08202e6f7375c44b47a7a78c8d7f2223f8a739e1",
+  "checkpoints/057-deck-editor-model-test.json": "4a698626daf6afd4e027bbc22cd8ab778292843d33b254c89c59130bc8868265",
+  "checkpoints/058-deck-editor-browser-menus.json": "f7737db5b967fe8461219d3cfe38f5b4b491bac9f27e3242bd6e614ef8335435",
+  "checkpoints/059-deck-editor-browser-version.json": "8208a6112157e0c0896530afa0463cfd53b78e58488f0d8b4561296262298bf5",
+  "checkpoints/060-deck-editor-portable-version.json": "c1d3a0b312247e99e73311227f689f071cfc0cefc49f26563de0d88651c90ad9",
+  "checkpoints/062-deck-editor-package-gate.json": "3b23eea709561d48ccc21f2195774394ff96181dffa9e4d903dddbaaea45d6c5"
 }

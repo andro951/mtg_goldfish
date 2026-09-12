@@ -61,6 +61,6 @@ export function openingPopup({g}){
   return `<section class="opening-prompt" aria-label="Opening hand"><span>Opening hand${g.state.mulligans?' · mulligan '+g.state.mulligans:''}</span>${button('Mulligan','mulligan')}${button('Keep','keep','','primary')}</section>`;
 }
 export function menuBody({g,saveStatus}){
-  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck pool','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide']];
+  const items=[['New test','new'],['Laboratory','labs'],['Cards','cards'],['Deck editor','deck'],['Save / import','save'],['Settings','settings'],['Action log','log'],['Notes','notes'],['Guide','guide']];
   return `<div class="app-menu-grid">${items.map(([label,name])=>button(label,'dialog',`data-dialog="${name}"`)).join('')}</div><div class="menu-undo">${button('Undo','undo',!g.cursor&&!g.transaction?'disabled':'')}${button('Redo','redo',g.cursor>=g.history.length||g.transaction?'disabled':'')}<small>Backspace: undo · Esc: cancel</small></div><label class="menu-preference"><input type="checkbox" data-setting="holdPriority" ${g.state.settings.holdPriority?'checked':''}> Hold priority</label><p class="save-status ${saveStatus.error?'error':''}" id="save-status">${h(saveStatus.text)}</p>`;
 }
