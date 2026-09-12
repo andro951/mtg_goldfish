@@ -1,0 +1,112 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+index 763447e..48e2c62 100644
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -79,6 +79,7 @@ export const actionMethods = {
+       this.state.reserveAccess = !!action.enabled; this.record('HARNESS_RESERVE_ACCESS', { enabled: this.state.reserveAccess }); return;
+     }
+     if (type.startsWith('DEBUG_')) return this.debugAction(action);
++    if (type === 'REVISE_DRAFT_INPUT') return this.reviseDraftInput(action);
+     if (this.state.pending || this.state.actionDraft) {
+       if (type === 'ACTIVATE_ABILITY' && ['payment', 'effectPayment'].includes(this.state.pending?.kind)) return this.beginPaymentManaAbility(action);
+       requireRule(false, 'Finish the highlighted choice before taking another action.', 'CHOICE_PENDING');
+@@ -225,13 +226,34 @@ export const actionMethods = {
+       const mana = typeof definition.cost === 'function' ? definition.cost(this, source, context) : definition.cost || '';
+       if (mana.includes('/P}')) specs.push({ key: 'phyrexian', type: 'option', label: 'Phyrexian mana', options: [{ value: 'mana', label: 'Pay colored mana' }, { value: 'life', label: 'Pay 2 life instead' }] });
+     }
++    // Announcement inputs (modes, targets, X, etc.) are chosen before costs.
+     specs.push(...list(definition.inputs, this, source, context));
+     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
+       if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
+       specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
+     }
++    // Effect choices that are not modes/targets belong after additional-cost
++    // selections. This keeps UX/rules sequencing clear for abilities such as
++    // Scene of the Crime: choose the creature paying the tap cost, then choose
++    // which color the effect will produce.
++    specs.push(...list(definition.effectInputs, this, source, context));
+     return specs;
+   },
++  reviseDraftInput(action) {
++    const draft = this.state.actionDraft;
++    requireRule(draft && this.state.pending?.kind === 'draft', 'There is no draft choice to revise.', 'NO_DRAFT_CHOICE');
++    const key = String(action.key || '');
++    const specs = this.inputSpecs(draft), index = specs.findIndex(spec => spec.key === key);
++    requireRule(index >= 0, 'That earlier choice cannot be revised.', 'CHOICE_NOT_REVISABLE');
++    // Remove the requested choice and every dependent choice after it. Costs
++    // have not been paid yet while a draft decision is pending, so this is a
++    // safe rewind within the same transaction rather than an undo action.
++    for (const spec of specs.slice(index)) delete draft.context.inputs[spec.key];
++    draft.targets = [];
++    this.state.pending = null;
++    this.record('DRAFT_CHOICE_REVISED', { key });
++    this.advanceDraft();
++  },
+   materializeInput(spec, context) {
+     const input = clone(spec); input.min ??= 1; input.max ??= input.min;
+     if (spec.type === 'select' || !spec.type) {
+diff --git a/src/rules/landfall.js b/src/rules/landfall.js
+index 4213028..755e673 100644
+--- a/src/rules/landfall.js
++++ b/src/rules/landfall.js
+@@ -48,16 +48,23 @@ export function installLandfall(registry) {
+       test: (g, s, e) => e.changes.some(c => c.to === 'graveyard' && c.lki.owner === s.controller && !c.lki.token && c.lki.characteristics.types.includes('Land')), effect: () => [draw()] },
+   ] });
+   register(registry, 'Retreat to Coralhelm', { triggers: [landfall('retreat', 'Tap/untap a creature or scry', (g, ctx) => ctx.inputs.mode === 'scry' ? [{ op: 'scry', count: 1 }] : tapChoice(), {
++    modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'creature', label: 'Creature' }, { value: 'scry', label: 'Scry' }] },
+     inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Retreat’s mode', options: [{ value: 'creature', label: 'You may tap or untap target creature' }, { value: 'scry', label: 'Scry 1' }] },
+       ...(ctx.inputs.mode === 'creature' ? [target({ zones: ['battlefield'], creature: true })] : [])],
+   })] });
++  const raftModes = (g, controller = 0) => [
++    ...(g.count({ creature: true, controller: 'opponent' }, { controller }) ? [{ value: 'tap', label: 'Tap target creature an opponent controls' }] : []),
++    ...(g.count({ creature: true, controller: 'you' }, { controller }) ? [{ value: 'untap', label: 'Untap target creature you control' }] : []),
++  ];
+   register(registry, 'Elven Raft-Steerer', { triggers: [landfall('steer', 'Tap an opposing creature or untap your creature', (g, ctx) => [{ op: ctx.inputs.mode, ids: '$input.target' }], {
+-    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: [{ value: 'tap', label: 'Tap target creature an opponent controls' }, { value: 'untap', label: 'Untap target creature you control' }] },
++    modePreference: { key: 'mode', label: 'Landfall mode', options: [{ value: 'tap', label: 'Tap opponent' }, { value: 'untap', label: 'Untap yours' }] },
++    inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Raft-Steerer’s mode', options: raftModes(g, s.controller) },
+       ...(ctx.inputs.mode ? [target({ zones: ['battlefield'], creature: true, controller: ctx.inputs.mode === 'tap' ? 'opponent' : 'you' })] : [])],
+   })] });
+   register(registry, 'Tideforce Elemental', { activated: [{ id: 'tideforce', label: 'Tap or untap another creature', cost: '{U}', tap: true, inputs: [target({ zones: ['battlefield'], creature: true, another: true })], effect: () => tapChoice() }],
+     triggers: [landfall('untap', 'You may untap Tideforce Elemental', () => [{ op: 'untap', ids: '$source' }], { optional: true })] });
+   register(registry, 'Scaretiller', { triggers: [{ id: 'tiller', label: 'Put a land from hand or return a land from graveyard', event: 'BECAME_TAPPED', test: (g, s, e) => sameRef(s, e.object),
++    modePreference: { key: 'mode', label: 'Tapped trigger mode', options: [{ value: 'hand', label: 'Hand land' }, { value: 'graveyard', label: 'Graveyard land' }] },
+     inputs: (g, s, ctx) => [{ key: 'mode', type: 'option', label: 'Choose Scaretiller’s mode', options: [{ value: 'hand', label: 'You may put a land from hand onto the battlefield tapped' }, { value: 'graveyard', label: 'Return target land from your graveyard tapped' }] },
+       ...(ctx.inputs.mode === 'graveyard' ? [target({ ...GY, land: true })] : [])],
+     effect: (g, ctx) => ctx.inputs.mode === 'graveyard' ? [move('$input.target', 'battlefield', { tapped: true })] : handLand(true),
+diff --git a/src/rules/lands.js b/src/rules/lands.js
+index 853702b..44bfc76 100644
+--- a/src/rules/lands.js
++++ b/src/rules/lands.js
+@@ -21,7 +21,7 @@ export function installLands(registry) {
+   register(registry, 'Buried Ruin', { activated: [{ id: 'recover', label: 'Return target artifact card', cost: '{2}', tap: true, costs: [selfSacrifice], inputs: [target({ ...GY, artifact: true })], effect: () => [move('$input.target', 'hand')] }] });
+   register(registry, 'Treasure Vault', { activated: [{ id: 'treasures', label: 'Create X Treasures', cost: '{X}{X}', tap: true, inputs: [xInput], costs: [selfSacrifice], effect: (g, ctx) => [{ op: 'token', card: 'Treasure', count: ctx.inputs.x }] }] });
+   register(registry, 'Scene of the Crime', { possibleMana: ['C', ...anyColor], activated: [
+-    { id: 'filter', label: 'Tap a creature: add any color', mana: true, tap: true, inputs: [colorInput()], costs: [tapOthers({ ...BF, creature: true }, 1)], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] },
++    { id: 'filter', label: 'Tap a creature: add any color', mana: true, tap: true, costs: [tapOthers({ ...BF, creature: true }, 1)], effectInputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] },
+     { id: 'clue', label: 'Sacrifice Clue: draw a card', cost: '{2}', costs: [selfSacrifice], effect: () => [draw()] },
+   ] });
+   register(registry, 'Power Depot', { possibleMana: ['C', ...anyColor], entersCounters: { '+1/+1': 1 }, activated: [
+diff --git a/src/rules/mana-engines.js b/src/rules/mana-engines.js
+index 521e659..a2e904c 100644
+--- a/src/rules/mana-engines.js
++++ b/src/rules/mana-engines.js
+@@ -27,7 +27,7 @@ export function installManaEngines(registry) {
+   register(registry, 'Priest of Yawgmoth', { activated: [{ id: 'sacrifice', label: 'Sacrifice an artifact: add its mana value in black', tap: true, mana: true,
+     costs: [sacrifice({ ...BF, artifact: true })], effect: (g, ctx) => [{ op: 'mana', production: { B: paidMV(ctx) } }] }] });
+   register(registry, 'Radiant Lotus', { activated: [{ id: 'lotus', label: 'Sacrifice artifacts; target player adds 3N mana', tap: true, mana: false,
+-    inputs: [playerTarget(), colorInput()], costs: [{ kind: 'sacrifice', key: 'sacrificed', selector: { ...BF, artifact: true }, min: 1, max: 10000 }],
++    inputs: [playerTarget()], costs: [{ kind: 'sacrifice', key: 'sacrificed', selector: { ...BF, artifact: true }, min: 1, max: 10000 }], effectInputs: [colorInput()],
+     effect: (g, ctx) => [{ op: 'mana', player: ctx.inputs.player, color: ctx.inputs.color, amount: 3 * paid(ctx).length }] }] });
+   register(registry, 'Urza, Lord High Artificer', { triggers: [etb('construct', 'Create a Construct', () => [{ op: 'token', card: 'Construct' }])], activated: [
+     { id: 'artifact-mana', label: 'Tap an artifact: add U', mana: true, costs: [tapOthers({ ...BF, artifact: true }, 1)], effect: () => [{ op: 'mana', production: { U: 1 } }] },
+@@ -50,6 +50,7 @@ export function installManaEngines(registry) {
+     return unique(colors);
+   };
+   register(registry, 'Squandered Resources', { activated: [{ id: 'land-mana', label: 'Sacrifice a land: add a type it could produce', mana: true,
+-    inputs: (g, s, ctx) => [selectInput('sacrificed', 'Choose a land to sacrifice', { ...BF, land: true }), ...(ctx.inputs.sacrificed?.length ? [colorInput('color', landMana(g, g.object(ctx.inputs.sacrificed[0])))] : [])],
+-    costs: [sacrifice({ ...BF, land: true })], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
++    costs: [sacrifice({ ...BF, land: true })],
++    effectInputs: (g, s, ctx) => ctx.inputs.sacrificed?.length ? [colorInput('color', landMana(g, g.object(ctx.inputs.sacrificed[0])))] : [],
++    effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
+ }
