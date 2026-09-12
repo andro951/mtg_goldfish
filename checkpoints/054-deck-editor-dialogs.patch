@@ -1,0 +1,70 @@
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -1,10 +1,57 @@
+ import { dialogHTML as originalDialog } from '../ui/dialogs.js';
+-import { h, button, saveDownload } from '../ui/components.js';
++import { h, asset, button, manaText } from '../ui/components.js';
+ import { menuBody } from './views.js';
++import { deckCounts, supportedCards, poolLabel } from './deck-editor.js';
++
++function membershipBadges(membership={}) {
++  return ['main','command','outside'].filter(pool=>membership[pool]).map(pool=>`<span title="${h(poolLabel(pool))}">${pool==='main'?'M':pool==='command'?'C':'O'}${membership[pool]}</span>`).join('');
++}
++function deckEditor(ctx) {
++  const {ui,registry}=ctx, counts=deckCounts(ui.deckText,registry), tab=ui.deckTab||'main';
++  const filters={query:ui.deckSearch||'',type:ui.deckType||'',color:ui.deckColor||'',sort:ui.deckSort||'name'}, cards=supportedCards(registry,filters);
++  const tabRecords=counts.records.filter(row=>row.pool===tab);
++  const typeOptions=['Artifact','Creature','Enchantment','Instant','Sorcery','Land','Planeswalker'];
++  const status=ui.deckReport ? `<div class="deck-live-status ${ui.deckReport.accepted?'ready':'needs-work'}"><strong>${ui.deckReport.accepted?'Ready for New test':'Needs attention'}</strong><span>${h(ui.deckReport.summary)}</span></div>` : '';
++  const browser=cards.map(card=>{
++    const member=counts.membership[card.name.toLowerCase()]||{}, badges=membershipBadges(member);
++    return `<article class="deck-browser-card" draggable="true" data-deck-drag="database" data-card-name="${h(card.name)}" title="Drag ${h(card.name)} into a deck section">
++      <div class="deck-browser-art">${badges?`<div class="deck-membership">${badges}</div>`:''}<button type="button" class="deck-card-preview" data-action="zoom" data-card-id="${h(card.id)}" title="Inspect ${h(card.name)}"><img src="${h(asset(card.image))}" alt="${h(card.name)}" loading="lazy"></button></div>
++      <div class="deck-browser-caption"><strong>${h(card.name)}</strong><span>${manaText(card.manaCost)} <small>${h(card.typeLine)}</small></span></div>
++      <button type="button" class="deck-quick-add" data-action="deck-add" data-card-name="${h(card.name)}" data-pool="${h(tab)}" title="Add one to ${h(poolLabel(tab))}" aria-label="Add ${h(card.name)} to ${h(poolLabel(tab))}">+</button>
++    </article>`;
++  }).join('');
++  const entries=tabRecords.map(row=>{
++    const supported=registry.has(row.name), card=supported?registry.get(row.name):null;
++    return `<article class="deck-entry ${supported?'':'unsupported'}" draggable="true" data-deck-drag="deck" data-deck-drop-before="${h(row.name)}" data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" data-quantity="${row.quantity}" title="Drag to move this entry to another section">
++      ${card?`<img src="${h(asset(card.image))}" alt="" loading="lazy">`:'<div class="deck-entry-missing">?</div>'}
++      <div class="deck-entry-name"><strong>${h(row.name)}</strong><small>${card?h(card.typeLine):'Unsupported card name'}</small></div>
++      <div class="deck-quantity" aria-label="Quantity for ${h(row.name)}">${button('−','deck-adjust',`data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" data-delta="-1" aria-label="Remove one ${h(row.name)}"`)}<input type="number" min="0" max="1000" value="${row.quantity}" data-deck-qty data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" aria-label="${h(row.name)} quantity">${button('+','deck-adjust',`data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" data-delta="1" aria-label="Add one ${h(row.name)}"`)}</div>
++      ${button('×','deck-remove',`data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" title="Remove all copies of ${h(row.name)}" aria-label="Remove all copies of ${h(row.name)}"`,'quiet deck-remove')}
++    </article>`;
++  }).join('');
++  return `<div class="deck-editor-summary">
++    <div><strong>${counts.main}</strong><small>Main pool</small></div><div><strong>${counts.lands}</strong><small>Fixed lands</small></div><div><strong>${counts.reserve}</strong><small>Seeded reserve</small></div><div><strong>${counts.command}</strong><small>Commander</small></div><div><strong>${counts.outside}</strong><small>Outside</small></div>
++  </div>${status}
++  <div class="deck-editor-shell">
++    <section class="deck-browser-panel">
++      <div class="deck-search-tools"><input id="deck-search" value="${h(filters.query)}" placeholder="Search 160 supported cards…" autocomplete="off" aria-label="Search supported cards"><select id="deck-type" aria-label="Filter card type"><option value="">All types</option>${typeOptions.map(v=>`<option ${filters.type===v?'selected':''}>${v}</option>`).join('')}</select><select id="deck-color" aria-label="Filter color identity"><option value="">All colors</option><option value="C" ${filters.color==='C'?'selected':''}>Colorless</option>${['W','U','B','R','G'].map(v=>`<option value="${v}" ${filters.color===v?'selected':''}>${v}</option>`).join('')}<option value="M" ${filters.color==='M'?'selected':''}>Multicolor</option></select><select id="deck-sort" aria-label="Sort cards"><option value="name" ${filters.sort==='name'?'selected':''}>Name</option><option value="mv" ${filters.sort==='mv'?'selected':''}>Mana value</option><option value="type" ${filters.sort==='type'?'selected':''}>Type</option></select></div>
++      <div class="deck-browser-heading"><span><b>${cards.length}</b> supported cards</span><small>Drag a card right, or press + to add to ${h(poolLabel(tab))}.</small></div>
++      <div class="deck-browser-grid" data-modal-scroll="deck-browser">${browser||'<div class="deck-empty">No supported cards match those filters.</div>'}</div>
++    </section>
++    <section class="deck-build-panel">
++      <div class="deck-drop-tabs">${['main','command','outside'].map(pool=>`<button type="button" class="deck-pool-target ${tab===pool?'active':''}" data-action="deck-tab" data-pool="${pool}" data-deck-drop="${pool}" title="Drop cards here to move/add them to ${h(poolLabel(pool))}"><span>${h(poolLabel(pool))}</span><b>${counts[pool]}</b></button>`).join('')}<div class="deck-trash-target" data-deck-drop="remove" title="Drop a deck entry here to remove all copies">⌫ <span>Remove</span></div></div>
++      <div class="deck-section-heading"><div><strong>${h(poolLabel(tab))}</strong><small>${tabRecords.length} names · ${counts[tab]} copies</small></div><span class="muted">Drag entries onto another section above, or onto Remove.</span></div>
++      <div class="deck-entry-list" data-deck-drop="${h(tab)}" data-modal-scroll="deck-list">${entries||`<div class="deck-empty">Drop supported cards here to add them to ${h(poolLabel(tab))}.</div>`}</div>
++    </section>
++  </div>
++  <details class="deck-advanced"><summary>Advanced text / paste list</summary><p class="muted">You can still paste a quantity/name list. Visual edits preserve supported and unsupported names; Validate reports anything the engine cannot use.</p><textarea id="deck-text" rows="10" spellcheck="false" aria-label="Deck list">${h(ui.deckText)}</textarea><div class="row" style="margin-top:6px">${button('Apply text list','deck-apply-text','','primary')}<small>Sections: // Main, // Commander, // Outside the Game</small></div></details>`;
++}
++
+ export function dialogs(ctx){
+   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.1';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.2';narrow=true;body=menuBody(ctx);}
++  else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
+   else if(ui.modal==='settings'){
+     title='Settings';sub='Your table layout is saved automatically.';
+     const setting=(key,name,help)=>`<div class="setting-row"><input id="setting-${key}" type="checkbox" data-setting="${key}" ${s.settings[key]?'checked':''}><label for="setting-${key}"><strong>${name}</strong><small>${help}</small></label></div>`;
+@@ -21,5 +68,6 @@
+     title='Play on the table';sub='A compact offline goldfish workspace.';
+     body=`<div class="guide-grid"><section><h3>Cards and mana</h3><p>Click a card to inspect it; click the same card again to close. Untapped lands and permanents with one tap-mana ability use that ability on click. Right-click always opens the inspector. Already-tapped sources cannot ask for mana colors. Drag a hand card onto the battlefield to request a legal play or cast. The exact drop position is kept through payment and resolution.</p><p>Tap mana sources directly on the battlefield while paying. Sources with multiple colors ask which color to add. The payment window stays separate from the table. Pay uses the suggested allocation unless you edit it; it never taps anything automatically.</p><h3>Move and stack</h3><p>The grabbed point stays under your pointer. Hover uses the original stack order, so crossing onto an upper card immediately selects that upper card. On a drop, cursor-covered cards go below the dragged card; overlapping cards not under the cursor go above it. This lets you insert cards into a stack.</p><p>Tapped cards physically rotate counter-clockwise around their upright bottom-left corner. That point becomes their sideways bottom-right corner. Select mode, Shift-click and dragging a selection rectangle support groups.</p></section><section><h3>Make room</h3><p>Wheel over the battlefield or side zone to zoom around the pointer. Drag empty space to pan, or hold Space and drag. The small fit icon shows every card again. The battlefield is always visible. Graveyard, exile and outside-the-game open alongside it.</p><p>Drag the left rail divider to change width, the hand divider to change height, and the side-zone divider to change width. Cards in hand grow or shrink with the row. Move inspector, stack and decision windows by their title bars. Layout and zoom are remembered.</p><h3>Look, stack and shortcuts</h3><p>The eye icon appears only for a temporary multi-card workspace created by effects such as looking at, revealing or reordering several cards. It is not the top-card display: a legal top-card view replaces the library back automatically.</p><p>Gold borders mark spells on the stack; teal borders mark abilities and triggers. Hover a stack image for its exact effect. Hold priority is off by default; switch it on in Menu to respond before resolution.</p><p><kbd>Esc</kbd> cancels or declines the active decision, closes a dialog, or dismisses inspection. <kbd>Backspace</kbd> or <kbd>Ctrl Z</kbd> undoes outside text fields. <kbd>Ctrl Shift Z</kbd> redoes. <kbd>Ctrl S</kbd> exports a portable game.</p></section></div><div class="callout">Save / import preserves the game and table layout between computers. Browser autosave is local to its browser profile and file/origin. Opponents are abstract; blocking and combat-damage assignment remain explicitly user-assisted.</div>`;
+   }else return originalDialog(ctx);
+-  return `<div class="modal-backdrop" data-action="backdrop"><section class="modal ${narrow?'narrow':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><h2 id="modal-title">${h(title)}</h2><p>${h(sub)}</p></div>${button('×','close-dialog','aria-label="Close dialog"','quiet')}</header><div class="modal-body" data-scroll="modal">${body}</div>${footer?`<footer class="modal-footer">${footer}</footer>`:''}</section></div>`;
++  const extraClass=ui.modal==='deck'?'deck-editor-modal':'';
++  return `<div class="modal-backdrop" data-action="backdrop"><section class="modal ${narrow?'narrow':''} ${extraClass}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><h2 id="modal-title">${h(title)}</h2><p>${h(sub)}</p></div>${button('×','close-dialog','aria-label="Close dialog"','quiet')}</header><div class="modal-body" data-scroll="modal">${body}</div>${footer?`<footer class="modal-footer">${footer}</footer>`:''}</section></div>`;
+ }
