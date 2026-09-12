@@ -1,0 +1,16 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -207,8 +207,11 @@
+  if(action==='cast')return run({type:g.characteristics(id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id});
+  if(action==='ability'){
+   const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
+-  if(ui.inspected===id&&source&&ability)ui.inspectorActivation={origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor};
+-  return run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
++  const marker=ui.inspected===id&&source&&ability?{origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor}:null;
++  if(marker)ui.inspectorActivation=marker;
++  const result=run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
++  if(marker&&!result.ok)ui.inspectorActivation=null;
++  return result;
+  }
+  if(action==='revise-choice'){ui.modeBypass=draftIdentity();return run({type:'REVISE_DRAFT_INPUT',key:el.dataset.key});}
+  if(action==='mode-default'){
