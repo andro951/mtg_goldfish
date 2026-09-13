@@ -1,0 +1,82 @@
+diff --git a/tests/portable_test.py b/tests/portable_test.py
+index 3b90e0c..284c5a0 100644
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -3,2 +3,3 @@
+ from __future__ import annotations
++import hashlib
+ import json
+@@ -34,3 +35,3 @@ try:
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+-        check('all 343 card/face images and the real Magic back are embedded', count == 344)
++        check('all 351 card/face images and the real Magic back are embedded', count == 352)
+         image_report = page.evaluate('''async () => {
+@@ -62,3 +63,3 @@ except Exception as error:
+ 
+-report = {'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.5', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+ OUT.mkdir(parents=True, exist_ok=True)
+diff --git a/tools/package.py b/tools/package.py
+index bd5de3d..b4b4e7f 100644
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -41,4 +41,4 @@ assets = read_json('data/assets-manifest.json')
+ ui_assets = read_json('data/ui-assets.json')
+-require(sum(bool(c.get('candidate')) for c in cards) == 310, 'Expected exactly 310 candidates.')
+-require(len(cards) == 340 and len(assets) == 343, 'Expected 340 definitions and 343 local card/face images.')
++require(sum(bool(c.get('candidate')) for c in cards) == 317, 'Expected exactly 317 candidates.')
++require(len(cards) == 348 and len(assets) == 351, 'Expected 348 definitions and 351 local card/face images.')
+ for name, entry in {**assets, **ui_assets}.items():
+@@ -67,3 +67,3 @@ def total(label: str) -> int:
+ engine_tests = total('tests')
+-require(engine_tests >= 989 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 1048 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+@@ -74,3 +74,7 @@ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only brows
+ require(browser.get('uiVersion') == '1.4.5', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 479, 'Browser regression suite is incomplete.')
++require(browser['checksPassed'] >= 530, 'Browser regression suite is incomplete.')
++
++require(browser.get('testedBuildSHA256') == digest(safe_file('index.html').read_bytes()), 'Browser report belongs to a different build.')
++require(portable.get('uiVersion') == read_json('package.json')['version'], 'Portable report is for an older release.')
++require(portable.get('testedBuildSHA256') == digest(safe_file('Astra-standalone.html').read_bytes()), 'Portable report belongs to a different build.')
+ 
+@@ -97,3 +101,3 @@ report = {
+     'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0,
+-    'candidateCards': 310, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True,
++    'candidateCards': 317, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'],
+     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
+@@ -111,3 +115,3 @@ for folder in ('src', 'data', 'assets', 'tools', 'tests', 'docs', '.github', 'ch
+             names.add(path.relative_to(ROOT).as_posix())
+-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json'):
++for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json'):
+     names.add('test-results/' + name)
+@@ -124,3 +128,3 @@ with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslev
+     for name, contents in sorted(files.items()):
+-        info = zipfile.ZipInfo('AstraSimulator/' + name, date_time=(2026, 9, 12, 0, 0, 0))
++        info = zipfile.ZipInfo('AstraSimulator/' + name, date_time=(2026, 9, 13, 0, 0, 0))
+         info.compress_type = zipfile.ZIP_DEFLATED
+diff --git a/tools/verify-card-support.mjs b/tools/verify-card-support.mjs
+index af3904f..525db8b 100644
+--- a/tools/verify-card-support.mjs
++++ b/tools/verify-card-support.mjs
+@@ -9,3 +9,3 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+ const cards=JSON.parse(read('data/cards.json')),registry=createRegistry(cards),names=new Set(),reports=[];
+-for(const [name,file] of [['List 1','expanded-pool.txt'],['List 2','refined-pool.txt']]){
++for(const [name,file] of [['List 1','expanded-pool.txt'],['List 2','refined-pool.txt'],['13 September request','2026-09-13-pool.txt']]){
+  const {records,errors}=parseDeck(read('data/decks/'+file));assert.equal(errors.length,0);
+@@ -16,3 +16,3 @@ for(const [name,file] of [['List 1','expanded-pool.txt'],['List 2','refined-pool
+ }
+-assert.equal(names.size,310);assert.equal(cards.filter(c=>c.candidate).length,310);
++assert.equal(names.size,317);assert.equal(cards.filter(c=>c.candidate).length,317);
+ for(const n of names){const c=registry.get(n);assert.equal(c.candidate,true);assert.equal(registry.module(c.id).status,'full');assert.ok(fs.existsSync(path.join(root,c.image)));}
+@@ -21,3 +21,8 @@ for(const n of newCards){assert.ok(tap.includes('# Subtest: expanded rules: '+n+
+ assert.ok(!/^not ok /m.test(tap));
+-const out={version:'1.4.2',supportedNames:310,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
++for(const n of ['Academy Ruins','Planar Bridge','Mycosynth Golem','Cauldron of Souls','Chocobo Racetrack','Doors of Durin','Cosmic Cube']){assert.ok(tap.includes('# Subtest: latest rules: '+n+' |'),'Missing requested-card rules regression: '+n);assert.ok(tap.includes('card acceptance: '+n+' — metadata and legal entry'));}
++const latest=parseDeck(read('data/decks/2026-09-13-pool.txt')).records,latestReport=registry.report(latest);
++assert.equal(latest.length,177);assert.equal(latestReport.supported.length,177);
++const audit=latest.map(row=>{const c=registry.get(row.name);return {name:row.name,pool:row.pool,rulesStatus:registry.module(c.id).status,metadataStatus:c.metadataStatus,localImage:c.image};});
++fs.writeFileSync(path.join(root,'test-results/requested-card-audit.json'),JSON.stringify(audit,null,2)+'\n');
++const out={version:JSON.parse(read('package.json')).version,latestRequestNames:latest.length,latestRequestSupported:latestReport.supported.length,supportedNames:317,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
+ fs.writeFileSync(path.join(root,'test-results/card-support.json'),JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out,null,2));
