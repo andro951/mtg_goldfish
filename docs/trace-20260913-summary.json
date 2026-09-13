@@ -1,0 +1,33 @@
+{
+  "sourceFilename": "Trace-20260913T104221.json.gz",
+  "sourceSHA256": "de1943c11965f4735c6a65dd9de5f786b0760d9e79de950d07b0f042a699211c",
+  "durationMs": 72333.177,
+  "mainThread": {"pid": 14748, "tid": 1352},
+  "events": 309464,
+  "metrics": {
+    "RunTask": {"count": 4688, "totalMs": 60168.457, "maxMs": 5236.386, "over50Ms": 32},
+    "FunctionCall": {"count": 2580, "totalMs": 58062.861, "maxMs": 5235.771, "over50Ms": 30},
+    "EventDispatch": {"count": 1727, "totalMs": 1506.284, "maxMs": 255.998, "over50Ms": 7},
+    "TimerFire": {"count": 26, "totalMs": 14188.035, "maxMs": 1460.588, "over50Ms": 13},
+    "FireAnimationFrame": {"count": 1011, "totalMs": 168.424, "maxMs": 0.874, "over50Ms": 0},
+    "UpdateLayoutTree": {"count": 486, "totalMs": 53.517, "maxMs": 1.925, "over50Ms": 0},
+    "Layout": {"count": 422, "totalMs": 87.787, "maxMs": 5.93, "over50Ms": 0},
+    "Paint": {"count": 4471, "totalMs": 289.945, "maxMs": 6.396, "over50Ms": 0},
+    "MajorGC": {"count": 8, "totalMs": 804.429, "maxMs": 150.617, "over50Ms": 7},
+    "MinorGC": {"count": 240, "totalMs": 3196.361, "maxMs": 62.823, "over50Ms": 1}
+  },
+  "topCallbacks": [
+    {"function": "previous.onsuccess", "count": 10, "totalMs": 42319.047, "maxMs": 5235.771},
+    {"function": "(anonymous)", "count": 875, "totalMs": 15658.167, "maxMs": 1460.073},
+    {"function": "document.addEventListener.passive", "count": 1266, "totalMs": 69.076, "maxMs": 0.531},
+    {"function": "paint", "count": 398, "totalMs": 14.751, "maxMs": 0.418},
+    {"function": "schedule", "count": 21, "totalMs": 1.561, "maxMs": 0.219},
+    {"function": "tx.oncomplete", "count": 10, "totalMs": 0.259, "maxMs": 0.042}
+  ],
+  "peakSampledHeapBytes": 2435971224,
+  "notes": [
+    "Complete-event category durations overlap and must not be added together.",
+    "Heap values are samples, not a guaranteed absolute peak.",
+    "Paths, URLs, screenshots and detailed browsing contents are intentionally omitted."
+  ]
+}
