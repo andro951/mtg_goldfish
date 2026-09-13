@@ -1,0 +1,54 @@
+--- a/package.json
++++ b/package.json
+@@ -3 +3 @@
+-  "version": "1.4.8",
++  "version": "1.4.9",
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -565 +565 @@
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.8'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.9'};
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -59 +59 @@
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.8';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.9';narrow=true;body=menuBody(ctx);}
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -58 +58 @@
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.8');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.9');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+@@ -64 +64 @@
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.8','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.9','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -4 +4 @@
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.8')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.9')
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -34 +34 @@
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.8')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.9')
+@@ -64 +64 @@
+-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.8', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.9', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+--- a/tests/benchmark_browser.py
++++ b/tests/benchmark_browser.py
+@@ -21 +21 @@
+-  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_8',ROOT/'index.html')]:
++  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_9',ROOT/'index.html')]:
+@@ -49 +49 @@
+-a,b=reports['before_1_4_5'],reports['after_1_4_8']
++a,b=reports['before_1_4_5'],reports['after_1_4_9']
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -68 +68 @@
+-require(engine_tests >= 1118 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 1158 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+@@ -74,2 +74,2 @@
+-require(browser.get('uiVersion') == '1.4.8', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 690, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.9', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 725, 'Browser regression suite is incomplete.')
