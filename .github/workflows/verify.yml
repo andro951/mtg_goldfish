@@ -57,12 +57,17 @@ jobs:
         run: python tests/browser_tabletop.py
       - name: Test isolated portable edition with networking disabled
         run: python tests/portable_test.py
+      - name: Compare long-session performance with verified 1.4.5
+        run: |
+          git fetch --depth=1 origin 26b7e2c70835451b6554e08b3d2e6cd9e3cd7142
+          git show 26b7e2c70835451b6554e08b3d2e6cd9e3cd7142:index.html > "$RUNNER_TEMP/astra-before.html"
+          python tests/benchmark_browser.py --baseline "$RUNNER_TEMP/astra-before.html"
       - name: Verify release contents and create archive
         run: python tools/package.py
       - name: Preserve tested application and acceptance reports
         run: |
-          git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap
-          for report in test-results/release.json test-results/package-verification.json; do
+          git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap test-results/performance.json
+          for report in test-results/release.json test-results/package-verification.json test-results/card-support.json test-results/requested-card-audit.json; do
             if [ -f "$report" ]; then git add "$report"; fi
           done
           if ! git diff --cached --quiet; then
