@@ -1,0 +1,25 @@
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -39,3 +39,17 @@
+ save('target-many',{battlefield:['Krark-Clan Ironworks',...Array(48).fill('Ancient Den')]});
+ save('program-stop',{battlefield:['Grim Monolith']},{mana:{C:1000}});
+ save('multi-cost',{battlefield:['Kuldotha Forgemaster','Ancient Den','Tree of Tales','Great Furnace']});
++
++// Expanded-pool tests use prepared states only through the public session Import UI.
++save('expanded-arrows',{battlefield:['Tideforce Elemental','Walking Atlas','Codex Shredder','Ancient Den','Clock of Omens','Buried Ruin'],hand:['Whir of Invention'],graveyard:['Sol Ring']},{mana:{U:8,C:5}});
++save('expanded-payment',{battlefield:['The Wandering Minstrel','Arcane Signet','Ancient Den'],hand:['Walking Atlas','Growth Spiral'],command:[]},{mana:{U:8,G:3,R:2}});
++save('expanded-suspend',{hand:['Lotus Bloom','Mox Tantalite','Sol Talisman'],battlefield:['Ancient Den']},{mana:{C:1}});
++save('expanded-improvise',{battlefield:['Ancient Den','Tree of Tales','Mox Amber'],hand:['Whir of Invention'],libraryActive:['Scrap Trawler','Sol Ring','Tree of Tales']},{mana:{U:3}});
++save('expanded-dredge',{hand:[],graveyard:['Life from the Loam'],battlefield:[]});
++save('expanded-choices',{hand:['Intuition','Gifts Ungiven','Transmute Artifact'],battlefield:['Sol Ring'],libraryActive:['Ancient Den','Walking Atlas','Krark-Clan Ironworks','Tree of Tales','Mox Amber']},{mana:{U:10,C:15}});
++save('expanded-automatic',{battlefield:["Gonti's Aether Heart",'Aetherworks Marvel','Krark-Clan Ironworks','Ancient Den','Zuran Orb'],hand:['Tree of Tales']});
++save('expanded-cascade',{hand:['Apex Devastator'],libraryActive:['Ancient Den','Mox Amber','Tree of Tales','Sol Ring','Great Furnace','Walking Atlas','Vault of Whispers','Grim Monolith']},{mana:{C:8,G:2}});
++save('expanded-discover',{battlefield:['Chimil, the Inner Sun'],libraryActive:['Ancient Den','Sol Ring','Tree of Tales']});
++save('expanded-combat',{battlefield:['Akiri, Line-Slinger','Ancient Den','Sol Ring'],hand:['Mox Amber']});
++save('expanded-warp',{hand:['Eusocial Engineering','Ancient Den']},{mana:{C:1,G:1}});
++save('expanded-baulbes',{battlefield:["Mishra's Bauble","Urza's Bauble"],hand:['Sol Ring','Tree of Tales'],libraryActive:['Walking Atlas','Mox Amber','Ancient Den']});
+--- a/tools/verify-card-support.mjs
++++ b/tools/verify-card-support.mjs
+@@ -20 +20 @@
+-for(const n of newCards){assert.ok(tap.includes('# Subtest: expanded rules: '+n+' |'),'Missing focused test: '+n);assert.ok(tap.includes('card acceptance: '+n+' — metadata and legal entry'));}
++for(const n of newCards){assert.ok(tap.includes('# Subtest: expanded rules: '+n+' |'),'Missing focused test: '+n);assert.ok(tap.includes('card acceptance: '+registry.get(n).name+' — metadata and legal entry'));}
