@@ -158,7 +158,7 @@ export function installInteractions(api){
       e.preventDefault();const key=divider.dataset.resize,amount=e.shiftKey?30:10;
       if(key==='sidebar')api.prefs.sidebarWidth=clamp(api.prefs.sidebarWidth+(e.key==='ArrowRight'?amount:-amount),92,260);
       if(key==='hand')api.prefs.handHeight=clamp(api.prefs.handHeight+(e.key==='ArrowUp'?amount:-amount),80,400);
-      if(key==='dock')api.prefs.dockWidth=clamp(api.prefs.dockWidth+(e.key==='ArrowLeft'?amount:-amount),170,900);
+      if(key==='dock')api.prefs.dockWidth=clamp(api.prefs.dockWidth+(e.key==='ArrowLeft'?amount:-amount),170,Math.max(170,innerWidth-api.prefs.sidebarWidth-150));
       api.size();api.savePreferences();
     }
   },true);

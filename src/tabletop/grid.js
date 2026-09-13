@@ -21,7 +21,7 @@ export function bestGridShape(count,width=290,height=420){
  * Manually positioned cards immediately release their slots. New arrivals use
  * the first hole, even when a detached card still visually covers that slot.
  * Grid-owned cards reflow responsively; detached coordinates never do. */
-export function gridLayout(objects, previous=[], width=290,height=420) {
+export function gridLayout(objects, previous=[], width=290,height=420,fixedColumns=null) {
   const live=new Map(objects.filter(o=>!o.location||o.location.grid===o.zone).map(o=>[key(o),o]));
   const used=new Set(),slots=Array.from(previous,k=>{if(!live.has(k)||used.has(k))return null;used.add(k);return k;});
   for(const o of objects)if(live.has(key(o))&&!used.has(key(o))){
@@ -30,7 +30,11 @@ export function gridLayout(objects, previous=[], width=290,height=420) {
     if(index<0)index=slots.length;while(slots.length<=index)slots.push(null);slots[index]=key(o);used.add(key(o));
   }
   while(slots.length&&slots.at(-1)==null)slots.pop();
-  const indices=new Map(slots.map((k,i)=>[k,i])),shape=bestGridShape(indices.size,width,height);
+  // Holes still occupy cells. Map.size collapses repeated nulls and can choose
+  // too few rows after several cards have been detached.
+  const indices=new Map(slots.map((k,i)=>[k,i]).filter(([k])=>k!==null));
+  const shape=bestGridShape(slots.length,width,height);
+  if(Number.isInteger(fixedColumns)&&fixedColumns>0){shape.columns=fixedColumns;shape.rows=Math.ceil(slots.length/fixedColumns);}
   const cards=objects.map((o,index)=>{
     const slot=indices.get(key(o)),manual=slot==null,pos=o.location;
     return {id:o.id,index,tapped:!!o.tapped,z:Number.isFinite(o.flags?.tableZ)?o.flags.tableZ:index,gridSlot:manual?null:slot,
