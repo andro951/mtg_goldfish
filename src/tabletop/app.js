@@ -42,12 +42,31 @@ const targetLinks=installTargetLinks({get g(){return g;},ui});
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
 function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
-function exported(){return {...g.exportSession(),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
-async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}const seq=saveSequence,doc=exported();try{const at=await store.save(doc);if(seq===saveSequence){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}}catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}}
-function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
-function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
+function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
+let saveRevision=0,savedRevision=-1,saveFlight=null;
+async function saveNow(){
+ if(!g)return;clearTimeout(saveTimer);clearTimeout(preferenceTimer);persistPreferences(prefs);
+ if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}
+ if(saveFlight)return saveFlight;
+ if(savedRevision===saveRevision)return;
+ saveFlight=(async()=>{
+  // At most one captured save is in flight. Changes made while storage is busy
+  // are coalesced into the next snapshot, not a queue of full history copies.
+  while(savedRevision!==saveRevision){
+   if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);break;}
+   const rev=saveRevision,seq=saveSequence;
+   try{
+    const at=await store.save(exported({copyHistory:false}));savedRevision=rev;
+    if(seq===saveSequence&&rev===saveRevision){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}
+   }catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}
+  }
+ })().finally(()=>{saveFlight=null;});
+ return saveFlight;
+}
+function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
+function savePreferences(){saveRevision++;clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
 function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
@@ -404,7 +423,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='export-report'){saveDownload('missing-cards-report.json',auditDeck());renderModal();return;}
  if(action==='export-json')return exportJSON();if(action==='export-text'){saveDownload('astra-action-log.txt',g.exportText(),'text/plain');return;}
  if(action==='verify-replay'){if(g.transaction)return toast('Finish or undo the current action before replay verification.',true);const r=g.verifyReplay();toast(`Replay verified: ${r.actions} actions · ${r.checksum}`);return;}
- if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
+ if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);store.adopt(engine,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
  if(action==='zoom'){ui.previousModal=ui.modal;ui.zoomCard=el.dataset.cardId;ui.backFace=false;ui.modal='card';renderModal();return;}
  if(action==='zoom-back'){ui.modal=ui.previousModal;renderModal();return;}if(action==='flip'){ui.backFace=!ui.backFace;renderModal();return;}
  if(action==='attack-confirm'){const attackers=g.controlled().filter(o=>ui.selected.has(o.id)&&g.characteristics(o).types.includes('Creature')).map(o=>({id:o.id,player:ui.attacks[o.id]||1}));const result=run({type:'DECLARE_ATTACKERS',attackers});if(result.ok){ui.modal=null;ui.selected.clear();render();autoResolve();}return;}
@@ -516,6 +535,7 @@ window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return pr
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
+ if(engine&&doc)store.adopt(engine,doc);
  useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms});
 }
 boot().catch(error=>{root.innerHTML=`<div class="fatal"><h1>Unable to start Astra</h1><p>${h(error.message)}</p><p>Open the standalone edition, or keep index.html together with the assets folder.</p></div>`;console.error(error);});
