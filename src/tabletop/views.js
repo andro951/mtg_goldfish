@@ -70,6 +70,12 @@ function playerPolicies(g,o,prefs,ui){
  }
  return rows.length?`<div class="player-policies">${rows.join('')}</div>`:'';
 }
+function orderedChoiceRow(ctx,p,id,i,options){
+ const triggerOrder=p.kind==='triggerOrder',object=triggerOrder?null:ctx.g.object(id);
+ const definition=object?ctx.g.definition(object):null,label=options.find(o=>o.value===id)?.label||definition?.name||id;
+ const preview=definition?`<button type="button" class="order-card-preview" data-action="order-inspect" data-id="${h(id)}" title="Inspect ${h(definition.name)}" aria-label="Inspect ${h(definition.name)}"><img src="${h(asset(object.face&&definition.backImage?definition.backImage:definition.image))}" alt="${h(definition.name)}" draggable="false"></button>`:'';
+ return `<div class="choice-row ${triggerOrder?'trigger-order-row':'card-order-row'}" draggable="true" data-order-id="${h(id)}"><span class="order-grip" title="Drag to reorder">⠿</span><span class="ordinal">${i+1}</span>${preview}<span class="order-label">${h(label)}</span>${button('⇈','order-edge',`data-index="${i}" data-edge="top" title="Move to top" aria-label="Move item ${i+1} to top" ${i===0?'disabled':''}`)}${button('↑','order',`data-index="${i}" data-direction="-1" aria-label="Move item ${i+1} earlier" ${i===0?'disabled':''}`)}${button('↓','order',`data-index="${i}" data-direction="1" aria-label="Move item ${i+1} later" ${i===ctx.ui.choice.length-1?'disabled':''}`)}${button('⇊','order-edge',`data-index="${i}" data-edge="bottom" title="Move to bottom" aria-label="Move item ${i+1} to bottom" ${i===ctx.ui.choice.length-1?'disabled':''}`)}</div>`;
+}
 export function decisionPopup(ctx){
  const p=ctx.g.state.pending;if(!p)return '';
  if(isManaColorChoice(p))return manaChoiceHTML(p);
@@ -80,7 +86,7 @@ export function decisionPopup(ctx){
  let body;
  if(p.ordered){
   const options=p.options||[];
-  body=`<p class="muted">${p.kind==='triggerOrder'?'First row resolves first.':'First row is the top card.'} Drag rows or use the arrows.</p><div class="ordered-list" data-scroll="ordered">${ctx.ui.choice.map((id,i)=>`<div class="choice-row" draggable="true" data-order-id="${h(id)}"><span class="order-grip" title="Drag to reorder">⠿</span><span class="ordinal">${i+1}</span><span class="order-label">${h(options.find(o=>o.value===id)?.label||ctx.g.definition(id).name)}</span>${button('⇈','order-edge',`data-index="${i}" data-edge="top" title="Move to top" aria-label="Move item ${i+1} to top" ${i===0?'disabled':''}`)}${button('↑','order',`data-index="${i}" data-direction="-1" aria-label="Move item ${i+1} earlier" ${i===0?'disabled':''}`)}${button('↓','order',`data-index="${i}" data-direction="1" aria-label="Move item ${i+1} later" ${i===ctx.ui.choice.length-1?'disabled':''}`)}${button('⇊','order-edge',`data-index="${i}" data-edge="bottom" title="Move to bottom" aria-label="Move item ${i+1} to bottom" ${i===ctx.ui.choice.length-1?'disabled':''}`)}</div>`).join('')}</div><div class="order-footer">${button(p.kind==='triggerOrder'?'Confirm resolution order':'Confirm card order','confirm-choice','','primary')}</div>`;
+  body=`<p class="muted">${p.kind==='triggerOrder'?'First row resolves first.':'First row is the top card. Click a card image to inspect it.'} Drag rows or use the arrows.</p><div class="ordered-list ${p.kind==='triggerOrder'?'trigger-order-list':'card-order-list'}" data-scroll="ordered">${ctx.ui.choice.map((id,i)=>orderedChoiceRow(ctx,p,id,i,options)).join('')}</div><div class="order-footer">${button(p.kind==='triggerOrder'?'Confirm resolution order':'Confirm card order','confirm-choice','','primary')}</div>`;
  }else body=decisionHTML(ctx);
  if(!p.ordered&&(p.candidates||p.ids))body+=`<label class="auto-accept"><input type="checkbox" data-auto-accept ${ctx.prefs.autoAccept?'checked':''}> Auto-accept completed selections</label>`;
  let html=floating('decision',p.label,body,revise+tool('close','cancel','title="Cancel / decline (Escape)" aria-label="Cancel decision"'),'decision-window'+(p.ordered?' ordering-window':''));

@@ -93,7 +93,23 @@ export const phaseMethods = {
     else if (step === 'beginCombat') {
       this.state.attackersDeclared = false;
       for (const object of this.objects('battlefield')) delete object.flags.attacking;
-      if (this.state.extraCombatActive && this.state.currentExtraCombat?.untapCreatures) this.tapObjects(this.controlled(player).filter(o => this.characteristics(o).types.includes('Creature')).map(o => o.id), false, 'extra-combat');
+      if (this.state.extraCombatActive) {
+        let begin = this.state.currentExtraCombat?.beginTrigger;
+        // Sessions created before 1.4.4 stored Moraug's untap as an immediate
+        // phase action. Upgrade that pending combat into the rules-correct
+        // delayed triggered ability when such a session is resumed.
+        if (!begin && this.state.currentExtraCombat?.untapCreatures) {
+          const moraug = this.registry.get('Moraug, Fury of Akoum');
+          begin = { abilityId: 'extra-combat-untap', label: 'Moraug, Fury of Akoum — untap all creatures you control', source: null, sourceCardId: moraug.id,
+            program: [{ op: 'untap', selector: { zones: ['battlefield'], creature: true, controller: 'you' } }], inputSpecs: [],
+            context: { controller: player, source: null, sourceCardId: moraug.id, vars: {}, inputs: {}, event: null } };
+        }
+        if (begin) {
+          const event = { type: 'BEGIN_EXTRA_COMBAT', player, step, turnSerial: this.state.turnSerial, combatId: this.state.currentExtraCombat?.id };
+          this.queueTrigger({ controller: player, source: clone(begin.source), sourceCardId: begin.sourceCardId, abilityId: begin.abilityId, label: begin.label,
+            program: clone(begin.program || []), inputSpecs: clone(begin.inputSpecs || []), context: { ...clone(begin.context || {}), controller: player, event } });
+        }
+      }
       this.emit('COMBAT_BEGAN', { player, extra: this.state.extraCombatActive });
       for (const emblem of this.state.emblems.filter(e => e.trigger === 'combat' && e.controller === player)) this.queueTrigger({ controller: player, source: null, sourceCardId: emblem.sourceCardId, abilityId: emblem.abilityId,
         label: emblem.label, program: clone(emblem.program), inputSpecs: clone(emblem.inputs || []), context: { controller: player, source: null, sourceCardId: emblem.sourceCardId, vars: {}, inputs: {}, event: { player, step, turnSerial: this.state.turnSerial } } });

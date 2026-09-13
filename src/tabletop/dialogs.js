@@ -56,7 +56,7 @@ function deckTextEditor(ctx){
 export function dialogs(ctx){
   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
   if(!ui.modal)return '';
-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.3';narrow=true;body=menuBody(ctx);}
+  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.4';narrow=true;body=menuBody(ctx);}
   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}

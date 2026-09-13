@@ -84,7 +84,10 @@ export function installLandfall(registry) {
       move('$var.kodamaPermanent', 'battlefield', { flags: { kodamaAbility: `${ctx.source.id}:${ctx.source.oid}` } })],
   }] });
   register(registry, 'Moraug, Fury of Akoum', { statics: [{ layer: 7, match: (g, s, o, c) => o.zone === 'battlefield' && o.controller === s.controller && c.types.includes('Creature'), apply: (g, s, o, c) => { c.power += o.attacksThisTurn || 0; } }],
-    triggers: [landfall('extra-combat', 'Additional combat after this main phase', (g, ctx) => [{ op: 'extraCombat', after: ctx.event.step, untapCreatures: true }], {
+    triggers: [landfall('extra-combat', 'Additional combat after this main phase', (g, ctx) => [{ op: 'extraCombat', after: ctx.event.step, beginTrigger: {
+      abilityId: 'extra-combat-untap', label: 'Moraug, Fury of Akoum — untap all creatures you control',
+      program: [{ op: 'untap', selector: { ...BF, creature: true, controller: 'you' } }],
+    } }], {
       test: (g, s, e) => e.change.object.controller === s.controller && e.change.object.characteristics.types.includes('Land') && g.state.activePlayer === s.controller && ['main1', 'main2'].includes(g.state.step),
       interveningIf: (g, ctx) => g.state.activePlayer === ctx.controller && ['main1', 'main2'].includes(g.state.step),
     })] });

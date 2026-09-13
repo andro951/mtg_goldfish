@@ -1,4 +1,11 @@
-# Astra 1.4.3 — The Goldfish Lab
+# Astra 1.4.4 — The Goldfish Lab
+
+## Card ordering and Moraug timing (1.4.4)
+
+Ordered **cards** now show their real card images rather than names alone. This includes Sensei's Divining Top and other top/library ordering decisions. Click a card image in the ordering window to open its inspector without changing the chosen order; trigger-ordering lists remain compact because those rows represent effects rather than cards.
+
+Moraug's additional combat is still scheduled directly by the resolving landfall ability, but the instruction to untap creatures at the beginning of that combat is modeled as the delayed triggered ability it actually is. It appears on the stack at beginning of combat, can be responded to, and creatures remain tapped until that trigger resolves. Existing 1.4.3 sessions with a Moraug extra combat already scheduled are upgraded when that combat begins.
+
 
 ## Mana palette dismissal (1.4.3)
 

@@ -88,5 +88,11 @@
   "checkpoints/103a-mana-palette-app.json": "8d01fd678d4a72cdfff40560dc89df5d711cfabc4fc4e1c2e41fc8a7d909dc81",
   "checkpoints/103b-mana-palette-game-test.json": "0d16703da31a4dd83402dc0b5b1c3e5d00557b12d1e14a4dc3943a0054dbf597",
   "checkpoints/103c-mana-palette-versioning.json": "6e00975f203e380f41756240a47fc8775fa5252f8aa43a5622b4fca041a30429",
-  "checkpoints/103d-mana-palette-docs.json": "1bfa584c58f95e17a69b0a547d0c716ee134d2220547fee83ed729c4be8f15d4"
+  "checkpoints/103d-mana-palette-docs.json": "1bfa584c58f95e17a69b0a547d0c716ee134d2220547fee83ed729c4be8f15d4",
+  "checkpoints/104a-moraug-engine.json": "e64be061432cb6d1a3605685bf9c6f7fb7b30e7457bfe9ae6c2203797bd686e3",
+  "checkpoints/104b1-card-order-app.patch": "107655cdaec116cb58b3da00ab4e51ec49f9c829a247a3c7a4d42b1bc33e7c63",
+  "checkpoints/104b2-card-order-views.json": "c06bdd545fe36c6d077c7919a7cc4044ea096ba935bfce87709364fd9c010c6a",
+  "checkpoints/104b3-card-order-styles.patch": "3ced9e12e0a696c03b3c86f16689376a7868d7c8e6e7ffb96e993b7b0a39ef19",
+  "checkpoints/104c-card-order-browser-release.patch": "98bf25d34f6352fcfaf7fbc942dd254b3e992c3b7b2ad76c8bca3d5dd698b98a",
+  "checkpoints/104d-card-order-version-docs.patch": "d1ea6f9e21f2166c50079506f2497098249f945f06f8870fd74ee28f037d3e93"
 }

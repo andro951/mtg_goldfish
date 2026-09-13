@@ -196,8 +196,14 @@ export const effectMethods = {
         return;
       }
       case 'extraCombat': {
-        this.state.extraCombats.push({ id: `combat-${this.state.nextId++}`, after: cmd.after || this.state.step, controller: player, untapCreatures: cmd.untapCreatures !== false });
-        this.record('EXTRA_COMBAT_SCHEDULED', { after: cmd.after || this.state.step, controller: player }); return;
+        const beginTrigger = command.beginTrigger ? {
+          abilityId: cmd.beginTrigger.abilityId || 'extra-combat-begin', label: cmd.beginTrigger.label || 'Beginning of extra combat',
+          program: clone(command.beginTrigger.program || []), inputSpecs: clone(command.beginTrigger.inputs || []),
+          source: clone(context.source), sourceCardId: context.sourceCardId,
+          context: { controller: player, source: clone(context.source), sourceCardId: context.sourceCardId, vars: {}, inputs: {}, event: null },
+        } : null;
+        this.state.extraCombats.push({ id: `combat-${this.state.nextId++}`, after: cmd.after || this.state.step, controller: player, beginTrigger });
+        this.record('EXTRA_COMBAT_SCHEDULED', { after: cmd.after || this.state.step, controller: player, beginTrigger: beginTrigger?.label || null }); return;
       }
       case 'castChoice': {
         const ids = this.effectIds(command.ids, context).filter(id => !this.characteristics(id).types.includes('Land'));

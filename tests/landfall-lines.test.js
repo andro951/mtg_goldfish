@@ -51,24 +51,46 @@ test('Cultivator NO skips the repeated optional effect',()=>{
   policy(g,'Cultivator Colossus','colossus','NO');cast(g,'Cultivator Colossus');drain(g);
   assert(id(g,'Tree of Tales','hand'));assert.equal(g.state.zones.libraryActive.length,24);roundTrip(g);
 });
-test('Moraug main-one extra combat untaps at its beginning but not at the later normal combat',()=>{
+test('Moraug main-one extra combat creates an untap trigger on the stack before attackers',()=>{
   const g=fixture({battlefield:['Moraug, Fury of Akoum',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den']});
   play(g,'Ancient Den');drain(g);assert.equal(g.state.extraCombats.length,1);
-  g.act({type:'ADVANCE_PHASE',step:'attackers'});drain(g);assert.equal(g.state.extraCombatActive,true);assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);
+  g.act({type:'ADVANCE_PHASE',step:'attackers'});
+  assert.equal(g.state.step,'beginCombat');assert.equal(g.state.extraCombatActive,true);assert.equal(g.object(id(g,'Walking Atlas')).tapped,true);
+  assert.equal(g.state.stack.length,1);assert.equal(g.state.stack.at(-1).kind,'trigger');assert.match(g.state.stack.at(-1).label,/untap all creatures/i);
+  assert.equal(g.state.stack.at(-1).sourceCardId,registry.get('Moraug, Fury of Akoum').id);
+  g.act({type:'RESOLVE_TOP'});assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);assert.equal(g.state.step,'attackers');
   g.act({type:'DECLARE_ATTACKERS',attackers:[{id:id(g,'Moraug, Fury of Akoum'),player:1},{id:id(g,'Walking Atlas'),player:2}]});
   assert.equal(g.characteristics(id(g,'Moraug, Fury of Akoum')).power,7);assert.equal(g.characteristics(id(g,'Walking Atlas')).power,2);
   g.act({type:'ADVANCE_PHASE',step:'endCombat'});g.act({type:'ADVANCE_PHASE',next:true});
   assert.equal(g.state.step,'beginCombat');assert.equal(g.state.extraCombatActive,false);assert.equal(g.object(id(g,'Walking Atlas')).tapped,true);roundTrip(g);
 });
-test('Moraug second-main landfalls queue separate combats and untap at each',()=>{
-  const g=fixture({battlefield:['Moraug, Fury of Akoum','Azusa, Lost but Seeking','Walking Atlas'],hand:['Ancient Den','Tree of Tales']},{step:'main2'});
+
+test('Moraug delayed untap trigger still resolves if Moraug leaves after landfall resolves',()=>{
+  const g=fixture({battlefield:['Moraug, Fury of Akoum',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den']});
+  play(g,'Ancient Den');drain(g);g.act({type:'DEBUG_MOVE',id:id(g,'Moraug, Fury of Akoum'),zone:'exile'});
+  g.act({type:'ADVANCE_PHASE',step:'attackers'});assert.equal(g.state.stack.length,1);assert.equal(g.object(id(g,'Walking Atlas')).tapped,true);
+  g.act({type:'RESOLVE_TOP'});assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);assert.equal(g.state.step,'attackers');roundTrip(g);
+});
+test('Moraug second-main landfalls queue separate combats and a separate untap trigger for each',()=>{
+  const g=fixture({battlefield:['Moraug, Fury of Akoum','Azusa, Lost but Seeking',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den','Tree of Tales']},{step:'main2'});
   play(g,'Ancient Den');drain(g);play(g,'Tree of Tales');drain(g);assert.equal(g.state.extraCombats.length,2);
   for(let n=1;n<=2;n++){
-    g.act({type:'ADVANCE_PHASE',step:'attackers'});drain(g);assert.equal(g.state.extraCombatActive,true);assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);
+    if(n===1)g.act({type:'ADVANCE_PHASE',step:'attackers'});
+    assert.equal(g.state.step,'beginCombat');assert.equal(g.state.extraCombatActive,true);assert.equal(g.state.stack.length,1);assert.equal(g.object(id(g,'Walking Atlas')).tapped,true);
+    g.act({type:'RESOLVE_TOP'});assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);if(g.state.step==='beginCombat')g.act({type:'ADVANCE_PHASE',next:true});assert.equal(g.state.step,'attackers');
     g.act({type:'DECLARE_ATTACKERS',attackers:[{id:id(g,'Walking Atlas'),player:1}]});assert.equal(g.characteristics(id(g,'Walking Atlas')).power,1+n);
     g.act({type:'ADVANCE_PHASE',step:'endCombat'});if(n===1)g.act({type:'ADVANCE_PHASE',next:true});
   }
   g.act({type:'ADVANCE_PHASE',next:true});assert.equal(g.state.step,'end');assert.equal(g.state.extraCombats.length,0);roundTrip(g);
+});
+test('Moraug legacy pending combat upgrades immediate untap into a delayed stack trigger',()=>{
+  const g=fixture({battlefield:[{name:'Walking Atlas',tapped:true}]},{step:'main2'});
+  const moraug=registry.get('Moraug, Fury of Akoum');
+  g.state.extraCombats=[{id:'legacy-moraug',after:'main2',controller:0,untapCreatures:true}];g.initialState=structuredClone(g.state);g.history=[];g.cursor=0;
+  g.act({type:'ADVANCE_PHASE',step:'attackers'});
+  assert.equal(g.state.step,'beginCombat');assert.equal(g.object(id(g,'Walking Atlas')).tapped,true);
+  assert.equal(g.state.stack.length,1);assert.equal(g.state.stack.at(-1).sourceCardId,moraug.id);assert.match(g.state.stack.at(-1).label,/untap all creatures/i);
+  g.act({type:'RESOLVE_TOP'});assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);assert.equal(g.state.step,'attackers');roundTrip(g);
 });
 test('Moraug does not create extra combat for an opponent-turn land entry',()=>{
   const g=fixture({battlefield:['Moraug, Fury of Akoum','Walking Atlas'],hand:['Ancient Den']},{player:1});

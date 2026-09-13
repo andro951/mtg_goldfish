@@ -65,3 +65,4 @@ save('ability-layers',{battlefield:['Treasure Vault','Ancient Den']});
 
 const gridCards=registry.list().filter(c=>c.candidate).slice(0,27).map(c=>c.name);
 save('grid-resize',{graveyard:gridCards,exile:gridCards,outside:gridCards});
+save('moraug-stack',{battlefield:['Moraug, Fury of Akoum',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den']});

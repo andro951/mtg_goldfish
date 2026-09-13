@@ -65,14 +65,14 @@ def total(label: str) -> int:
     require(len(matches) == 1, f'Missing or ambiguous test total: {label}')
     return int(matches[0])
 engine_tests = total('tests')
-require(engine_tests >= 987 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+require(engine_tests >= 989 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
 for label in ('fail', 'cancelled', 'skipped', 'todo'):
     require(total(label) == 0, f'Engine test {label} must be zero.')
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser.get('uiVersion') == '1.4.3', 'The tested UI must be the compact tabletop, not the retired interface.')
-require(browser['checksPassed'] >= 471, 'Browser regression suite is incomplete.')
+require(browser.get('uiVersion') == '1.4.4', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser['checksPassed'] >= 479, 'Browser regression suite is incomplete.')
 
 subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
 support = read_json('test-results/card-support.json')
