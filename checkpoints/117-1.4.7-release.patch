@@ -1,0 +1,95 @@
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,12 @@
+-# Astra 1.4.6 — The Goldfish Lab
++# Astra 1.4.7 — The Goldfish Lab
++
++## Attached cards and soulbond connections (1.4.7)
++
++Equipment and Auras now show persistent arrows to the permanent they are actually attached to. Attachments default to **Follow attached permanent**: they tuck behind the host, offset slightly up and left, and move with it during a drag. Multiple attachments form a staggered fan. Near a viewport edge the fan turns inward rather than hiding cards offscreen; the host and camera are never moved automatically.
++
++Drag an attached card separately to switch following off for that instance. Its rules attachment and arrow remain intact. Right-click the card (or open its abilities inspector), then click **Follow attached permanent** to snap it back under its current host and resume following. The host's inspector also lists attached cards so partly covered cards remain easy to access. The preference survives reattachment, undo/redo, autosave, and session export/import. Cancelled drags do not change it. A card leaving and returning is a new object and starts with following on again.
++
++Soulbond pairs show a distinct dashed connection rather than an attachment arrow; paired creatures stay independently movable. Links brighten when either endpoint is hovered, selected, focused, or inspected. The overlay does not intercept clicks, and it uses event-driven updates rather than an idle animation loop. Actual detachments, zone changes and invalidated pairing references remove their links.
++
++The existing 317-card catalog and all 177 names in the September request remain unchanged. Generic soulbond pairing and display are tested with granted-keyword fixtures because that catalog currently has no native Soulbond cards; this release does not silently claim support for additional individual cards. See `docs/attachments-147.md` for implementation and verification scope. The 1.4.6 autosave improvements, Ask defaults, loyalty overlays, targeting arrows, and visible automatic arrivals are retained.
+ 
+--- a/package.json
++++ b/package.json
+@@ -2,3 +2,3 @@
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.6",
++  "version": "1.4.7",
+   "private": true,
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -550,3 +550,3 @@
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.6'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.7'};
+ async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -58,3 +58,3 @@
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.6';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.7';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
+--- a/tests/benchmark_browser.py
++++ b/tests/benchmark_browser.py
+@@ -20,3 +20,3 @@
+   browser=pw.chromium.launch(args=['--no-sandbox'])
+-  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_6',ROOT/'index.html')]:
++  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_7',ROOT/'index.html')]:
+    context=browser.new_context(viewport={'width':1366,'height':768});page=context.new_page();page.set_default_timeout(15000)
+@@ -48,3 +48,3 @@
+ finally:server.terminate();server.wait(timeout=5)
+-a,b=reports['before_1_4_5'],reports['after_1_4_6']
++a,b=reports['before_1_4_5'],reports['after_1_4_7']
+ checks={'both_used_real_indexeddb':a['storageMode']==b['storageMode']=='indexeddb',
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -53,3 +53,3 @@
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.6');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.7');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+@@ -59,3 +59,3 @@
+  if server:server.terminate();server.wait(timeout=5)
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.6','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.7','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -33,3 +33,3 @@
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.6')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.7')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+@@ -63,3 +63,3 @@
+ 
+-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.6', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.7', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+ OUT.mkdir(parents=True, exist_ok=True)
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -3,3 +3,3 @@
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.6')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.7')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -67,3 +67,3 @@
+ engine_tests = total('tests')
+-require(engine_tests >= 1076 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 1101 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+@@ -73,4 +73,4 @@
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.4.6', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 570, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.7', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 630, 'Browser regression suite is incomplete.')
+ 
