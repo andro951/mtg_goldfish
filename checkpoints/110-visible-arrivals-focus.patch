@@ -1,0 +1,68 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+index f71aad9..a8dae29 100644
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -0,0 +1 @@
++import { visiblePlacement } from './placement.js';
+@@ -43 +44 @@ function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=sa
+-function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y};return result;}
++function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
+@@ -115,0 +117,8 @@ function makeLayouts(){
++  if(zone==='battlefield'){
++    for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
++      if(o.location)continue;
++      if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
++      else c.autoArrival=true;
++    }
++    ui.layouts[zone]=list;continue;
++  }
+@@ -131,0 +141,21 @@ function makeLayouts(){
++// Called after DOM sizing: use the actual surface, including wrapped toolbars,
++// resized hand rows and open side zones. Only new object identities are placed;
++// rerenders, undo, reload and explicitly dropped cards retain their locations.
++function placeBattlefieldArrivals(){
++ const list=ui.layouts.battlefield||[],arrivals=list.filter(c=>c.autoArrival);
++ if(!arrivals.length)return;
++ const surface=document.querySelector('[data-surface="battlefield"]');if(!surface)return;
++ const viewport={width:surface.clientWidth,height:surface.clientHeight},rect=surface.getBoundingClientRect();
++ const camera=prefs.cameras.battlefield||{x:0,y:0,zoom:1};
++ const obstacles=[...floats.querySelectorAll('[data-floating]')].filter(el=>!el.hidden).map(el=>{
++   const r=el.getBoundingClientRect();return {left:r.left-rect.left,top:r.top-rect.top,right:r.right-rect.left,bottom:r.bottom-rect.top};
++ });
++ const existing=list.filter(c=>!c.autoArrival),nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
++ for(const c of arrivals){
++   const o=g.object(c.id),land=g.characteristics(o).types.includes('Land');
++   Object.assign(c,visiblePlacement(c,existing,viewport,camera,{land,obstacles}));delete c.autoArrival;
++   ui.memo[`battlefield/${o.id}:${o.oid}`]={x:c.x,y:c.y,z:c.z};existing.push(c);
++   const el=nodes.get(c.id);if(el){el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
++ }
++ targetLinks.schedule();
++}
+@@ -192 +222 @@ function render(){if(!g||rendering)return;rendering=true;try{
+- renderModal(false);size();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
++ renderModal(false);size();placeBattlefieldArrivals();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
+@@ -196 +226,7 @@ function render(){if(!g||rendering)return;rendering=true;try{
+-function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(['deck','decktext'].includes(name))auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':name==='decktext'?'#deck-text':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
++function openDialog(name){
++ clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(['deck','decktext'].includes(name))auditDeck();renderModal();
++ // The dialog exists now. A deferred focus callback can steal focus after the
++ // user has started typing (or after a different dialog has already opened).
++ const selector=name==='deck'?'#deck-search':name==='decktext'?'#deck-text':name==='notes'?'#note-text':'input:not([type=checkbox]),textarea,button';
++ overlay.querySelector(selector)?.focus({preventScroll:true});
++}
+diff --git a/tests/ui_acceptance_menus.py b/tests/ui_acceptance_menus.py
+index f8078d7..00366d3 100644
+--- a/tests/ui_acceptance_menus.py
++++ b/tests/ui_acceptance_menus.py
+@@ -45 +45,10 @@ def menus(p):
+- menu(p,'notes');start=state(p,'state.notes.length');cursor=state(p,'cursor');p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Backspace');check('Backspace edits text without undoing game',p.locator('#note-text').input_value()=='Line tested <b>literal</b' and state(p,'cursor')==cursor);click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
++ menu(p,'notes');start=state(p,'state.notes.length');cursor=state(p,'cursor')
++ p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Control+End')
++ before=p.locator('#note-text').evaluate('(e)=>({text:e.value,start:e.selectionStart,end:e.selectionEnd,active:document.activeElement.id})')
++ p.locator('#note-text').press('Backspace')
++ after=p.locator('#note-text').evaluate('(e)=>({text:e.value,start:e.selectionStart,end:e.selectionEnd,active:document.activeElement.id})')
++ detail={'before':before,'after':after,'cursorBefore':cursor,'cursorAfter':state(p,'cursor')}
++ check('Backspace deletes exactly one character in Notes',after['text']=='Line tested <b>literal</b',detail)
++ check('Backspace in Notes leaves game history unchanged',state(p,'cursor')==cursor,detail)
++ check('Notes retains the active caret after editing',after['active']=='note-text' and after['start']==after['end']==len(after['text']),detail)
++ click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
