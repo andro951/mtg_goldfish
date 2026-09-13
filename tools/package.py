@@ -71,8 +71,8 @@ for label in ('fail', 'cancelled', 'skipped', 'todo'):
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser.get('uiVersion') == '1.4.2', 'The tested UI must be the compact tabletop, not the retired interface.')
-require(browser['checksPassed'] >= 466, 'Browser regression suite is incomplete.')
+require(browser.get('uiVersion') == '1.4.3', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser['checksPassed'] >= 471, 'Browser regression suite is incomplete.')
 
 subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
 support = read_json('test-results/card-support.json')
