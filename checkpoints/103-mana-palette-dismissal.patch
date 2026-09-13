@@ -1,0 +1,182 @@
+--- a/src/tabletop/app.js	2026-09-13 03:03:12.000000000 +0000
++++ b/src/tabletop/app.js	2026-09-13 03:25:14.106870632 +0000
+@@ -1,4 +1,5 @@
+ import { cardActions } from './card-actions.js';
++import { isManaColorChoice } from './mana-choice.js';
+ import { installTargetLinks } from './target-links.js';
+ import { createProgramController } from './program-controller.js';
+ import { futurePrograms,programId } from './programs.js';
+@@ -377,8 +378,33 @@
+  if(action==='debug-shuffle')return run({type:'DEBUG_SHUFFLE'});
+ }
+ interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
++let outsideManaDismiss=null;
++function manaPickerIsOpen(){return !!g&&isManaColorChoice(g.state.pending)&&!!floats.querySelector('.mana-window');}
++// A mana palette is transient. A primary pointer press anywhere except an actual
++// mana symbol cancels only that uncommitted mana activation. During a spell
++// payment, the core CANCEL action restores the parent payment and previously
++// produced mana. Consume the dismissing click so it cannot also tap/move the
++// thing underneath the palette by accident.
++document.addEventListener('pointerdown',e=>{
++ if(e.button!==0||!manaPickerIsOpen()||e.target.closest('.mana-choice'))return;
++ e.preventDefault();e.stopImmediatePropagation();
++ outsideManaDismiss={pointerId:e.pointerId};
++ run({type:'CANCEL'});
++},true);
++document.addEventListener('pointerup',e=>{
++ if(!outsideManaDismiss||outsideManaDismiss.pointerId!==e.pointerId)return;
++ e.preventDefault();e.stopImmediatePropagation();
++ // A click may or may not be synthesized after the popup redraw. Keep the
++ // guard through this event turn only, then discard it so the next real click
++ // can never be swallowed by a stale dismissal.
++ const token=outsideManaDismiss;setTimeout(()=>{if(outsideManaDismiss===token)outsideManaDismiss=null;},0);
++},true);
++document.addEventListener('pointercancel',e=>{if(outsideManaDismiss?.pointerId===e.pointerId)outsideManaDismiss=null;},true);
+ document.addEventListener('pointerdown',e=>{const zone=e.target.closest('[data-surface]')?.dataset.surface;if(zone)ui.activeZone=zone;});
+-document.addEventListener('click',e=>{handleClick(e).catch(error=>{toast(error.message,true);if(!(error instanceof RuleError))console.error(error);});});
++document.addEventListener('click',e=>{
++ if(outsideManaDismiss){outsideManaDismiss=null;e.preventDefault();e.stopImmediatePropagation();return;}
++ handleClick(e).catch(error=>{toast(error.message,true);if(!(error instanceof RuleError))console.error(error);});
++},true);
+ document.addEventListener('dragstart',e=>{
+  const row=e.target.closest?.('[data-order-id]');if(row){ui.orderDrag=row.dataset.orderId;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',ui.orderDrag);return;}
+  const el=e.target.closest?.('[data-deck-drag]');if(!el||ui.modal!=='deck')return;
+@@ -449,7 +475,7 @@
+ });
+ let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.2'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.3'};
+ async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
+  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
+  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
+--- a/tests/ui_acceptance_game.py	2026-09-13 03:03:12.000000000 +0000
++++ b/tests/ui_acceptance_game.py	2026-09-13 03:25:57.469549701 +0000
+@@ -1,7 +1,7 @@
+ from ui_acceptance_support import *
+ 
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.2')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.3')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
+  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
+@@ -29,12 +29,18 @@
+  check('second London mulligan selects one bottom card and keeps six',state(p,'state.zones.hand.length')==6)
+ 
+ def mana(p):
+- fixture(p,'mana');r=obj(p,'Razortide Bridge');b=card(p,r['id'],'battlefield').bounding_box();x,y=b['x']+b['width']*.65,b['y']+b['height']*.45;p.mouse.click(x,y)
++ fixture(p,'mana');original=checksum(p);r=obj(p,'Razortide Bridge');b=card(p,r['id'],'battlefield').bounding_box();x,y=b['x']+b['width']*.65,b['y']+b['height']*.45;p.mouse.click(x,y)
+  check('dual land opens only a tiny symbol palette',p.locator('.mana-window .mana-choice').count()==2 and p.locator('.mana-window').bounding_box()['height']<=55)
+  check('palette has no visible text or payment controls',p.locator('.mana-window').inner_text().strip()=='' and p.locator('.mana-window .float-header,.mana-window input').count()==0)
+  popup=p.locator('.mana-window').bounding_box();check('mana palette opens beside the clicked source',abs(popup['x']-x)<130 and abs(popup['y']-y)<80)
+  check('mana colors have real local vector symbols',p.locator('.mana-choice svg').count()==2)
+- shot(p,'02-mana-symbols.png');choose_option(p,'U')
++ surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
++ check('clicking empty table outside mana symbols dismisses palette without activating the source',p.locator('.mana-window').count()==0 and checksum(p)==original and not obj(p,'Razortide Bridge')['tapped'])
++ card(p,r['id'],'battlefield').click();popup=p.locator('.mana-window').bounding_box();p.mouse.click(popup['x']+2,popup['y']+2)
++ check('clicking palette padding also dismisses because only mana symbols are choices',p.locator('.mana-window').count()==0 and checksum(p)==original and not obj(p,'Razortide Bridge')['tapped'])
++ card(p,r['id'],'battlefield').click();den=obj(p,'Ancient Den');card(p,den['id'],'battlefield').click()
++ check('outside click is consumed instead of also tapping the card underneath',p.locator('.mana-window').count()==0 and not obj(p,'Razortide Bridge')['tapped'] and not obj(p,'Ancient Den')['tapped'] and checksum(p)==original)
++ card(p,r['id'],'battlefield').click();shot(p,'02-mana-symbols.png');choose_option(p,'U')
+  check('one symbol click taps source and immediately adds blue',obj(p,'Razortide Bridge')['tapped'] and state(p,'state.players[0].mana.U')==1 and pending(p) is None)
+  rb=card(p,r['id'],'battlefield').bounding_box();check('tapped card is physically sideways',rb['width']>rb['height'] and abs(rb['width']-b['height'])<.1)
+  check('clockwise tapping keeps the physical bottom-right at the upright bottom-left anchor',abs(rb['x']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
+@@ -56,8 +62,12 @@
+  before=checksum(p);p.locator('#pay-C').fill('0');click(p,'pay','[data-floating="decision"]');check('invalid payment is rejected atomically',checksum(p)==before)
+  # Close inspection, but leave payment open; mana sources stay clickable.
+  if p.locator('.inspector-window').count():click(p,'close-inspector')
+- amber=obj(p,'Mox Amber');card(p,amber['id'],'battlefield').click();check('clicking Amber during casting opens the same tiny color palette',p.locator('.mana-window').count()==1)
+- choose_option(p,'U');check('mana choice returns to parent payment rather than finishing/cancelling cast',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1)
++ amber=obj(p,'Mox Amber');payment_cursor=p.evaluate('astra.engine.cursor');card(p,amber['id'],'battlefield').click();check('clicking Amber during casting opens the same tiny color palette',p.locator('.mana-window').count()==1)
++ surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
++ check('outside click cancels only nested mana color choice and restores parent payment',p.locator('.mana-window').count()==0 and pending(p)['kind']=='payment' and not obj(p,'Mox Amber')['tapped'] and p.evaluate('astra.engine.cursor')==payment_cursor and obj(p,'The One Ring','hand') is not None)
++ card(p,amber['id'],'battlefield').click();choose_option(p,'U');check('mana choice returns to parent payment rather than finishing/cancelling cast',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1)
++ bridge=obj(p,'Razortide Bridge');card(p,bridge['id'],'battlefield').click();surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
++ check('dismissing another mana palette preserves mana already produced for parent payment',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1 and not obj(p,'Razortide Bridge')['tapped'])
+  vault=obj(p,'Mana Vault');card(p,vault['id'],'battlefield').click();check('direct mana source remains usable during payment',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.C')==3)
+  shot(p,'03-payment-with-table.png');pay(p);p.wait_for_function("()=>Object.values(astra.engine.state.instances).some(o=>o.zone==='battlefield'&&astra.engine.definition(o).name==='The One Ring')");p.wait_for_function('()=>!astra.engine.state.stack.length&&!astra.engine.state.pending')
+  check('default automatic resolution casts and resolves Ring without extra Resolve clicks',obj(p,'The One Ring','battlefield') is not None)
+--- a/package.json	2026-09-13 03:03:12.000000000 +0000
++++ b/package.json	2026-09-13 03:19:53.345829866 +0000
+@@ -1,6 +1,6 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.2",
++  "version": "1.4.3",
+   "private": true,
+   "type": "module",
+   "description": "Offline rules-aware 310-card MTG goldfish laboratory",
+--- a/src/tabletop/dialogs.js	2026-09-13 03:03:12.000000000 +0000
++++ b/src/tabletop/dialogs.js	2026-09-13 03:19:53.346359426 +0000
+@@ -56,7 +56,7 @@
+ export function dialogs(ctx){
+   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.2';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.3';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
+   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
+   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
+--- a/tests/browser_tabletop.py	2026-09-13 03:03:12.000000000 +0000
++++ b/tests/browser_tabletop.py	2026-09-13 03:19:53.346422261 +0000
+@@ -44,13 +44,13 @@
+   if not args.memory and not args.groups:
+    context=b.new_context();p=context.new_page()
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.2');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.3');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+    context.close()
+   b.close()
+ finally:
+  if server:server.terminate();server.wait(timeout=5)
+-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.2','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.3','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+ print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
+ raise SystemExit(bool(failures or errors or requests))
+--- a/tests/portable_test.py	2026-09-13 03:03:12.000000000 +0000
++++ b/tests/portable_test.py	2026-09-13 03:19:53.346580570 +0000
+@@ -30,7 +30,7 @@
+         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
+         page.goto(destination.as_uri())
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.2')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.3')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+         check('all 343 card/face images and the real Magic back are embedded', count == 344)
+         image_report = page.evaluate('''async () => {
+--- a/tools/package.py	2026-09-13 03:03:12.000000000 +0000
++++ b/tools/package.py	2026-09-13 03:19:53.346749825 +0000
+@@ -71,8 +71,8 @@
+ browser = browser_report('test-results/browser.json')
+ portable = browser_report('test-results/portable.json')
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.4.2', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 466, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.3', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 471, 'Browser regression suite is incomplete.')
+ 
+ subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
+ support = read_json('test-results/card-support.json')
+--- a/README.md	2026-09-13 03:03:12.000000000 +0000
++++ b/README.md	2026-09-13 03:20:02.109043982 +0000
+@@ -1,4 +1,8 @@
+-# Astra 1.4.2 — The Goldfish Lab
++# Astra 1.4.3 — The Goldfish Lab
++
++## Mana palette dismissal (1.4.3)
++
++Mana-color palettes are transient. Clicking anywhere except one of the displayed mana symbols closes the palette and cancels that uncommitted mana activation. The dismissing click is consumed, so it cannot accidentally tap or move a card underneath. During an existing spell/ability payment, dismissal restores that parent payment and preserves mana already produced by other sources. Escape continues to provide the same cancellation behavior.
+ 
+ A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
+ 
+@@ -15,7 +19,7 @@
+ **Moving an existing game into this edition:** export its session JSON from the old application, open this edition, then use **Menu → Save / import**. This interface update retains the existing rules-pack/session compatibility. New games default to hold priority off and reserve access on; imported games keep their saved game settings.
+ 
+ 
+-## Deck text editor and responsive side-zone grids (1.4.2)
++## Deck text editor and responsive side-zone grids (1.4.3)
+ 
+ The visual drag-and-drop deck builder remains the default, and the original quantity/name workflow is now a **separate Deck text editor**. Open it directly from Menu → Deck text, or switch between Visual editor and Text editor from either deck dialog. Both edit the same saved deck source immediately, so a change in one appears in the other. The text editor supports the familiar `// Main`, `// Commander`, and `// Outside the Game` sections, bulk paste, validation, supplied-list presets, and restoring the original supplied pool.
