@@ -66,3 +66,14 @@ save('ability-layers',{battlefield:['Treasure Vault','Ancient Den']});
 const gridCards=registry.list().filter(c=>c.candidate).slice(0,27).map(c=>c.name);
 save('grid-resize',{graveyard:gridCards,exile:gridCards,outside:gridCards});
 save('moraug-stack',{battlefield:['Moraug, Fury of Akoum',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den']});
+
+// Viewport arrival regressions and the exact newly requested card rules.
+save('arrival-batch',{battlefield:['Krark-Clan Ironworks'],graveyard:[...Array(12).fill('Clock of Omens'),...Array(12).fill('Codex Shredder'),...Array(8).fill('Razortide Bridge'),...Array(8).fill('Ancient Den')],hand:['Open the Vaults']},{mana:{C:4,W:2}});
+save('arrival-search',{battlefield:['Planar Bridge'],libraryActive:['Razortide Bridge','Open the Vaults']},{mana:{C:8}});
+save('arrival-birds',{battlefield:['Chocobo Racetrack'],hand:['Ancient Den']});
+save('arrival-blink',{battlefield:['Displacer Kitten','Mana Vault'],hand:['Mox Amber']});
+save('latest-recover',{battlefield:['Academy Ruins'],graveyard:['Mox Opal'],libraryActive:['Walking Atlas']},{mana:{C:1,U:1}});
+save('latest-affinity',{battlefield:['Mycosynth Golem','Ancient Den'],hand:['Walking Atlas']});
+save('latest-persist',{battlefield:['Cauldron of Souls','Metalworker','Krark-Clan Ironworks']});
+save('latest-doors',{battlefield:['Doors of Durin','Metalworker'],libraryActive:['Skyshroud Ranger','Ancient Den']},{step:'attackers'});
+save('latest-cube',{battlefield:['Cosmic Cube',{name:'Metalworker',counters:{'+1/+1':1}}],libraryActive:['Walking Atlas','Ancient Den','Seat of the Synod','Planar Bridge','Cosmic Cube','Cauldron of Souls','Great Furnace']},{step:'attackers'});

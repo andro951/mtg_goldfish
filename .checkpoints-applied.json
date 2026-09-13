@@ -106,5 +106,7 @@
   "checkpoints/112a-requested-rules-core.patch": "28a84e2793f41f9a762d7351461811ed234bcce8f1cd339f143d92349c1d8eab",
   "checkpoints/112b-catalog.patch": "1e9d6e2dc7dbd2d21d01f3affe0c937fbe2c99e73fe20a5065297d9797cb0eb6",
   "checkpoints/112c-build.patch": "3ecb06dc56ad097c117cd0c6b31540e049775c6b53371301a86473f1f245502a",
-  "checkpoints/112d-release-verification.patch": "b292ebb8b0573f501d7425249dbf974900c2c442f5a222c503f6ebfb7154d392"
+  "checkpoints/112d-release-verification.patch": "b292ebb8b0573f501d7425249dbf974900c2c442f5a222c503f6ebfb7154d392",
+  "checkpoints/112e-browser-wiring.patch": "dfea8d0db9f8827e24c56fcefdb7781c271ad3722b12236b15d2329ff6ed150e",
+  "checkpoints/112f-menus-count.patch": "2ebb326032452712b72e04a293b96b3ac483025cf08f93b7fa0b6ec3889c2fc2"
 }
