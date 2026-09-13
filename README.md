@@ -1,4 +1,4 @@
-# Astra 1.4 — The Goldfish Lab
+# Astra 1.4.1 — The Goldfish Lab
 
 A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
 
@@ -13,6 +13,16 @@ Alternatively, extract the source ZIP and open `AstraSimulator/index.html`. Keep
 For a consistent local-server origin, Node.js 22 or later can run `npm start`; open `http://127.0.0.1:4173`. No `npm install` is required. The server binds to the local machine only. All network use belongs to optional developer import/test setup, not to gameplay.
 
 **Moving an existing game into this edition:** export its session JSON from the old application, open this edition, then use **Menu → Save / import**. This interface update retains the existing rules-pack/session compatibility. New games default to hold priority off and reserve access on; imported games keep their saved game settings.
+
+## Mana-source special abilities (1.4.1)
+
+Mana sources with additional activated abilities now have a small **⋯ Abilities** button on the card. Click that button to open the inspector **without tapping or paying anything**. Clicking the artwork retains the quick-mana action. The same button closes the inspector again. Right-click remains available, but is no longer the only discoverable path.
+
+For **Treasure Vault**, click **⋯ → Create X Treasures**, select X, and pay the displayed cost. For example, X=3 asks for six mana, taps and sacrifices the Vault as costs, then its ability creates three Treasure tokens on resolution. Cancelling before payment leaves the Vault and resources unchanged.
+
+The control reads the current ability list, including copied, chapter-granted and other granted abilities. It also covers lands such as Buried Ruin, Fomori Vault and Oboro, and artifacts such as Grim Monolith. A tapped permanent can still expose a legal non-tap ability; its tap-cost abilities remain unavailable. The button stays on the exposed left corner when tapped so it does not disappear behind the next card in a row. Ordinary mana-only lands keep their uncluttered image.
+
+Both keyboard activation and touch are supported. One touchscreen tap is handled once rather than again through its synthesized click. During an outstanding spell payment, inspection preserves that payment and exposes only the mana actions permitted there; non-mana abilities do not bypass the engine.
 
 ## New in 1.4
 

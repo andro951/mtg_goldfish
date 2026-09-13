@@ -82,3 +82,6 @@
 .playing-card:has(.card-abilities) .card-marks{right:30px}
 .drag-ghost .card-abilities{display:none}
 @media(pointer:coarse){.card-abilities{width:30px;height:28px}.playing-card:has(.card-abilities) .card-marks{right:36px}}
+/* Keep the control at the exposed left corner of a tapped row; do not bury it
+   under the next untapped card merely because this card became wider. */
+.card-position.tapped .card-abilities{top:auto;right:auto;bottom:3px;left:3px;transform:rotate(-90deg)}

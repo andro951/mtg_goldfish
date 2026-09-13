@@ -19,5 +19,5 @@ for(const n of names){const c=registry.get(n);assert.equal(c.candidate,true);ass
 const tap=read('test-results/engine.tap');const newCards=read('data/expanded-card-names.txt').trim().split('\n');
 for(const n of newCards){assert.ok(tap.includes('# Subtest: expanded rules: '+n+' |'),'Missing focused test: '+n);assert.ok(tap.includes('card acceptance: '+registry.get(n).name+' — metadata and legal entry'));}
 assert.ok(!/^not ok /m.test(tap));
-const out={version:'1.4.0',supportedNames:310,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
+const out={version:'1.4.1',supportedNames:310,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
 fs.writeFileSync(path.join(root,'test-results/card-support.json'),JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out,null,2));

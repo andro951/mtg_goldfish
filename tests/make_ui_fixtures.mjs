@@ -53,3 +53,12 @@ save('expanded-discover',{battlefield:['Chimil, the Inner Sun'],libraryActive:['
 save('expanded-combat',{battlefield:['Akiri, Line-Slinger','Ancient Den','Sol Ring'],hand:['Mox Amber']});
 save('expanded-warp',{hand:['Eusocial Engineering','Ancient Den']},{mana:{C:1,G:1}});
 save('expanded-baulbes',{battlefield:["Mishra's Bauble","Urza's Bauble"],hand:['Sol Ring','Tree of Tales'],libraryActive:['Walking Atlas','Mox Amber','Ancient Den']});
+
+// Ordinary left-click and keyboard access to non-mana abilities on mana sources.
+save('vault-access',{battlefield:['Treasure Vault','Ancient Den'],hand:['Walking Atlas']},{mana:{C:6}});
+save('vault-payment',{battlefield:['Treasure Vault','Ancient Den'],hand:['Walking Atlas']});
+save('special-land-access',{battlefield:['Oboro, Palace in the Clouds','Buried Ruin','Fomori Vault','Ancient Den','Sol Ring'],hand:['Explore'],graveyard:['Mox Amber'],libraryActive:['Walking Atlas','Tree of Tales','Mox Opal','Great Furnace']},{mana:{C:10}});
+save('saga-access',{battlefield:[{name:"Urza's Saga",lore:2,props:{flags:{sagaMana:true,sagaConstruct:true}}}]},{mana:{C:2}});
+save('monolith-access',{battlefield:[{name:'Grim Monolith',tapped:true}]},{mana:{C:4}});
+save('granted-access',{battlefield:['Ancient Den',"Bootleggers' Stash",'Krark-Clan Ironworks']});
+save('ability-layers',{battlefield:['Treasure Vault','Ancient Den']});

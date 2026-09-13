@@ -1,6 +1,6 @@
 {
   "name": "astra-mtg-goldfish",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "type": "module",
   "description": "Offline rules-aware 310-card MTG goldfish laboratory",

@@ -272,7 +272,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='rule-save'){readRuleForm();const r=structuredClone(ui.ruleDraft);if(['one','current'].includes(r.scope)){const c=r.stackContext;r.stackIds=r.scope==='one'?[c.id]:[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])].filter(s=>s.sourceCardId===c.cardId&&(s.abilityId||'')===c.abilityId).map(s=>s.id);r.scope='stack';}programs.saveRule(r);ui.ruleDraft=null;renderModal();return;}
  // Table pointer gestures own mouse picking. Keyboard activation and decision
  // galleries still use native button clicks.
- if(['card','card-abilities'].includes(action)&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
+ if(['card','card-abilities'].includes(action)&&el.closest('.surface,.hand,.rail')&&(event.detail!==0||event.pointerType))return;
  if((event.clientX||event.clientY)&&!el.closest('[data-floating=decision]'))atPoint({x:event.clientX,y:event.clientY});
  if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();autoResolve();}return;}
  if(action==='menu')return openDialog('menu');if(action==='dialog')return openDialog(el.dataset.dialog);
@@ -423,7 +423,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.0'};
+window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.1'};
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
