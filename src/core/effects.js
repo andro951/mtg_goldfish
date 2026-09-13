@@ -247,7 +247,9 @@ export const effectMethods = {
       if (!ids.length || max === 0) { context.vars[key] = []; this.record('EMPTY_SELECTION', { key }); return; }
     }
     const policyKey = command.policyKey ? `${context.sourceCardId}/${command.policyKey}` : null;
-    const preference = policyKey ? this.state.optionalPreferences[policyKey] || 'ASK' : null;
+    // Historical replay alone retains the old implicit choice. Live games always ask.
+    const legacy=this._legacyReplayDefaults?(command.legacyDefaultValue||command.defaultValue):null;
+    const preference = policyKey ? this.state.optionalPreferences[policyKey] || legacy || 'ASK' : null;
     if (preference && preference !== 'ASK' && spec.options?.some(o => o.value === preference)) {
       context.vars[key] = preference; this.record('OPTIONAL_POLICY_APPLIED', { key: policyKey, value: preference }); return;
     }
