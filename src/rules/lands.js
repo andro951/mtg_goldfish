@@ -9,7 +9,7 @@ export function installLands(registry) {
     const production = {};
     for (const color of colors) production[color] = (production[color] || 0) + 1;
     register(registry, card.id, { entersTapped: /enters tapped/.test(card.oracleText), possibleMana: unique(colors),
-      activated: colors.length ? [choice ? mana({}, { inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
+      activated: colors.length ? [choice ? mana({}, { singleMana:{colors:unique(colors),key:'color'}, inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
   }
   for (const name of ['Simic Growth Chamber', 'Selesnya Sanctuary', 'Golgari Rot Farm', 'Dimir Aqueduct', 'Gruul Turf', 'Azorius Chancery', 'Izzet Boilerworks']) {
     register(registry, name, { triggers: [etb('return-land', 'Return a land you control', () => [choose('returnedLand', 'Return a land you control to its owner’s hand', { ...BF, land: true }), move('$var.returnedLand', 'hand', { cause: 'bounce-land' })])] });
@@ -25,7 +25,7 @@ export function installLands(registry) {
     { id: 'clue', label: 'Sacrifice Clue: draw a card', cost: '{2}', costs: [selfSacrifice], effect: () => [draw()] },
   ] });
   register(registry, 'Power Depot', { possibleMana: ['C', ...anyColor], entersCounters: { '+1/+1': 1 }, activated: [
-    { id: 'restricted-color', label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
+    { id: 'restricted-color', singleMana:{colors:anyColor,key:'color',restriction:'artifactSpellOrAbility'}, label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
   ], triggers: [{ id: 'modular', label: 'Modular 1', event: 'LEAVE', lookBack: true, test: (g, s, e) => e.change.to === 'graveyard' && sameRef(s, e.change.beforeRef), optional: true,
     inputs: [target({ zones: ['battlefield'], allTypes: ['Artifact', 'Creature'] })], effect: (g, ctx) => [{ op: 'counter', ids: '$input.target', type: '+1/+1', amount: ctx.event.change.lki.counters['+1/+1'] || 0 }] }] });
   const fairCondition = (g, controller = 0) => countType(g, 'Artifact', controller) >= 3;

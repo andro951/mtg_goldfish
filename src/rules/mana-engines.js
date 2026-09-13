@@ -13,12 +13,12 @@ export function installManaEngines(registry) {
     { id: 'draw-damage', label: 'Mana Vault deals 1 damage to you', event: 'DRAW_STEP', test: (g, s, e) => e.player === s.controller && s.tapped,
       interveningIf: (g, ctx) => !!g.object(ctx.source)?.tapped, effect: (g, ctx) => [{ op: 'damage', player: ctx.controller, amount: 1 }] },
   ] });
-  register(registry, 'Mox Opal', { activated: [{ id: 'mana', label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
+  register(registry, 'Mox Opal', { activated: [{ id: 'mana', singleMana:{colors:anyColor,key:'color'}, label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
     inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
   const amberColors = (g, controller = 0) => unique(g.controlled(controller).filter(o => {
     const c = g.characteristics(o); return c.supertypes.includes('Legendary') && (c.types.includes('Creature') || c.types.includes('Planeswalker'));
   }).flatMap(o => g.characteristics(o).colors));
-  register(registry, 'Mox Amber', { activated: [{ id: 'mana', label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
+  register(registry, 'Mox Amber', { activated: [{ id: 'mana', singleMana:{colors:(g,s)=>amberColors(g,s.controller),key:'color'}, label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
     inputs: (g, s) => [colorInput('color', amberColors(g, s.controller))], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
   register(registry, 'Empowered Autogenerator', { entersTapped: true, activated: [{ id: 'mana', label: 'Add charge; produce that much mana', tap: true, mana: true, inputs: [colorInput()],
     effect: () => [{ op: 'counter', ids: '$source', type: 'charge', amount: 1 }, { op: 'call', handler: 'mana.autogenerator' }] }] });
