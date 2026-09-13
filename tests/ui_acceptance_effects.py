@@ -51,9 +51,16 @@ def triggers(p):
  menu(p,'settings');p.locator(f'[data-policy="{key}"]').select_option('ASK');check('remembered decision can be reset in Settings',p.evaluate('(k)=>astra.engine.state.optionalPreferences[k]',key)=='ASK');close(p)
  fixture(p,'moraug-stack');hold(p,True);cast(p,'Ancient Den');check('Moraug landfall itself uses the stack before scheduling combat',state(p,'state.stack.length')==1 and 'Additional combat' in state(p,'state.stack.at(-1).label'));click(p,'resolve','.stack-window')
  check('Moraug landfall resolution schedules the extra combat without untapping yet',state(p,'state.extraCombats.length')==1 and obj(p,'Walking Atlas')['tapped'])
+ check('phase bar shows one remaining extra combat only after it is actually scheduled',p.locator('.extra-combat-chip').inner_text()=='Extra ×1' and 'Main 1' in p.locator('.extra-combat-chip').get_attribute('title'))
  click(p,'phase',extra='[data-step=attackers]');check('beginning of Moraug extra combat puts a separate untap trigger on stack',state(p,'state.step')=='beginCombat' and state(p,'state.stack.length')==1 and 'untap all creatures' in state(p,'state.stack.at(-1).label').lower() and obj(p,'Walking Atlas')['tapped'])
+ check('active extra combat remains included in the remaining-combat count',p.locator('.extra-combat-chip').inner_text()=='Extra ×1' and 'current included' in p.locator('.extra-combat-chip').get_attribute('title'))
  check('Moraug untap trigger uses Moraug art as a stack effect',p.locator('.stack-card.effect img[alt="Moraug, Fury of Akoum"]').count()==1);shot(p,'26-moraug-untap-trigger.png');click(p,'resolve','.stack-window')
  check('creatures untap only when Moraug delayed trigger resolves',not obj(p,'Walking Atlas')['tapped'] and state(p,'state.step')=='attackers')
+ # Use the actual Step button for the rest of the extra combat and the normal combat.
+ for expected in ['damage','endCombat','beginCombat','attackers','damage','endCombat','main2']:
+  click(p,'next');settle(p)
+  check('Step reaches '+expected+' in Moraug phase path',state(p,'state.step')==expected)
+ check('Main-1 Moraug extra combat never causes Step to skip Main 2',state(p,'state.step')=='main2' and p.locator('.extra-combat-chip').count()==0)
  lab(p,'artifacts');activate(p,'Krark-Clan Ironworks','sacrifice');choose_cards(p,[obj(p,'Ancient Den')['id']]);settle(p,pay_optional=True)
  check('Duplicator payment schedules delayed copy',state(p,'state.delayed.length')>0)
  click(p,'phase',extra='[data-step=end]');settle(p,pay_optional=True)

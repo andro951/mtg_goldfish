@@ -92,6 +92,28 @@ test('Moraug legacy pending combat upgrades immediate untap into a delayed stack
   assert.equal(g.state.stack.length,1);assert.equal(g.state.stack.at(-1).sourceCardId,moraug.id);assert.match(g.state.stack.at(-1).label,/untap all creatures/i);
   g.act({type:'RESOLVE_TOP'});assert.equal(g.object(id(g,'Walking Atlas')).tapped,false);assert.equal(g.state.step,'attackers');roundTrip(g);
 });
+
+test('Step next never skips Main 2 after Main-1 Moraug extra combats',()=>{
+  const g=fixture({battlefield:['Moraug, Fury of Akoum','Azusa, Lost but Seeking',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den','Tree of Tales']},{step:'main1'});
+  play(g,'Ancient Den');drain(g);play(g,'Tree of Tales');drain(g);
+  assert.deepEqual(g.extraCombatStatus(),{remaining:2,current:false,queued:2,afterMain1:2,afterMain2:0});
+  const visited=[];
+  for(let guard=0;guard<30&&g.state.step!=='main2';guard++){
+    g.act({type:'ADVANCE_PHASE',next:true});visited.push(g.state.step);
+    if(g.state.stack.length){assert.match(g.state.stack.at(-1).label,/untap all creatures/i);g.act({type:'RESOLVE_TOP'});}
+  }
+  assert.equal(g.state.step,'main2');assert.ok(visited.includes('main2'));assert.equal(g.extraCombatStatus().remaining,0);
+  assert.equal(visited.filter(step=>step==='beginCombat').length,3,'two extras plus the normal combat must occur before Main 2');roundTrip(g);
+});
+test('extra combat status counts the active combat plus queued combats and explains Main-2 origin',()=>{
+  const g=fixture({battlefield:['Moraug, Fury of Akoum','Azusa, Lost but Seeking'],hand:['Ancient Den','Tree of Tales']},{step:'main2'});
+  play(g,'Ancient Den');drain(g);play(g,'Tree of Tales');drain(g);assert.deepEqual(g.extraCombatStatus(),{remaining:2,current:false,queued:2,afterMain1:0,afterMain2:2});
+  g.act({type:'ADVANCE_PHASE',next:true});assert.deepEqual(g.extraCombatStatus(),{remaining:2,current:true,queued:1,afterMain1:0,afterMain2:2});g.act({type:'RESOLVE_TOP'});
+  for(const step of ['attackers','damage','endCombat'])g.act({type:'ADVANCE_PHASE',next:true});
+  g.act({type:'ADVANCE_PHASE',next:true});assert.deepEqual(g.extraCombatStatus(),{remaining:1,current:true,queued:0,afterMain1:0,afterMain2:1});g.act({type:'RESOLVE_TOP'});
+  for(const step of ['attackers','damage','endCombat'])g.act({type:'ADVANCE_PHASE',next:true});
+  g.act({type:'ADVANCE_PHASE',next:true});assert.equal(g.state.step,'end','An extra combat created during Main 2 does not create a third main phase.');assert.equal(g.extraCombatStatus().remaining,0);roundTrip(g);
+});
 test('Moraug does not create extra combat for an opponent-turn land entry',()=>{
   const g=fixture({battlefield:['Moraug, Fury of Akoum','Walking Atlas'],hand:['Ancient Den']},{player:1});
   ability(g,'Walking Atlas','put-land');g.act({type:'RESOLVE_TOP'});choose(g,[id(g,'Ancient Den','hand')]);drain(g);

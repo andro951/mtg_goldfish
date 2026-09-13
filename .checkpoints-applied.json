@@ -98,5 +98,7 @@
   "checkpoints/108a-final-core.json": "d78ba5119759b411cec0a034350dbb95261345a3b05e0d6a230c3e0af86758e5",
   "checkpoints/109a-final-docs-version.patch": "f3b1f75d0602ebfb2c1a24f29e685dcce777de8b6600bef31047de588b0d9be5",
   "checkpoints/109b-final-tabletop-app.patch": "ca8af2bbe18a4ea121fb6ab56737718e052b368e9cca7b515fedb8416700ba8b",
-  "checkpoints/109c-final-tabletop-views.patch": "53acdd5dc91c8956d88eab03e3f6412d94a401cc1123c7d87d0f8ebad2bee332"
+  "checkpoints/109c-final-tabletop-views.patch": "53acdd5dc91c8956d88eab03e3f6412d94a401cc1123c7d87d0f8ebad2bee332",
+  "checkpoints/109d-final-engine-browser-tests.patch": "02f43e59ecde4b3066f300441b2a5548a2023508f3e9581681e0488ad7ba252a",
+  "checkpoints/109e-final-browser-release.patch": "b334c05e3f27faa58e333f3cba5c7bf27528d9485155f44ce28d78574450e129"
 }
