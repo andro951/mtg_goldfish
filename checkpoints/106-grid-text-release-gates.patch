@@ -1,0 +1,63 @@
+diff --git a/tests/browser_tabletop.py b/tests/browser_tabletop.py
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -20,0 +21,2 @@
++from ui_acceptance_grid_text import grid_resize_visual,deck_text_editor
++
+@@ -28 +30 @@
+-  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry]
++  groups=[opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+@@ -45 +47 @@
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.1');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.2');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+@@ -51 +53 @@
+-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.1','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.2','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ diff --git a/tests/make_ui_fixtures.mjs b/tests/make_ui_fixtures.mjs
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -64,0 +65,3 @@
++
++const gridCards=registry.list().filter(c=>c.candidate).slice(0,27).map(c=>c.name);
++save('grid-resize',{graveyard:gridCards,exile:gridCards,outside:gridCards});
+ diff --git a/tests/portable_test.py b/tests/portable_test.py
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -33 +33 @@
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.1')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.2')
+ diff --git a/tests/ui_acceptance_game.py b/tests/ui_acceptance_game.py
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -4 +4 @@
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.1')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.2')
+ diff --git a/tests/ui_acceptance_menus.py b/tests/ui_acceptance_menus.py
+--- a/tests/ui_acceptance_menus.py
++++ b/tests/ui_acceptance_menus.py
+@@ -4 +4 @@
+- menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==11)
++ menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==12)
+@@ -22 +22 @@
+- p.locator('.deck-advanced summary').click();p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel\n// Outside the Game\n');click(p,'deck-apply-text','.modal')
++ click(p,'dialog',extra='[data-dialog=decktext]');p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel\n// Outside the Game\n');click(p,'deck-apply-text','.modal')
+@@ -27 +27 @@
+- click(p,'restore-pool','.modal');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
++ click(p,'restore-pool','.modal');click(p,'dialog',extra='[data-dialog=deck]');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
+ diff --git a/tools/package.py b/tools/package.py
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -68 +68 @@
+-require(engine_tests >= 976 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 987 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+@@ -74,2 +74,2 @@
+-require(browser.get('uiVersion') == '1.4.1', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 435, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.2', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 466, 'Browser regression suite is incomplete.')
+ diff --git a/tools/verify-card-support.mjs b/tools/verify-card-support.mjs
+--- a/tools/verify-card-support.mjs
++++ b/tools/verify-card-support.mjs
+@@ -22 +22 @@
+-const out={version:'1.4.1',supportedNames:310,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
++const out={version:'1.4.2',supportedNames:310,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
