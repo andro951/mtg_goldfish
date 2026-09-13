@@ -1,6 +1,6 @@
 {
   "baselineCommit": "26b7e2c70835451b6554e08b3d2e6cd9e3cd7142",
-  "testedBuildSHA256": "f94ca818dc813e7e2a146b5bb6e5d0a953eb01ebae993491b94d32fb237a4191",
+  "testedBuildSHA256": "b062ea3c8cffcc7191a67259d5a24d03baa0a23192672ce95e96a793777b198f",
   "method": "Same Chromium process, independent browser contexts, 160 identical moves, eight awaited real autosaves per build. This is a synthetic comparison, not a replay of the user trace.",
   "checks": {
     "both_used_real_indexeddb": true,
@@ -13,102 +13,102 @@
   "errors": [],
   "measurements": {
     "before_1_4_5": {
-      "elapsedMs": 7690.5,
+      "elapsedMs": 7957.699999999953,
       "actions": {
-        "meanMs": 14.542499999995925,
-        "maxMs": 33.59999999997672,
+        "meanMs": 15.311250000001746,
+        "maxMs": 34.60000000009313,
         "samples": 160
       },
       "saves": {
-        "meanMs": 597.0625,
-        "maxMs": 1496.5999999999767,
+        "meanMs": 613.9625000000087,
+        "maxMs": 1531.8000000000466,
         "samples": 8
       },
       "put": {
-        "meanMs": 85.03124999999272,
-        "maxMs": 242.80000000004657,
+        "meanMs": 88.48749999998836,
+        "maxMs": 253.69999999995343,
         "samples": 16
       },
       "longTasks": [
         {
-          "start": 936.5,
-          "ms": 66
+          "start": 998.5,
+          "ms": 70
         },
         {
-          "start": 1289.9000000000233,
-          "ms": 59
+          "start": 1377.1999999999534,
+          "ms": 63
         },
         {
-          "start": 1352.9000000000233,
-          "ms": 147
+          "start": 1443.8000000000466,
+          "ms": 151
         },
         {
-          "start": 1823.6000000000931,
-          "ms": 85
+          "start": 1934.3000000000466,
+          "ms": 88
         },
         {
-          "start": 1912.6000000000931,
-          "ms": 267
+          "start": 2026.8000000000466,
+          "ms": 277
         },
         {
-          "start": 2583.20000000007,
-          "ms": 133
+          "start": 2718.0999999999767,
+          "ms": 132
         },
         {
-          "start": 2733.3000000000466,
-          "ms": 432
+          "start": 2865.6999999999534,
+          "ms": 439
         },
         {
-          "start": 3580.600000000093,
-          "ms": 198
+          "start": 3737.8000000000466,
+          "ms": 205
         },
         {
-          "start": 3789.600000000093,
-          "ms": 696
+          "start": 3953.3000000000466,
+          "ms": 720
         },
         {
-          "start": 4950.300000000047,
-          "ms": 259
+          "start": 5158,
+          "ms": 265
         },
         {
-          "start": 5216.400000000023,
-          "ms": 883
+          "start": 5431.800000000047,
+          "ms": 904
         },
         {
-          "start": 6607.5,
-          "ms": 317
+          "start": 6846.900000000023,
+          "ms": 332
         },
         {
-          "start": 6943.100000000093,
-          "ms": 1183
+          "start": 7198.699999999953,
+          "ms": 1204
         }
       ],
-      "maxHeartbeatGapMs": 1186,
+      "maxHeartbeatGapMs": 1207.5,
       "sessionBytes": 67968184,
       "historyActions": 160,
       "storageMode": "indexeddb",
       "storageStats": null,
       "buildSHA256": "9d0e1515dd0cbdf995c728e86e17959519d166745af585ad47c43b4c094e0be9"
     },
-    "after_1_4_9": {
-      "elapsedMs": 2127,
+    "after_1_4_10": {
+      "elapsedMs": 2187.4000000000233,
       "actions": {
-        "meanMs": 8.775625000000582,
-        "maxMs": 19.400000000023283,
+        "meanMs": 9.021874999994907,
+        "maxMs": 23.199999999953434,
         "samples": 160
       },
       "saves": {
-        "meanMs": 21.125,
-        "maxMs": 27.599999999976717,
+        "meanMs": 21.737499999973807,
+        "maxMs": 26.599999999976717,
         "samples": 8
       },
       "put": {
-        "meanMs": 0.07608695652110643,
-        "maxMs": 0.8999999999068677,
+        "meanMs": 0.07934782608176845,
+        "maxMs": 0.8000000000465661,
         "samples": 184
       },
       "longTasks": [],
-      "maxHeartbeatGapMs": 30.199999999953434,
+      "maxHeartbeatGapMs": 34.800000000046566,
       "sessionBytes": 3562341,
       "historyActions": 160,
       "storageMode": "indexeddb",
@@ -118,7 +118,7 @@
         "historyChunksWritten": 160,
         "duplicateSkips": 0
       },
-      "buildSHA256": "f94ca818dc813e7e2a146b5bb6e5d0a953eb01ebae993491b94d32fb237a4191"
+      "buildSHA256": "b062ea3c8cffcc7191a67259d5a24d03baa0a23192672ce95e96a793777b198f"
     }
   }
 }

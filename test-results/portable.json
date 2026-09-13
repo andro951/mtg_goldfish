@@ -1,6 +1,6 @@
 {
-  "testedBuildSHA256": "ad412dcc97712fc87382f27adeeab410ce26063c1e3fedf3fe6c385d2e2ae91c",
-  "uiVersion": "1.4.9",
+  "testedBuildSHA256": "e351f4ab7c7db34a0ee3cffe75c7ff1ae183ccfd2a859d26537bc04528acc0f6",
+  "uiVersion": "1.4.10",
   "mode": "isolated single-file Chromium with offline networking",
   "checksPassed": 8,
   "checks": [
