@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def opening(p):
- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.2')
+ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.3')
  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
@@ -29,12 +29,18 @@ def opening(p):
  check('second London mulligan selects one bottom card and keeps six',state(p,'state.zones.hand.length')==6)
 
 def mana(p):
- fixture(p,'mana');r=obj(p,'Razortide Bridge');b=card(p,r['id'],'battlefield').bounding_box();x,y=b['x']+b['width']*.65,b['y']+b['height']*.45;p.mouse.click(x,y)
+ fixture(p,'mana');original=checksum(p);r=obj(p,'Razortide Bridge');b=card(p,r['id'],'battlefield').bounding_box();x,y=b['x']+b['width']*.65,b['y']+b['height']*.45;p.mouse.click(x,y)
  check('dual land opens only a tiny symbol palette',p.locator('.mana-window .mana-choice').count()==2 and p.locator('.mana-window').bounding_box()['height']<=55)
  check('palette has no visible text or payment controls',p.locator('.mana-window').inner_text().strip()=='' and p.locator('.mana-window .float-header,.mana-window input').count()==0)
  popup=p.locator('.mana-window').bounding_box();check('mana palette opens beside the clicked source',abs(popup['x']-x)<130 and abs(popup['y']-y)<80)
  check('mana colors have real local vector symbols',p.locator('.mana-choice svg').count()==2)
- shot(p,'02-mana-symbols.png');choose_option(p,'U')
+ surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
+ check('clicking empty table outside mana symbols dismisses palette without activating the source',p.locator('.mana-window').count()==0 and checksum(p)==original and not obj(p,'Razortide Bridge')['tapped'])
+ card(p,r['id'],'battlefield').click();popup=p.locator('.mana-window').bounding_box();p.mouse.click(popup['x']+2,popup['y']+2)
+ check('clicking palette padding also dismisses because only mana symbols are choices',p.locator('.mana-window').count()==0 and checksum(p)==original and not obj(p,'Razortide Bridge')['tapped'])
+ card(p,r['id'],'battlefield').click();den=obj(p,'Ancient Den');card(p,den['id'],'battlefield').click()
+ check('outside click is consumed instead of also tapping the card underneath',p.locator('.mana-window').count()==0 and not obj(p,'Razortide Bridge')['tapped'] and not obj(p,'Ancient Den')['tapped'] and checksum(p)==original)
+ card(p,r['id'],'battlefield').click();shot(p,'02-mana-symbols.png');choose_option(p,'U')
  check('one symbol click taps source and immediately adds blue',obj(p,'Razortide Bridge')['tapped'] and state(p,'state.players[0].mana.U')==1 and pending(p) is None)
  rb=card(p,r['id'],'battlefield').bounding_box();check('tapped card is physically sideways',rb['width']>rb['height'] and abs(rb['width']-b['height'])<.1)
  check('clockwise tapping keeps the physical bottom-right at the upright bottom-left anchor',abs(rb['x']-b['x'])<.1 and abs(rb['y']+rb['height']-b['y']-b['height'])<.1)
@@ -56,8 +62,12 @@ def payments(p):
  before=checksum(p);p.locator('#pay-C').fill('0');click(p,'pay','[data-floating="decision"]');check('invalid payment is rejected atomically',checksum(p)==before)
  # Close inspection, but leave payment open; mana sources stay clickable.
  if p.locator('.inspector-window').count():click(p,'close-inspector')
- amber=obj(p,'Mox Amber');card(p,amber['id'],'battlefield').click();check('clicking Amber during casting opens the same tiny color palette',p.locator('.mana-window').count()==1)
- choose_option(p,'U');check('mana choice returns to parent payment rather than finishing/cancelling cast',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1)
+ amber=obj(p,'Mox Amber');payment_cursor=p.evaluate('astra.engine.cursor');card(p,amber['id'],'battlefield').click();check('clicking Amber during casting opens the same tiny color palette',p.locator('.mana-window').count()==1)
+ surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
+ check('outside click cancels only nested mana color choice and restores parent payment',p.locator('.mana-window').count()==0 and pending(p)['kind']=='payment' and not obj(p,'Mox Amber')['tapped'] and p.evaluate('astra.engine.cursor')==payment_cursor and obj(p,'The One Ring','hand') is not None)
+ card(p,amber['id'],'battlefield').click();choose_option(p,'U');check('mana choice returns to parent payment rather than finishing/cancelling cast',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1)
+ bridge=obj(p,'Razortide Bridge');card(p,bridge['id'],'battlefield').click();surface=p.locator('[data-surface="battlefield"]').bounding_box();p.mouse.click(surface['x']+surface['width']-12,surface['y']+surface['height']-12)
+ check('dismissing another mana palette preserves mana already produced for parent payment',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.U')==1 and not obj(p,'Razortide Bridge')['tapped'])
  vault=obj(p,'Mana Vault');card(p,vault['id'],'battlefield').click();check('direct mana source remains usable during payment',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.C')==3)
  shot(p,'03-payment-with-table.png');pay(p);p.wait_for_function("()=>Object.values(astra.engine.state.instances).some(o=>o.zone==='battlefield'&&astra.engine.definition(o).name==='The One Ring')");p.wait_for_function('()=>!astra.engine.state.stack.length&&!astra.engine.state.pending')
  check('default automatic resolution casts and resolves Ring without extra Resolve clicks',obj(p,'The One Ring','battlefield') is not None)

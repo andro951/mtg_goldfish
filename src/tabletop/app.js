@@ -1,4 +1,5 @@
 import { cardActions } from './card-actions.js';
+import { isManaColorChoice } from './mana-choice.js';
 import { installTargetLinks } from './target-links.js';
 import { createProgramController } from './program-controller.js';
 import { futurePrograms,programId } from './programs.js';
@@ -377,8 +378,33 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='debug-shuffle')return run({type:'DEBUG_SHUFFLE'});
 }
 interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
+let outsideManaDismiss=null;
+function manaPickerIsOpen(){return !!g&&isManaColorChoice(g.state.pending)&&!!floats.querySelector('.mana-window');}
+// A mana palette is transient. A primary pointer press anywhere except an actual
+// mana symbol cancels only that uncommitted mana activation. During a spell
+// payment, the core CANCEL action restores the parent payment and previously
+// produced mana. Consume the dismissing click so it cannot also tap/move the
+// thing underneath the palette by accident.
+document.addEventListener('pointerdown',e=>{
+ if(e.button!==0||!manaPickerIsOpen()||e.target.closest('.mana-choice'))return;
+ e.preventDefault();e.stopImmediatePropagation();
+ outsideManaDismiss={pointerId:e.pointerId};
+ run({type:'CANCEL'});
+},true);
+document.addEventListener('pointerup',e=>{
+ if(!outsideManaDismiss||outsideManaDismiss.pointerId!==e.pointerId)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ // A click may or may not be synthesized after the popup redraw. Keep the
+ // guard through this event turn only, then discard it so the next real click
+ // can never be swallowed by a stale dismissal.
+ const token=outsideManaDismiss;setTimeout(()=>{if(outsideManaDismiss===token)outsideManaDismiss=null;},0);
+},true);
+document.addEventListener('pointercancel',e=>{if(outsideManaDismiss?.pointerId===e.pointerId)outsideManaDismiss=null;},true);
 document.addEventListener('pointerdown',e=>{const zone=e.target.closest('[data-surface]')?.dataset.surface;if(zone)ui.activeZone=zone;});
-document.addEventListener('click',e=>{handleClick(e).catch(error=>{toast(error.message,true);if(!(error instanceof RuleError))console.error(error);});});
+document.addEventListener('click',e=>{
+ if(outsideManaDismiss){outsideManaDismiss=null;e.preventDefault();e.stopImmediatePropagation();return;}
+ handleClick(e).catch(error=>{toast(error.message,true);if(!(error instanceof RuleError))console.error(error);});
+},true);
 document.addEventListener('dragstart',e=>{
  const row=e.target.closest?.('[data-order-id]');if(row){ui.orderDrag=row.dataset.orderId;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',ui.orderDrag);return;}
  const el=e.target.closest?.('[data-deck-drag]');if(!el||ui.modal!=='deck')return;
@@ -449,7 +475,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.2'};
+window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.3'};
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
