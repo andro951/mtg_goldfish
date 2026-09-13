@@ -1,0 +1,36 @@
+diff --git a/src/tabletop/grid.js b/src/tabletop/grid.js
+--- a/src/tabletop/grid.js
++++ b/src/tabletop/grid.js
+@@ -24 +24 @@
+-export function gridLayout(objects, previous=[], width=290,height=420) {
++export function gridLayout(objects, previous=[], width=290,height=420,fixedColumns=null) {
+@@ -33 +33,5 @@
+-  const indices=new Map(slots.map((k,i)=>[k,i])),shape=bestGridShape(indices.size,width,height);
++  // Holes still occupy cells. Map.size collapses repeated nulls and can choose
++  // too few rows after several cards have been detached.
++  const indices=new Map(slots.map((k,i)=>[k,i]).filter(([k])=>k!==null));
++  const shape=bestGridShape(slots.length,width,height);
++  if(Number.isInteger(fixedColumns)&&fixedColumns>0){shape.columns=fixedColumns;shape.rows=Math.ceil(slots.length/fixedColumns);}
+ diff --git a/src/tabletop/preferences.js b/src/tabletop/preferences.js
+--- a/src/tabletop/preferences.js
++++ b/src/tabletop/preferences.js
+@@ -5 +5 @@
+-  cameras:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,manualControls:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
++  cameras:{},gridViews:{},popups:{},modeDefaults:{},holdPriority:false,reserveAccess:true,orderTriggers:true,autoAccept:false,manualControls:false,popupSizes:{},playerDefaults:{},savedPrograms:{},deckText:null};}
+@@ -10 +10 @@
+-  p.dockWidth=clamp(value.dockWidth??p.dockWidth,170,900);
++  p.dockWidth=clamp(value.dockWidth??p.dockWidth,170,10000);
+@@ -16,0 +17,7 @@
++  // Persist the geometry that the saved camera was laid out for. Old sessions
++  // lacking it get one responsive refit; ordinary renders keep a user's zoom.
++  for(const zone of ['graveyard','exile','outside']){
++    const v=value.gridViews?.[zone];
++    if(v&&Number.isFinite(v.width)&&Number.isFinite(v.height)&&Number.isInteger(v.columns)&&v.columns>0&&v.columns<=5000)
++      p.gridViews[zone]={width:clamp(v.width,20,10000),height:clamp(v.height,20,10000),columns:v.columns};
++  }
+ diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
+--- a/src/tabletop/interactions.js
++++ b/src/tabletop/interactions.js
+@@ -161 +161 @@
+-      if(key==='dock')api.prefs.dockWidth=clamp(api.prefs.dockWidth+(e.key==='ArrowLeft'?amount:-amount),170,900);
++      if(key==='dock')api.prefs.dockWidth=clamp(api.prefs.dockWidth+(e.key==='ArrowLeft'?amount:-amount),170,Math.max(170,innerWidth-api.prefs.sidebarWidth-150));
