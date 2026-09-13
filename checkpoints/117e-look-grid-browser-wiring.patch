@@ -1,0 +1,47 @@
+diff --git a/src/tabletop/preferences.js b/src/tabletop/preferences.js
+--- a/src/tabletop/preferences.js
++++ b/src/tabletop/preferences.js
+@@ -22 +22 @@
+-      p.gridViews[zone]={width:clamp(v.width,20,10000),height:clamp(v.height,20,10000),columns:v.columns,...(typeof v.members==='string'&&v.members.length<=150000?{members:v.members}:{})};
++      p.gridViews[zone]={width:clamp(v.width,20,10000),height:clamp(v.height,20,10000),columns:v.columns,...(typeof v.members==='string'&&v.members.length<=150000?{members:v.members}:{}),...(zone==='workspace'&&typeof v.episode==='string'&&v.episode.length<1000?{episode:v.episode}:{})};
+diff --git a/tests/browser_tabletop.py b/tests/browser_tabletop.py
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -29,2 +29,4 @@
+ 
++from ui_acceptance_148 import look_popup,arrival_grids
++
+ server=None
+@@ -36,3 +38,3 @@
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+diff --git a/tests/make_ui_fixtures.mjs b/tests/make_ui_fixtures.mjs
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -106 +106,8 @@
+ }
++
++// Floating look surfaces and grids that grow from an initially empty zone.
++save('look-seeker',{battlefield:['Sarinth Steelseeker','Azusa, Lost but Seeking'],hand:['Ancient Den','Seat of the Synod','Tree of Tales'],libraryActive:['Great Furnace','Walking Atlas','Mox Opal'],graveyard:['Mox Amber','Scroll Rack']});
++save('look-scry',{hand:['Simulacrum Synthesizer'],libraryActive:['Ancient Den','Walking Atlas','Mox Amber']},{mana:{C:2,U:1}});
++save('look-surveil',{battlefield:['Golbez, Crystal Collector'],hand:['Ancient Den'],libraryActive:['Walking Atlas','Great Furnace']});
++save('growing-graveyard',{battlefield:Array(12).fill('Grinding Station'),libraryActive:Array(60).fill('Walking Atlas')});
++save('growing-exile',{battlefield:Array(12).fill('Scrabbling Claws'),graveyard:Array(28).fill('Walking Atlas'),hand:[],libraryActive:[]});
+diff --git a/tests/ui_acceptance_effects.py b/tests/ui_acceptance_effects.py
+--- a/tests/ui_acceptance_effects.py
++++ b/tests/ui_acceptance_effects.py
+@@ -28,7 +28,9 @@
+  p.locator('.inspector-window .rules-text summary').click();check('ordered-card inspector exposes full rules text',len(p.locator('.inspector-window .oracle').inner_text())>0);click(p,'close-inspector')
+- check('Look icon exists only while multi-card workspace is present',p.locator('[data-action=zone][data-zone=workspace]').count()==1)
+- p.locator('[data-action=zone][data-zone=workspace]').click();check('Look workspace opens beside rather than instead of battlefield',p.locator('[data-surface=battlefield]').count()==1 and p.locator('[data-surface=workspace]').count()==1)
++ check('Look toggle is available during a multi-card look',p.locator('[data-action=zone][data-zone=workspace]').count()==1)
++ check('Look workspace opens automatically above rather than replacing battlefield',p.locator('[data-surface=battlefield]').count()==1 and p.locator('.workspace-window [data-surface=workspace]').count()==1)
++ p.locator('[data-action=zone][data-zone=workspace]').click();check('Look toggle hides its popup without cancelling card ordering',p.locator('[data-surface=workspace]').count()==0 and pending(p).get('ordered'))
++ p.locator('[data-action=zone][data-zone=workspace]').click();check('Look toggle reopens its current cards',p.locator('[data-surface=workspace] .face').count()==3)
+  p.locator('[data-action=order][data-index="0"][data-direction="1"]').click();click(p,'confirm-choice','[data-floating=decision]');settle(p)
+  check('Top keeps hand size and applies top-first order',state(p,'state.zones.hand.length')==hand and state(p,'state.zones.libraryActive[0]')==old[1])
+- check('completed Look workspace closes and returns space to battlefield',p.locator('[data-surface=workspace]').count()==0 and p.locator('[data-zone=workspace]').count()==0)
++ check('completed Look workspace closes while its toolbar toggle remains available',p.locator('[data-surface=workspace]').count()==0 and p.locator('.zone-tools [data-zone=workspace]').get_attribute('data-count')=='0')
+  activate(p,'Scroll Rack','rack');pay(p);click(p,'resolve','.stack-window');choose_cards(p,[obj(p,'Ancient Den','hand')['id']]);settle(p)
