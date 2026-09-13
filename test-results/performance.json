@@ -1,0 +1,124 @@
+{
+  "baselineCommit": "26b7e2c70835451b6554e08b3d2e6cd9e3cd7142",
+  "testedBuildSHA256": "945beffc4a14ec30db0627ad70328e38eaf5487dcb7bf79dd6b1dc8907d63f08",
+  "method": "Same Chromium process, independent browser contexts, 160 identical moves, eight awaited real autosaves per build. This is a synthetic comparison, not a replay of the user trace.",
+  "checks": {
+    "both_used_real_indexeddb": true,
+    "same_number_of_actions": true,
+    "new_save_at_least_ten_times_smaller": true,
+    "new_mean_save_at_least_twice_as_fast": true,
+    "history_written_once": true,
+    "no_browser_errors": true
+  },
+  "errors": [],
+  "measurements": {
+    "before_1_4_5": {
+      "elapsedMs": 7518.899999999994,
+      "actions": {
+        "meanMs": 13.971875000000546,
+        "maxMs": 31,
+        "samples": 160
+      },
+      "saves": {
+        "meanMs": 588.6375000000007,
+        "maxMs": 1505.7999999999884,
+        "samples": 8
+      },
+      "put": {
+        "meanMs": 75.64999999999964,
+        "maxMs": 200.79999999998836,
+        "samples": 16
+      },
+      "longTasks": [
+        {
+          "start": 916.3999999999942,
+          "ms": 71
+        },
+        {
+          "start": 1268.7000000000116,
+          "ms": 60
+        },
+        {
+          "start": 1332.3000000000175,
+          "ms": 148
+        },
+        {
+          "start": 1797.8999999999942,
+          "ms": 87
+        },
+        {
+          "start": 1888.6000000000058,
+          "ms": 268
+        },
+        {
+          "start": 2542.600000000006,
+          "ms": 127
+        },
+        {
+          "start": 2686.5,
+          "ms": 421
+        },
+        {
+          "start": 3513.5,
+          "ms": 197
+        },
+        {
+          "start": 3720.100000000006,
+          "ms": 670
+        },
+        {
+          "start": 4829.200000000012,
+          "ms": 253
+        },
+        {
+          "start": 5091.100000000006,
+          "ms": 839
+        },
+        {
+          "start": 6412.5,
+          "ms": 317
+        },
+        {
+          "start": 6743.899999999994,
+          "ms": 1189
+        }
+      ],
+      "maxHeartbeatGapMs": 1193.2000000000116,
+      "sessionBytes": 67968184,
+      "historyActions": 160,
+      "storageMode": "indexeddb",
+      "storageStats": null,
+      "buildSHA256": "9d0e1515dd0cbdf995c728e86e17959519d166745af585ad47c43b4c094e0be9"
+    },
+    "after_1_4_6": {
+      "elapsedMs": 2038.7999999999884,
+      "actions": {
+        "meanMs": 8.336874999999964,
+        "maxMs": 19.800000000017462,
+        "samples": 160
+      },
+      "saves": {
+        "meanMs": 20.774999999997817,
+        "maxMs": 27.300000000017462,
+        "samples": 8
+      },
+      "put": {
+        "meanMs": 0.07608695652110643,
+        "maxMs": 0.7999999999883585,
+        "samples": 184
+      },
+      "longTasks": [],
+      "maxHeartbeatGapMs": 33.5,
+      "sessionBytes": 3562341,
+      "historyActions": 160,
+      "storageMode": "indexeddb",
+      "storageStats": {
+        "writes": 9,
+        "chunksWritten": 170,
+        "historyChunksWritten": 160,
+        "duplicateSkips": 0
+      },
+      "buildSHA256": "945beffc4a14ec30db0627ad70328e38eaf5487dcb7bf79dd6b1dc8907d63f08"
+    }
+  }
+}

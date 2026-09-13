@@ -1,0 +1,1241 @@
+[
+  {
+    "name": "Clock of Omens",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/5d0f4665-aa10-4251-b590-129b59274fb3.jpg"
+  },
+  {
+    "name": "Urza, Lord High Artificer",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e87906d2-db1a-4e19-b910-adb4eb339945.jpg"
+  },
+  {
+    "name": "Empowered Autogenerator",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6832f9e2-294a-44a2-8af9-eb16ccfdfc36.jpg"
+  },
+  {
+    "name": "Elven Raft-Steerer",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/d0f62148-1015-49b8-b61f-a4332325a6b0.jpg"
+  },
+  {
+    "name": "Walking Atlas",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/855a4837-7fc8-4b97-afbd-daa88e322c89.jpg"
+  },
+  {
+    "name": "Nissa, Resurgent Animist",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c1fc5923-c3cd-448a-98d1-c154661c2812.jpg"
+  },
+  {
+    "name": "Sakura-Tribe Scout",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0c319f45-cb0f-4641-acd8-145768acb3fc.jpg"
+  },
+  {
+    "name": "Goblin Welder",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/9fc28e1f-f4ea-4bf8-9442-a36dba3b3b29.jpg"
+  },
+  {
+    "name": "PuPu UFO",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/b1412eda-e3a4-41b2-932e-795a0ba0f7f8.jpg"
+  },
+  {
+    "name": "Tireless Provisioner",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ab8d5f5c-1976-4f77-8ed2-8d28ee666741.jpg"
+  },
+  {
+    "name": "Radiant Lotus",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/307be184-176a-40a8-944c-48aa00cfdd29.jpg"
+  },
+  {
+    "name": "Codex Shredder",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ef7b11ab-24e7-4e7c-91a7-920bade6e60b.jpg"
+  },
+  {
+    "name": "Displacer Kitten",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/09ef446c-a13d-49d9-a94c-cd5f5a2d440b.jpg"
+  },
+  {
+    "name": "Retreat to Coralhelm",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c450f6b7-bb2a-4b8c-aec7-d27555137b63.jpg"
+  },
+  {
+    "name": "Sensei's Divining Top",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/13575cf9-65c1-4861-b21e-eb2155e07766.jpg"
+  },
+  {
+    "name": "Krark-Clan Ironworks",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/68e1f7e0-a9b3-437f-8086-0c0cb85f2880.jpg"
+  },
+  {
+    "name": "Tezzeret, Cruel Captain",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0eb11b2d-a397-48da-a0f3-9f0f83f42282.jpg"
+  },
+  {
+    "name": "Mox Amber",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/7a43bd27-fdd8-41f0-9bc4-92568f3408f1.jpg"
+  },
+  {
+    "name": "The Reality Chip",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/751f22bc-bcea-4213-a37b-b5f72448a4c4.jpg"
+  },
+  {
+    "name": "Tezzeret the Seeker",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/4aeafdf3-7828-4114-8c74-3bd46357caec.jpg"
+  },
+  {
+    "name": "Faith's Reward",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/2fbb6703-3517-4117-9ca4-45e90a6216ce.jpg"
+  },
+  {
+    "name": "Six",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/dbcbdf37-c40f-4068-b4a7-a849cab1056c.jpg"
+  },
+  {
+    "name": "Gerrard's Hourglass Pendant",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/01591d42-4ef8-471d-beda-d31186bba6a6.jpg"
+  },
+  {
+    "name": "Mox Opal",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/de2440de-e948-4811-903c-0bbe376ff64d.jpg"
+  },
+  {
+    "name": "Fateful Discovery",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/72c6174c-fa2c-4ff2-b76e-eb6e890e97c9.jpg"
+  },
+  {
+    "name": "Open the Vaults",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/1e9c473e-bd65-4e1f-b2ab-cac58dc581c9.jpg"
+  },
+  {
+    "name": "Esoteric Duplicator",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0752fe67-9b8a-42c0-90e3-087d426b2f3b.jpg"
+  },
+  {
+    "name": "Cultivator Colossus",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/4d8505d3-c8a1-4850-95d4-5ddb8ad49770.jpg"
+  },
+  {
+    "name": "Kodama of the East Tree",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/cb1afab6-b9c8-4b9c-840b-24106523a783.jpg"
+  },
+  {
+    "name": "Wake the Past",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/34143cfa-aa48-481c-af42-1240af174b80.jpg"
+  },
+  {
+    "name": "Moraug, Fury of Akoum",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6288c0cb-cf32-4ae9-abf0-104ec71654fa.jpg"
+  },
+  {
+    "name": "Phantom Train",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a0c4eb78-bee0-42c6-ab1e-64bacde87960.jpg"
+  },
+  {
+    "name": "Myr Battlesphere",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c53ba31a-ba27-4e17-9a92-311acb1cab29.jpg"
+  },
+  {
+    "name": "Emry, Lurker of the Loch",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/da3e7d3d-2ca0-40c3-9602-fca37c92f507.jpg"
+  },
+  {
+    "name": "Valakut Exploration",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/d6861319-ae16-4e6c-af87-a264f667d694.jpg"
+  },
+  {
+    "name": "Golbez, Crystal Collector",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/533d5bf9-0912-451f-a3f4-3842b0a75b1d.jpg"
+  },
+  {
+    "name": "Gandalf, Shadow's Foe",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6760d7d1-098e-4131-8824-53e5427d047b.jpg"
+  },
+  {
+    "name": "Scapeshift",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c235015e-a7a9-4f8d-bf4a-cf68b3847f83.jpg"
+  },
+  {
+    "name": "Sarinth Steelseeker",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/dacf7f0d-9ce2-4e28-98a5-e7ec270a4c83.jpg"
+  },
+  {
+    "name": "Portal to Phyrexia",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/301d1d8e-d3fc-4010-8b29-4724fa0b31cd.jpg"
+  },
+  {
+    "name": "Repurposing Bay",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/1787ac2f-762d-4f3a-b7e5-12db6d3d470d.jpg"
+  },
+  {
+    "name": "Crucible of Worlds",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/33c722cf-b4bf-431f-aefd-ee96241a7fbf.jpg"
+  },
+  {
+    "name": "Spine of Ish Sah",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/02f062f5-8012-4440-ac12-49fc49822106.jpg"
+  },
+  {
+    "name": "The Gitrog Monster",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a5e54d2b-aad8-4ddd-af4b-13668913762b.jpg"
+  },
+  {
+    "name": "Master Transmuter",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/da46786e-28df-4638-ab3d-121011d2f150.jpg"
+  },
+  {
+    "name": "Uthros Research Craft",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e1c9783a-1d1b-40d7-872e-0ca11b229ce6.jpg"
+  },
+  {
+    "name": "Trade Routes",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/120fa67e-e5e0-4c23-9a78-d6171d357aee.jpg"
+  },
+  {
+    "name": "Oswald Fiddlebender",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/dbc9ea19-cf68-41d3-88a8-b5ab8df75c5a.jpg"
+  },
+  {
+    "name": "Grinding Station",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0fcd476f-4db8-4293-9388-1678a0043c9e.jpg"
+  },
+  {
+    "name": "The Seriema",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a6bcec1f-f515-4e63-9e84-8eb04cc582ff.jpg"
+  },
+  {
+    "name": "Transplant Theorist",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/4a60db66-0347-4efc-8507-ab7ed8d984fe.jpg"
+  },
+  {
+    "name": "Crystal Skull, Isu Spyglass",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/b1f8eb7b-7e01-4bf8-a557-64e16a6052af.jpg"
+  },
+  {
+    "name": "Aesi, Tyrant of Gyre Strait",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6511f317-bd38-46d0-b800-7125a3f420da.jpg"
+  },
+  {
+    "name": "Nahiri's Lithoforming",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/888e711a-1251-4704-8ef1-b4b98ec54b5a.jpg"
+  },
+  {
+    "name": "Lightning Greaves",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ca204b66-8d0c-431a-8d34-282f7c2d17da.jpg"
+  },
+  {
+    "name": "Krang, Master Mind",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/52562194-4a97-40d2-aa73-7827f7834f2f.jpg"
+  },
+  {
+    "name": "Metalwork Colossus",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/64ffe529-ba53-48ec-8af1-b046fbd1f0cc.jpg"
+  },
+  {
+    "name": "Panther Robot",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/89115ed5-95bf-4b81-b352-5481c3addbed.jpg"
+  },
+  {
+    "name": "The Cauldron of Eternity",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a7308a1f-ec46-478e-86ea-33b2ebbd995f.jpg"
+  },
+  {
+    "name": "Krang, Utrom Warlord",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/2d56a491-b3eb-4f3e-82ab-981d3036c45d.jpg"
+  },
+  {
+    "name": "Lumra, Bellow of the Woods",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/97a84e9d-bfc4-4ca2-b1e8-908dba56ccdb.jpg"
+  },
+  {
+    "name": "Birthing Pod",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/f8b9dd54-0837-47f4-ad14-7a0322d46d5f.jpg"
+  },
+  {
+    "name": "Elvish Reclaimer",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/94f01534-7bb3-4b1e-8f77-e84156408686.jpg"
+  },
+  {
+    "name": "Smelting Vat",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/71d2a0fe-5426-4fa3-85a4-564c37184996.jpg"
+  },
+  {
+    "name": "Metalworker",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/9ed9accb-9f0c-40fa-aeea-2d1e1c9d1bd1.jpg"
+  },
+  {
+    "name": "Icetill Explorer",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/109cdefd-e8cc-4ac7-b6ba-2cfdef8d780f.jpg"
+  },
+  {
+    "name": "Amareth, the Lustrous",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8cccc8d0-bdd8-4853-8330-6f6a57695d11.jpg"
+  },
+  {
+    "name": "Scroll Rack",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/648bd03d-247e-4d6f-87a9-12a67688cbf5.jpg"
+  },
+  {
+    "name": "Chromatic Lantern",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/539f5396-d99a-417d-a84c-dff7930b5900.jpg"
+  },
+  {
+    "name": "Iron Man, Titan of Innovation",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/67ab82de-1167-42f5-90bd-21c63edcc712.jpg"
+  },
+  {
+    "name": "Simic Growth Chamber",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/046f5783-cc7b-416a-8cf6-2bcef9c2cc1a.jpg"
+  },
+  {
+    "name": "Selesnya Sanctuary",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/00ef1c55-dea1-4564-bd57-66de86cba4df.jpg"
+  },
+  {
+    "name": "Golgari Rot Farm",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/1b301478-b14f-4ef8-94e6-9647d582eabe.jpg"
+  },
+  {
+    "name": "Dimir Aqueduct",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/378a1d57-e2f1-4b84-9692-1564602e9e99.jpg"
+  },
+  {
+    "name": "Gruul Turf",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/657243dd-e479-4f4b-99d2-09b55d833a35.jpg"
+  },
+  {
+    "name": "Azorius Chancery",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/189fc8f4-17ac-4f1d-82c8-8401445bdaf4.jpg"
+  },
+  {
+    "name": "Izzet Boilerworks",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/1cb9d94a-3039-4f2e-8fcc-6996f9a45f74.jpg"
+  },
+  {
+    "name": "Razortide Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6cb37ac1-dd11-4a8c-bca5-ef44d828059f.jpg"
+  },
+  {
+    "name": "Silverbluff Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/081bfd50-a436-463b-9d2c-5bc8a32b387c.jpg"
+  },
+  {
+    "name": "Thornglint Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/99720c65-be96-4220-8ed4-720660bf6928.jpg"
+  },
+  {
+    "name": "Inventors' Fair",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/91d4a5fe-fd6d-4b14-a63f-61b4d0ecd9c4.jpg"
+  },
+  {
+    "name": "Oboro, Palace in the Clouds",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/645fb11b-d684-4bec-8532-8fa97e8f7b28.jpg"
+  },
+  {
+    "name": "Fomori Vault",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/622a53bd-d894-422c-a606-7126041afa02.jpg"
+  },
+  {
+    "name": "Seat of the Synod",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/39451b4d-cd7a-40da-b457-cb51b609173f.jpg"
+  },
+  {
+    "name": "Tanglepool Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/29cd8a7c-108a-43d1-af63-f603a27c24f2.jpg"
+  },
+  {
+    "name": "Vault of Whispers",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/09496421-74e4-466a-9546-56f2a0c8eef4.jpg"
+  },
+  {
+    "name": "Darksteel Citadel",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc.jpg"
+  },
+  {
+    "name": "Drossforge Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/44b83535-fdbf-4307-bf53-ca20470a768d.jpg"
+  },
+  {
+    "name": "Scene of the Crime",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ba11a517-1dbd-4797-9f5e-46ce0f6c77c0.jpg"
+  },
+  {
+    "name": "Urza's Saga",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/4c6a0c30-b547-4eff-8ff4-0ca25803c076.jpg"
+  },
+  {
+    "name": "Ancient Den",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/02f16726-f2f6-4943-b71a-93f8e26251d3.jpg"
+  },
+  {
+    "name": "Mishra's Workshop",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ba284fe6-bb29-455c-8321-9714a0cdc05e.jpg"
+  },
+  {
+    "name": "Rustvale Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a3faf70d-c034-4692-9e92-1922029e3852.jpg"
+  },
+  {
+    "name": "Field of the Dead",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/aa959340-c869-4caa-92c7-572bd8d23eef.jpg"
+  },
+  {
+    "name": "Treasure Vault",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3c43efd6-b1a8-452c-ae20-9a936c3340ab.jpg"
+  },
+  {
+    "name": "Mistvault Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/33ee23bc-6327-4a54-a704-dfd83be36bb5.jpg"
+  },
+  {
+    "name": "Darkmoss Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/2065cada-4078-41c4-9e06-2460d2a2e8ee.jpg"
+  },
+  {
+    "name": "Tree of Tales",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8b4aa971-b919-4750-8388-33d4f42c9280.jpg"
+  },
+  {
+    "name": "Goldmire Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c9b7ea9c-3bcb-4538-aa25-cdb82a52037e.jpg"
+  },
+  {
+    "name": "Power Depot",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/64687880-03f9-4f38-985b-1027c797e33f.jpg"
+  },
+  {
+    "name": "Great Furnace",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/f4819061-b0b5-48ab-af7b-6525c3d2eab7.jpg"
+  },
+  {
+    "name": "Slagwoods Bridge",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e040a8e6-b90c-42d1-a1b1-771d954c61ab.jpg"
+  },
+  {
+    "name": "The World Tree",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3437d504-bf62-4c27-b15f-f6330182ff7e.jpg"
+  },
+  {
+    "name": "Academy Ruins",
+    "pool": "main",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a3da7d5b-2c2b-45fe-b9c5-413b8c8fc0a2.jpg"
+  },
+  {
+    "name": "The Wandering Minstrel",
+    "pool": "command",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e6e6e3d2-f2fb-46a1-8798-13a2f2efe8cc.jpg"
+  },
+  {
+    "name": "Aetherworks Marvel",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/470ec98e-120c-446d-ade6-7d80aa836b55.jpg"
+  },
+  {
+    "name": "Llanowar Scout",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3bdc9211-8eff-4b30-8d6f-d26f4087f77f.jpg"
+  },
+  {
+    "name": "The One Ring",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3aa83ed2-f48b-4ce6-a614-2c54ddf50538.jpg"
+  },
+  {
+    "name": "Ancient Greenwarden",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3bcf090c-e890-4a9f-a8aa-6079e4ec9947.jpg"
+  },
+  {
+    "name": "Budoka Gardener",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/cb952c81-c7bb-4670-938d-296d35551986.jpg"
+  },
+  {
+    "name": "Azusa, Lost but Seeking",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6c2c8bf3-9bf8-4a86-89d3-3bb36260dc51.jpg"
+  },
+  {
+    "name": "Thought Monitor",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/9deded8b-cec4-4ede-a50b-131404d456d4.jpg"
+  },
+  {
+    "name": "Unwinding Clock",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/153fac93-5d2b-4348-a468-a5eef6a12da3.jpg"
+  },
+  {
+    "name": "Aftermath Analyst",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/374e54d8-8e73-4268-9dde-c28c77bbbf32.jpg"
+  },
+  {
+    "name": "Skyshroud Ranger",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8f47a230-7500-4afb-97cd-dbd444c307c8.jpg"
+  },
+  {
+    "name": "Squandered Resources",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/620d0572-6d22-43e2-83a9-000e605c8a2b.jpg"
+  },
+  {
+    "name": "Expedition Map",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8fcf50cd-e6d0-4516-850f-d42ee75dcc3a.jpg"
+  },
+  {
+    "name": "Goblin Engineer",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c1d6cce8-085f-42cb-8b0c-b6fbbf88b16a.jpg"
+  },
+  {
+    "name": "Zimone and Dina",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/5bc66b18-22ac-4138-b527-fa711116e298.jpg"
+  },
+  {
+    "name": "Seedborn Muse",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/463865bc-087e-477b-9e86-84e77f1ad931.jpg"
+  },
+  {
+    "name": "Lotus Cobra",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/8ad91f64-ccab-4edc-bd54-b2ee9267d614.jpg"
+  },
+  {
+    "name": "Scaled Herbalist",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6fd9ece7-366f-45c7-a8ea-edb4ca637a06.jpg"
+  },
+  {
+    "name": "Grim Monolith",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/229d6627-1292-4ae1-8849-b0f956fa6540.jpg"
+  },
+  {
+    "name": "Tideforce Elemental",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/bda87ca2-91d0-48fa-bb82-a3396f0438ac.jpg"
+  },
+  {
+    "name": "Eldritch Evolution",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0f77c0c9-4dc4-489a-b547-e93287c4d1a5.jpg"
+  },
+  {
+    "name": "Scaretiller",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e4b32e47-5484-4ee9-bac3-4ba37558a56a.jpg"
+  },
+  {
+    "name": "Mana Vault",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/736892cb-a34b-4bb9-b56c-e26e3db207a2.jpg"
+  },
+  {
+    "name": "Neoform",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/420c6dcf-966d-4a4c-a0ef-23037ab8b325.jpg"
+  },
+  {
+    "name": "Second Sunrise",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/15cef63b-903e-4f1b-a128-e59157e07c36.jpg"
+  },
+  {
+    "name": "Redress Fate",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e8ff6780-5f22-42fa-a7c1-7406e8203063.jpg"
+  },
+  {
+    "name": "Traveling Chocobo",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/2e5675d3-3fb0-43b5-a65c-95aacbe48bf9.jpg"
+  },
+  {
+    "name": "Urza, Prince of Kroog",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/6a448862-e8d8-4a08-8e3d-5460afa29b4d.jpg"
+  },
+  {
+    "name": "Quicksmith Genius",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/bca0c136-3845-4cb9-8d80-f504a01ad50a.jpg"
+  },
+  {
+    "name": "Manabond",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/482006a0-bb2a-4533-891b-2195da5e0f01.jpg"
+  },
+  {
+    "name": "Pitiless Carnage",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/186bfdac-ce9c-476f-89b6-ef467487fca5.jpg"
+  },
+  {
+    "name": "Jhoira, Weatherlight Captain",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c803b788-4213-4fab-b841-7e5bbf66088e.jpg"
+  },
+  {
+    "name": "Myr Turbine",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/b9043dcd-234f-4144-80db-1cb903c009ea.jpg"
+  },
+  {
+    "name": "Tatyova, Benthic Druid",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0715e860-3b3b-4331-9718-207973e94fee.jpg"
+  },
+  {
+    "name": "Shorikai, Genesis Engine",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/e2962883-6daf-4a84-af73-917afc73092c.jpg"
+  },
+  {
+    "name": "Salvage Titan",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/823cd586-92db-4e44-ba1f-394b2404cafc.jpg"
+  },
+  {
+    "name": "Ultron, Artificial Malevolence",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a8f25e67-2112-4355-9298-363ed04a5cb8.jpg"
+  },
+  {
+    "name": "Arcum Dagsson",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0fdfe986-0216-468b-aac8-bbcf588fd894.jpg"
+  },
+  {
+    "name": "Rook Turret",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c5a6d752-9975-4059-8552-55c6ffb3ab68.jpg"
+  },
+  {
+    "name": "Sarinth Greatwurm",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/5b5b9390-bb3a-4f71-809a-cfe2a6566b59.jpg"
+  },
+  {
+    "name": "Chromatic Orrery",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/95c3976c-33f3-490b-bfd3-7f1af2fe0416.jpg"
+  },
+  {
+    "name": "Kuldotha Forgemaster",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/b0f99367-4313-4bb1-a9fd-7711bc4ce40e.jpg"
+  },
+  {
+    "name": "Shimmer Dragon",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/de1316f2-1cca-4ac4-aead-0fd8b4036d88.jpg"
+  },
+  {
+    "name": "The Mightstone and Weakstone",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/c396db03-bf11-4e20-b630-4f9aa8fd78da.jpg"
+  },
+  {
+    "name": "Planar Bridge",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/853c6cc0-ed2b-4d65-add1-2449ade8cf68.jpg"
+  },
+  {
+    "name": "Mycosynth Golem",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ebcd864a-b7dd-4330-89e1-80576a9437ec.jpg"
+  },
+  {
+    "name": "Memory Jar",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/eb9c9a34-88a8-4afe-a053-806f6b29834f.jpg"
+  },
+  {
+    "name": "Bolas's Citadel",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/2bd111bb-ce02-414c-b5b7-e0e037d8d96b.jpg"
+  },
+  {
+    "name": "Combustible Gearhulk",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3494a575-f68e-4e78-9f6b-142cd8a0edea.jpg"
+  },
+  {
+    "name": "Scourglass",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/78541a40-c27a-49c0-aa3e-5a48b97065f0.jpg"
+  },
+  {
+    "name": "Urza, Lord Protector",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/df2af646-3e5b-43a3-8f3e-50565889f456.jpg"
+  },
+  {
+    "name": "The Great Henge",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/78427103-9543-41fb-b6d4-72963fe87275.jpg"
+  },
+  {
+    "name": "H.E.R.B.I.E. Scout Unit",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/393ff8c5-4da0-4290-b498-222cc0244026.jpg"
+  },
+  {
+    "name": "Priest of Yawgmoth",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/cb6465f9-dcf8-4258-aa18-661ad252b58b.jpg"
+  },
+  {
+    "name": "Salvaging Station",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3501ed98-473c-4a17-8b5f-1e0c00ee75da.jpg"
+  },
+  {
+    "name": "Bringer of the White Dawn",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/d6ee95a9-e518-49fd-bc11-02453c3220cd.jpg"
+  },
+  {
+    "name": "Molderhulk",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a6fa840a-817c-4e84-9dd3-d28a011f2214.jpg"
+  },
+  {
+    "name": "Summon: Bahamut",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/fe9f6825-597b-4d80-ab7c-f4ee4e824b6f.jpg"
+  },
+  {
+    "name": "Scrap Trawler",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/164f3f85-21fc-40b7-9871-4f303ba98428.jpg"
+  },
+  {
+    "name": "Chulane, Teller of Tales",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/ebf7ce9b-9e5e-4557-9e28-76556997f0ee.jpg"
+  },
+  {
+    "name": "Umbral Collar Zealot",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/12db6263-75c2-442f-a1a5-7af7915f8f9f.jpg"
+  },
+  {
+    "name": "Roil Cartographer",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3cd7ef87-4cb4-42ff-842f-e9a465dab165.jpg"
+  },
+  {
+    "name": "The Mycosynth Gardens",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/03f5c566-825c-4c46-9c01-a2f9b1e70a13.jpg"
+  },
+  {
+    "name": "Scrabbling Claws",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/4538ec2c-867e-412b-b6e3-a57f8e29ba84.jpg"
+  },
+  {
+    "name": "Buried Ruin",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/3644f316-f9a3-46c9-9b1e-747f86cf4ead.jpg"
+  },
+  {
+    "name": "Arcane Signet",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0bc7f093-bef0-4f1a-852c-4b75ebf54838.jpg"
+  },
+  {
+    "name": "Rydia, Summoner of Mist",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/a08f79b7-d66f-47da-9670-afd7409c0c5c.jpg"
+  },
+  {
+    "name": "Moonsilver Key",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/373395b2-f04b-46c9-b9f4-4f6815b71009.jpg"
+  },
+  {
+    "name": "Cauldron of Souls",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/5811d905-cae5-4f92-a78e-abb43f8864a7.jpg"
+  },
+  {
+    "name": "Chocobo Racetrack",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/7522f7fd-6fda-4ed3-9131-21bf91616a73.jpg"
+  },
+  {
+    "name": "Karn, Legacy Reforged",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/bc8802db-8c94-4eb4-817f-5f4f5408b7a4.jpg"
+  },
+  {
+    "name": "Doors of Durin",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/d82c77a1-2b81-415d-9f18-47e059c15e01.jpg"
+  },
+  {
+    "name": "Cosmic Cube",
+    "pool": "outside",
+    "rulesStatus": "full",
+    "metadataStatus": "canonical",
+    "localImage": "assets/cards/0866a630-d962-4aa9-a15f-08b2947540ef.jpg"
+  }
+]

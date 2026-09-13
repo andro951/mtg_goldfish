@@ -1,0 +1,63 @@
+{
+  "version": "1.4.6",
+  "latestRequestNames": 177,
+  "latestRequestSupported": 177,
+  "supportedNames": 317,
+  "newlySupportedNames": 150,
+  "allRequestedNamesSupported": true,
+  "allNewNamesHaveFocusedTests": true,
+  "localDefinitions": 348,
+  "localImages": 351,
+  "lists": [
+    {
+      "name": "List 1",
+      "file": "expanded-pool.txt",
+      "uniqueNames": 291,
+      "copies": 292,
+      "mainCopies": 203,
+      "commanderCopies": 1,
+      "outsideCopies": 88,
+      "fixedLands": 34,
+      "activeLibrary": 99,
+      "reserve": 104,
+      "duplicates": [
+        {
+          "name": "arcbound ravager",
+          "quantity": 2
+        }
+      ],
+      "missing": [],
+      "partial": []
+    },
+    {
+      "name": "List 2",
+      "file": "refined-pool.txt",
+      "uniqueNames": 168,
+      "copies": 168,
+      "mainCopies": 126,
+      "commanderCopies": 1,
+      "outsideCopies": 41,
+      "fixedLands": 35,
+      "activeLibrary": 99,
+      "reserve": 27,
+      "duplicates": [],
+      "missing": [],
+      "partial": []
+    },
+    {
+      "name": "13 September request",
+      "file": "2026-09-13-pool.txt",
+      "uniqueNames": 177,
+      "copies": 177,
+      "mainCopies": 104,
+      "commanderCopies": 1,
+      "outsideCopies": 72,
+      "fixedLands": 34,
+      "activeLibrary": 99,
+      "reserve": 5,
+      "duplicates": [],
+      "missing": [],
+      "partial": []
+    }
+  ]
+}
