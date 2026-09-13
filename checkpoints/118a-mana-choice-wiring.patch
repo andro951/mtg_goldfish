@@ -1,0 +1,56 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+index 699d810..8c71a8b 100644
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -4,0 +5 @@ import { makeInstance } from './deck.js';
++import { beginOneMana, acceptOneMana, ONE_MANA_ACTION } from './one-mana.js';
+@@ -14,0 +16,3 @@ export const actionMethods = {
++      if (this.state.pending?.kind === 'oneManaChoice' && this.state.pending.parent) {
++        this.state.pending=this.state.pending.parent;this.record('MANA_CHOICE_CANCELLED',{});return;
++      }
+@@ -98,0 +103 @@ export const actionMethods = {
++    if (type === ONE_MANA_ACTION) return beginOneMana(this, action);
+@@ -488,0 +494 @@ export const actionMethods = {
++    if (pending.kind === 'oneManaChoice') return acceptOneMana(this, value);
+diff --git a/src/core/sequences.js b/src/core/sequences.js
+index bd25d2d..e0d5f0c 100644
+--- a/src/core/sequences.js
++++ b/src/core/sequences.js
+@@ -2 +2 @@ import { requireRule, clone } from './util.js';
+-const allowed=new Set(['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
++const allowed=new Set(['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+index c9afde6..4058e10 100644
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -4,0 +5 @@ import { cardActions } from './card-actions.js';
++import { ONE_MANA_ACTION, ONE_MANA_ID } from '../core/one-mana.js';
+@@ -91 +92 @@ function syncInspectorState(){
+-  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&e.abilityId===activation.abilityId)){clearInspectorState();return;}
++  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&(e.abilityId===activation.abilityId||activation.abilityId===ONE_MANA_ID))){clearInspectorState();return;}
+@@ -325 +326 @@ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&sele
+-  const {quickMana}=cardActions(g,o);if(quickMana){run({type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
++  const {quickMana}=cardActions(g,o);if(quickMana){run(quickMana.singleManaGroup?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
+@@ -412 +413 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
+-  const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
++  const source=g.object(id),grouped=el.dataset.ability===ONE_MANA_ID,ability=source&&(grouped?cardActions(g,source).displayAbilities:g.abilities(source)).find(a=>a.id===el.dataset.ability);
+@@ -415 +416 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
+-  const result=run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
++  const result=run(grouped?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
+diff --git a/src/tabletop/programs.js b/src/tabletop/programs.js
+index b1718b5..5577b6b 100644
+--- a/src/tabletop/programs.js
++++ b/src/tabletop/programs.js
+@@ -6 +6 @@ export const programId=prefix=>prefix+'-'+Array.from(crypto.getRandomValues(new
+-export const ACTION_TYPES = ['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
++export const ACTION_TYPES = ['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
+@@ -74 +74 @@ export function captureStep(g,action){
+-  const label=source?`${a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
++  const label=source?`${a.type==='ACTIVATE_SINGLE_MANA'?'Choose one mana':a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
+diff --git a/src/tabletop/views.js b/src/tabletop/views.js
+index 33a0743..7ff1915 100644
+--- a/src/tabletop/views.js
++++ b/src/tabletop/views.js
+@@ -51 +51 @@ export function inspectorPopup({g,ui,registry,prefs}){
+-  const abilities=o?g.abilities(o):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
++  const abilities=o?(o.zone==='battlefield'?cardActions(g,o).displayAbilities:g.abilities(o)):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
