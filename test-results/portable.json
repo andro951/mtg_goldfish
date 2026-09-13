@@ -1,5 +1,5 @@
 {
-  "testedBuildSHA256": "1597c1966065b21d42e1fc40d08b81b274508e5c37d7b93ea1cd1ff10215a997",
+  "testedBuildSHA256": "9e41f01ea36d9be7df26b0c4b82d87f06a9c202d4d548d893a2a6c2486e18ce7",
   "uiVersion": "1.4.5",
   "mode": "isolated single-file Chromium with offline networking",
   "checksPassed": 8,

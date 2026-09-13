@@ -150,12 +150,31 @@ const targetLinks=installTargetLinks({get g(){return g;},ui});
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
 function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
-function exported(){return {...g.exportSession(),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
-async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}const seq=saveSequence,doc=exported();try{const at=await store.save(doc);if(seq===saveSequence){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}}catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}}
-function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
-function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
+function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
+let saveRevision=0,savedRevision=-1,saveFlight=null;
+async function saveNow(){
+ if(!g)return;clearTimeout(saveTimer);clearTimeout(preferenceTimer);persistPreferences(prefs);
+ if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}
+ if(saveFlight)return saveFlight;
+ if(savedRevision===saveRevision)return;
+ saveFlight=(async()=>{
+  // At most one captured save is in flight. Changes made while storage is busy
+  // are coalesced into the next snapshot, not a queue of full history copies.
+  while(savedRevision!==saveRevision){
+   if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);break;}
+   const rev=saveRevision,seq=saveSequence;
+   try{
+    const at=await store.save(exported({copyHistory:false}));savedRevision=rev;
+    if(seq===saveSequence&&rev===saveRevision){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}
+   }catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}
+  }
+ })().finally(()=>{saveFlight=null;});
+ return saveFlight;
+}
+function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
+function savePreferences(){saveRevision++;clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
 function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
@@ -512,7 +531,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='export-report'){saveDownload('missing-cards-report.json',auditDeck());renderModal();return;}
  if(action==='export-json')return exportJSON();if(action==='export-text'){saveDownload('astra-action-log.txt',g.exportText(),'text/plain');return;}
  if(action==='verify-replay'){if(g.transaction)return toast('Finish or undo the current action before replay verification.',true);const r=g.verifyReplay();toast(`Replay verified: ${r.actions} actions · ${r.checksum}`);return;}
- if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
+ if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);store.adopt(engine,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
  if(action==='zoom'){ui.previousModal=ui.modal;ui.zoomCard=el.dataset.cardId;ui.backFace=false;ui.modal='card';renderModal();return;}
  if(action==='zoom-back'){ui.modal=ui.previousModal;renderModal();return;}if(action==='flip'){ui.backFace=!ui.backFace;renderModal();return;}
  if(action==='attack-confirm'){const attackers=g.controlled().filter(o=>ui.selected.has(o.id)&&g.characteristics(o).types.includes('Creature')).map(o=>({id:o.id,player:ui.attacks[o.id]||1}));const result=run({type:'DECLARE_ATTACKERS',attackers});if(result.ok){ui.modal=null;ui.selected.clear();render();autoResolve();}return;}
@@ -624,6 +643,7 @@ window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return pr
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
+ if(engine&&doc)store.adopt(engine,doc);
  useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms});
 }
 boot().catch(error=>{root.innerHTML=`<div class="fatal"><h1>Unable to start Astra</h1><p>${h(error.message)}</p><p>Open the standalone edition, or keep index.html together with the assets folder.</p></div>`;console.error(error);});
@@ -5596,56 +5616,160 @@ function installSpecialMechanics(registry) {
 Object.assign(exports,{installSpecialMechanics});
 },
 "src/ui/storage.js":(module,exports,require)=>{
-/** Transactional browser persistence. Failure is surfaced, never called saved. */
+Object.assign(exports,require("src/ui/journal-store.js"));
+Object.assign(exports,{});
+},
+"src/ui/journal-store.js":(module,exports,require)=>{
+/** Incremental, transactional browser persistence.
+ * Head records reference immutable JSON chunks. Saving a new action never reads,
+ * clones, compares, or rewrites the entire previous history. Current + previous
+ * are advanced atomically; shared chunks survive undo/redo and branch changes.
+ */
+const FORMAT='astra-journal-v1', LOCAL_HEADS='astra-journal-heads-v1', PREFIX='astra-journal-';
+const refs=head=>head?.storageFormat===FORMAT?[head.initialKey,head.bodyKey,...head.historyKeys]:[];
+const sameHead=(a,b)=>a?.storageFormat===FORMAT&&a.initialKey===b.initialKey&&a.bodyKey===b.bodyKey&&
+  a.historyKeys.length===b.historyKeys.length&&a.historyKeys.every((key,i)=>key===b.historyKeys[i]);
 class SessionStore {
-  constructor() { this.database = null; this.mode = 'memory'; this.chain = Promise.resolve(); }
+  constructor() {
+    this.database=null;this.mode='memory';this.chain=Promise.resolve();
+    this.keys=new WeakMap();this.known=new Set();this.serial=0;
+    this.prefix=Array.from(globalThis.crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(16)).join('-');
+    this.bodyText=null;this.bodyKey=null;this.stats={writes:0,chunksWritten:0,historyChunksWritten:0,duplicateSkips:0};
+  }
+  nextKey(){return this.prefix+'/'+(++this.serial);}
   async open() {
     try {
-      this.database = await new Promise((resolve, reject) => {
-        const request = indexedDB.open('astra-goldfish-v1', 1);
-        request.onupgradeneeded = () => request.result.createObjectStore('sessions');
-        request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
-        request.onblocked = () => reject(new Error('Close another old Astra tab to enable autosave.'));
+      this.database=await new Promise((resolve,reject)=>{
+        const request=indexedDB.open('astra-goldfish-v1',2);let blocked=false;
+        request.onupgradeneeded=()=>{for(const name of ['sessions','journal'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);};
+        request.onsuccess=()=>{if(blocked){request.result.close();return;}resolve(request.result);};
+        request.onerror=()=>reject(request.error);
+        request.onblocked=()=>{blocked=true;reject(new Error('Close another old Astra tab to enable autosave.'));};
       });
-      this.mode = 'indexeddb';
+      this.database.onversionchange=()=>{this.database.close();this.mode='memory';};
+      this.mode='indexeddb';
     } catch {
-      try { localStorage.setItem('astra-storage-test', '1'); localStorage.removeItem('astra-storage-test'); this.mode = 'localstorage'; } catch { this.mode = 'memory'; }
+      try{localStorage.setItem('astra-storage-test','1');localStorage.removeItem('astra-storage-test');this.mode='localstorage';}catch{this.mode='memory';}
     }
     return this;
   }
-  async get(key = 'current') {
-    if (this.mode === 'indexeddb') return new Promise((resolve, reject) => {
-      const request = this.database.transaction('sessions').objectStore('sessions').get(key);
-      request.onsuccess = () => resolve(request.result || null); request.onerror = () => reject(request.error);
-    });
-    if (this.mode === 'localstorage') { const text = localStorage.getItem(`astra-session-${key}`); return text ? JSON.parse(text) : null; }
-    return null;
+  /** Rebind a validated imported document's immutable records after Engine
+   * defensively clones it. Unknown/untrusted documents have no stored keys. */
+  adopt(engine,document){
+    const bind=(copy,original)=>{const key=original&&this.keys.get(original);if(key&&copy)this.keys.set(copy,key);};
+    bind(engine.initialState,document.initialState);
+    engine.history.forEach((entry,i)=>{if(!engine._rewrittenHistory?.has(entry))bind(entry,document.history?.[i]);});
   }
-  save(session) {
-    const envelope = {savedAt: new Date().toISOString(), session};
-    this.chain = this.chain.catch(() => {}).then(async () => {
-      if (this.mode === 'memory') throw new Error('Browser storage is unavailable. Export your session to preserve it.');
-      if (this.mode === 'indexeddb') return new Promise((resolve, reject) => {
-        const tx = this.database.transaction('sessions', 'readwrite'), store = tx.objectStore('sessions');
-        const previous = store.get('current');
-        previous.onsuccess = () => {
-          // Repeated flushes must not replace the last distinct recovery point.
-          if (previous.result && JSON.stringify(previous.result.session) === JSON.stringify(session)) {
-            envelope.savedAt = previous.result.savedAt; return;
-          }
-          if (previous.result) store.put(previous.result, 'previous');
-          store.put(envelope, 'current');
-        };
-        tx.oncomplete = () => resolve(envelope.savedAt); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error || new Error('Autosave transaction was interrupted.'));
-      });
-      // Preserve a previous good record, even if a quota error rejects the next write.
-      const previous = localStorage.getItem('astra-session-current');
-      if (previous && JSON.stringify(JSON.parse(previous).session) === JSON.stringify(session)) return JSON.parse(previous).savedAt;
-      if (previous) localStorage.setItem('astra-session-previous', previous);
-      localStorage.setItem('astra-session-current', JSON.stringify(envelope));
-      return envelope.savedAt;
+  async get(key='current') {
+    if(this.mode==='memory')return null;
+    if(this.mode==='localstorage'){
+      const heads=JSON.parse(localStorage.getItem(LOCAL_HEADS)||'null'),head=heads?.[key];
+      if(heads&&!head)return null;
+      if(!head||head.legacy){const text=localStorage.getItem('astra-session-'+(head?.legacy||key));return text?JSON.parse(text):null;}
+      const values=[];
+      for(const [i,k] of refs(head).entries()){
+        const text=localStorage.getItem(PREFIX+k);if(text===null)throw new Error('Autosave chunk is missing. Try the previous autosave.');
+        values.push(JSON.parse(text));if(i%16===15)await new Promise(r=>setTimeout(r,0));
+      }
+      return this.assemble(head,values,key==='current');
+    }
+    return new Promise((resolve,reject)=>{
+      const tx=this.database.transaction(['sessions','journal']),request=tx.objectStore('sessions').get(key);let result=null,failure=null;
+      tx.oncomplete=()=>failure?reject(failure):resolve(result);
+      tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(failure||tx.error||new Error('Reading autosave was interrupted.'));
+      request.onsuccess=()=>{
+        const head=request.result;if(!head||head.storageFormat!==FORMAT){result=head||null;return;}
+        const keys=refs(head),values=new Array(keys.length);let remaining=keys.length;
+        for(const [i,k] of keys.entries()){
+          const chunk=tx.objectStore('journal').get(k);
+          chunk.onsuccess=()=>{try{
+            if(typeof chunk.result!=='string')throw new Error('Autosave chunk is missing. Try the previous autosave.');
+            values[i]=JSON.parse(chunk.result);if(!--remaining)result=this.assemble(head,values,key==='current');
+          }catch(error){failure=error;tx.abort();}};
+        }
+      };
     });
-    return this.chain;
+  }
+  assemble(head,values,rememberBody=true){
+    const [initialState,body,...history]=values,session={...body,initialState,history};
+    this.keys.set(initialState,head.initialKey);history.forEach((entry,i)=>this.keys.set(entry,head.historyKeys[i]));
+    refs(head).forEach(k=>this.known.add(k));
+    if(rememberBody&&head.bodyKey){this.bodyKey=head.bodyKey;this.bodyText=JSON.stringify(body);}
+    return {savedAt:head.savedAt,session};
+  }
+  save(session){
+    this.chain=this.chain.catch(()=>{}).then(()=>this.write(session));return this.chain;
+  }
+  prepare(session){
+    const records=[];
+    const immutable=(value,kind)=>{
+      let key=this.keys.get(value);if(!key){key=this.nextKey();this.keys.set(value,key);}
+      records.push({key,value,kind});return key;
+    };
+    const {initialState,history,...body}=session;
+    const initialKey=immutable(initialState,'initial'),historyKeys=history.map(entry=>immutable(entry,'history'));
+    const text=JSON.stringify(body);
+    if(text!==this.bodyText){this.bodyKey=this.nextKey();this.bodyText=text;}
+    records.push({key:this.bodyKey,text,kind:'body'});
+    return {head:{storageFormat:FORMAT,savedAt:new Date().toISOString(),initialKey,historyKeys,bodyKey:this.bodyKey},records};
+  }
+  async write(session){
+    if(this.mode==='memory')throw new Error('Browser storage is unavailable. Export your session to preserve it.');
+    const plan=this.prepare(session);
+    if(this.mode==='localstorage')return this.writeLocal(plan);
+    return new Promise((resolve,reject)=>{
+      const tx=this.database.transaction(['sessions','journal'],'readwrite'),heads=tx.objectStore('sessions'),chunks=tx.objectStore('journal');
+      const current=heads.get('current'),previous=heads.get('previous');let removed=[],failure=null,duplicate=false;
+      previous.onsuccess=()=>{
+        try{
+          if(sameHead(current.result,plan.head)){duplicate=true;plan.head.savedAt=current.result.savedAt;return;}
+          // One chunk per IDB success task: large migrations yield to input
+          // between records while keeping the whole transaction atomic.
+          const live=new Set([...refs(current.result),...refs(previous.result)]);
+          plan.records=plan.records.filter(r=>!live.has(r.key));
+          let index=0;
+          const next=()=>{try{
+            if(index<plan.records.length){const r=plan.records[index++];const put=chunks.put(r.text??JSON.stringify(r.value),r.key);put.onsuccess=next;return;}
+            const keep=new Set([...refs(current.result),...refs(plan.head)]);
+            removed=refs(previous.result).filter(k=>!keep.has(k));for(const key of removed)chunks.delete(key);
+            if(current.result)heads.put(current.result,'previous');heads.put(plan.head,'current');
+          }catch(error){failure=error;tx.abort();}};
+          next();
+        }catch(error){failure=error;tx.abort();}
+      };
+      tx.oncomplete=()=>{
+        if(duplicate)this.stats.duplicateSkips++;
+        else this.committed(plan,removed);
+        resolve(plan.head.savedAt);
+      };
+      tx.onerror=()=>reject(failure||tx.error);tx.onabort=()=>reject(failure||tx.error||new Error('Autosave transaction was interrupted.'));
+    });
+  }
+  committed(plan,removed){
+    for(const key of removed)this.known.delete(key);for(const r of plan.records)this.known.add(r.key);
+    this.stats.writes++;this.stats.chunksWritten+=plan.records.length;this.stats.historyChunksWritten+=plan.records.filter(r=>r.kind==='history').length;
+  }
+  async writeLocal(plan){
+    const heads=JSON.parse(localStorage.getItem(LOCAL_HEADS)||'null');
+    if(sameHead(heads?.current,plan.head)){this.stats.duplicateSkips++;return heads.current.savedAt;}
+    const current=heads?.current||(localStorage.getItem('astra-session-current')?{legacy:'current'}:null);
+    const live=new Set([...refs(current),...refs(heads?.previous)]);
+    plan.records=plan.records.filter(r=>!live.has(r.key));
+    const added=[];
+    try{
+      for(const [i,r] of plan.records.entries()){
+        localStorage.setItem(PREFIX+r.key,r.text??JSON.stringify(r.value));added.push(r.key);
+        if(i%8===7)await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      // Single atomic metadata write publishes both recovery points. A quota
+      // failure before here leaves the last good current + previous untouched.
+      localStorage.setItem(LOCAL_HEADS,JSON.stringify({current:plan.head,previous:current}));
+    }catch(error){for(const key of added)try{localStorage.removeItem(PREFIX+key);}catch{}throw error;}
+    const keep=new Set([...refs(current),...refs(plan.head)]),removed=refs(heads?.previous).filter(k=>!keep.has(k));
+    for(const key of removed)try{localStorage.removeItem(PREFIX+key);}catch{}
+    // Retire legacy envelopes only after neither published recovery point needs them.
+    for(const name of ['current','previous'])if(current?.legacy!==name)try{localStorage.removeItem('astra-session-'+name);}catch{}
+    this.committed(plan,removed);return plan.head.savedAt;
   }
 }
 
