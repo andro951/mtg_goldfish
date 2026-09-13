@@ -1,5 +1,43 @@
 [
   {
+    "id": "a3da7d5b-2c2b-45fe-b9c5-413b8c8fc0a2",
+    "key": "academy-ruins",
+    "name": "Academy Ruins",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Legendary Land",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [],
+    "supertypes": [
+      "Legendary"
+    ],
+    "oracleText": "{T}: Add {C}.\n{1}{U}, {T}: Put target artifact card from your graveyard on top of your library.",
+    "colors": [],
+    "colorIdentity": [
+      "U"
+    ],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/a3da7d5b-2c2b-45fe-b9c5-413b8c8fc0a2.jpg",
+    "backImage": null,
+    "printId": "a95b7645-154f-4904-bf71-db7eb24d4df2",
+    "set": "2xm",
+    "collectorNumber": "309",
+    "source": "https://scryfall.com/card/2xm/309/academy-ruins?utm_source=api",
+    "rulings": [],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:13.048333+00:00",
+    "candidate": true
+  },
+  {
     "id": "6511f317-bd38-46d0-b800-7125a3f420da",
     "key": "aesi-tyrant-of-gyre-strait",
     "name": "Aesi, Tyrant of Gyre Strait",
@@ -1054,6 +1092,111 @@
     "candidate": true
   },
   {
+    "id": "b9b3385e-a899-46ca-b476-a5c7989b97ba",
+    "key": "bird",
+    "name": "Bird",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Token Creature — Bird",
+    "types": [
+      "Creature"
+    ],
+    "subtypes": [
+      "Bird"
+    ],
+    "supertypes": [],
+    "oracleText": "Whenever a land you control enters, this token gets +1/+0 until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "colorIdentity": [
+      "G"
+    ],
+    "keywords": [],
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "defense": null,
+    "layout": "token",
+    "faces": [],
+    "image": "assets/cards/b9b3385e-a899-46ca-b476-a5c7989b97ba.jpg",
+    "backImage": null,
+    "printId": "8632216a-33c3-4d16-bf25-42e41af53986",
+    "set": "tfin",
+    "collectorNumber": "17",
+    "source": "https://scryfall.com/card/tfin/17/bird?utm_source=api",
+    "rulings": [],
+    "related": [
+      {
+        "object": "related_card",
+        "id": "8d8d3903-a7f4-4cd8-8d29-b4a173e4fbb2",
+        "component": "combo_piece",
+        "name": "Choco-Comet",
+        "type_line": "Sorcery",
+        "uri": "https://api.scryfall.com/cards/8d8d3903-a7f4-4cd8-8d29-b4a173e4fbb2"
+      },
+      {
+        "object": "related_card",
+        "id": "1565813b-6912-42f4-bae0-22136a2d6a92",
+        "component": "combo_piece",
+        "name": "Chocobo Racetrack",
+        "type_line": "Artifact",
+        "uri": "https://api.scryfall.com/cards/1565813b-6912-42f4-bae0-22136a2d6a92"
+      },
+      {
+        "object": "related_card",
+        "id": "b2e1986c-2852-4843-bdc4-eddb727ba3d4",
+        "component": "combo_piece",
+        "name": "Call the Mountain Chocobo",
+        "type_line": "Sorcery",
+        "uri": "https://api.scryfall.com/cards/b2e1986c-2852-4843-bdc4-eddb727ba3d4"
+      },
+      {
+        "object": "related_card",
+        "id": "0cbf911c-a721-4b84-8645-d83a0966be18",
+        "component": "combo_piece",
+        "name": "Sidequest: Raise a Chocobo // Black Chocobo",
+        "type_line": "Enchantment // Creature — Bird",
+        "uri": "https://api.scryfall.com/cards/0cbf911c-a721-4b84-8645-d83a0966be18"
+      },
+      {
+        "object": "related_card",
+        "id": "a44ae92c-4894-4172-82b3-11e2e94653ef",
+        "component": "combo_piece",
+        "name": "Summon: Fat Chocobo",
+        "type_line": "Enchantment Creature — Saga Bird",
+        "uri": "https://api.scryfall.com/cards/a44ae92c-4894-4172-82b3-11e2e94653ef"
+      },
+      {
+        "object": "related_card",
+        "id": "8632216a-33c3-4d16-bf25-42e41af53986",
+        "component": "token",
+        "name": "Bird",
+        "type_line": "Token Creature — Bird",
+        "uri": "https://api.scryfall.com/cards/8632216a-33c3-4d16-bf25-42e41af53986"
+      },
+      {
+        "object": "related_card",
+        "id": "4fcd08ad-4dac-4236-9030-f59e473b3ec7",
+        "component": "combo_piece",
+        "name": "Chocobo Camp",
+        "type_line": "Land",
+        "uri": "https://api.scryfall.com/cards/4fcd08ad-4dac-4236-9030-f59e473b3ec7"
+      },
+      {
+        "object": "related_card",
+        "id": "020dee17-d85b-44c4-9faa-b1ef977956f4",
+        "component": "combo_piece",
+        "name": "Gysahl Greens",
+        "type_line": "Sorcery",
+        "uri": "https://api.scryfall.com/cards/020dee17-d85b-44c4-9faa-b1ef977956f4"
+      }
+    ],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:13.718694+00:00",
+    "candidate": false
+  },
+  {
     "id": "f8b9dd54-0837-47f4-ad14-7a0322d46d5f",
     "key": "birthing-pod",
     "name": "Birthing Pod",
@@ -1882,6 +2025,97 @@
     "candidate": true
   },
   {
+    "id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+    "key": "cauldron-of-souls",
+    "name": "Cauldron of Souls",
+    "manaCost": "{5}",
+    "manaValue": 5.0,
+    "typeLine": "Artifact",
+    "types": [
+      "Artifact"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "{T}: Choose any number of target creatures. Each of those creatures gains persist until end of turn. (When it dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.)",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/5811d905-cae5-4f92-a78e-abb43f8864a7.jpg",
+    "backImage": null,
+    "printId": "cbd4604e-c21a-42a1-b099-aad7f9263a82",
+    "set": "cm2",
+    "collectorNumber": "180",
+    "source": "https://scryfall.com/card/cm2/180/cauldron-of-souls?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "If a creature with persist that has +1/+1 counters on it receives enough -1/-1 counters to cause it to be destroyed by lethal damage or put into its owner’s graveyard for having 0 or less toughness, persist won’t trigger and the card won’t return to the battlefield. That’s because persist checks the creature’s existence just before it leaves the battlefield, and it still has all those counters on it at that point."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "If a creature with persist stops being a creature, persist will still work."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "The persist ability triggers when the permanent is put into a graveyard. Its last known information (that is, how the creature last existed on the battlefield) is used to determine whether it had a -1/-1 counter on it."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "If a permanent has multiple instances of persist, they’ll each trigger separately, but the redundant instances will have no effect. If one instance returns the card to the battlefield, the next to resolve will do nothing."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "If a token with no -1/-1 counters on it has persist, the ability will trigger when the token is put into the graveyard. However, the token will cease to exist and can’t return to the battlefield."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "When a permanent with persist returns to the battlefield, it’s a new object with no memory of or connection to its previous existence."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2013-06-07",
+        "comment": "If multiple creatures with persist are put into the graveyard at the same time (due to combat damage or a spell that destroys all creatures, for example), the active player (the player whose turn it is) puts all of their persist triggers on the stack in any order, then each other player in turn order does the same. The last trigger put on the stack is the first one that resolves. That means that in a two-player game, the nonactive player’s persist creatures will return to the battlefield first, then the active player’s persist creatures do the same. The creatures return to the battlefield one at a time."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "5811d905-cae5-4f92-a78e-abb43f8864a7",
+        "source": "wotc",
+        "published_at": "2008-05-01",
+        "comment": "If a nontoken creature that gains persist this way is put into a graveyard, that card will be returned to the battlefield with a -1/-1 counter on it. However, because it’s a new object with no relation to its previous existence, the returned creature will not have persist."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:14.398960+00:00",
+    "candidate": true
+  },
+  {
     "id": "119d9671-61ba-4629-89b1-f94bdec5cb74",
     "key": "chimil-the-inner-sun",
     "name": "Chimil, the Inner Sun",
@@ -1932,6 +2166,85 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T21:41:47.179867+00:00",
+    "candidate": true
+  },
+  {
+    "id": "7522f7fd-6fda-4ed3-9131-21bf91616a73",
+    "key": "chocobo-racetrack",
+    "name": "Chocobo Racetrack",
+    "manaCost": "{3}{G}{G}",
+    "manaValue": 5.0,
+    "typeLine": "Artifact",
+    "types": [
+      "Artifact"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "Landfall — Whenever a land you control enters, create a 2/2 green Bird creature token with \"Whenever a land you control enters, this token gets +1/+0 until end of turn.\"",
+    "colors": [
+      "G"
+    ],
+    "colorIdentity": [
+      "G"
+    ],
+    "keywords": [
+      "Landfall"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/7522f7fd-6fda-4ed3-9131-21bf91616a73.jpg",
+    "backImage": null,
+    "printId": "1565813b-6912-42f4-bae0-22136a2d6a92",
+    "set": "fin",
+    "collectorNumber": "179",
+    "source": "https://scryfall.com/card/fin/179/chocobo-racetrack?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "7522f7fd-6fda-4ed3-9131-21bf91616a73",
+        "source": "wotc",
+        "published_at": "2025-07-25",
+        "comment": "A landfall ability triggers whenever a land you control enters for any reason. It triggers whenever you play a land, as well as whenever a spell or ability puts a land onto the battlefield under your control."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "7522f7fd-6fda-4ed3-9131-21bf91616a73",
+        "source": "wotc",
+        "published_at": "2025-07-25",
+        "comment": "Whenever a land you control enters, each landfall ability of permanents you control will trigger. You can put them on the stack in any order. The last ability you put on the stack will be the first one to resolve. As a result, you can have those abilities resolve in the order of your choosing."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "7522f7fd-6fda-4ed3-9131-21bf91616a73",
+        "source": "wotc",
+        "published_at": "2025-07-25",
+        "comment": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+      }
+    ],
+    "related": [
+      {
+        "object": "related_card",
+        "id": "1565813b-6912-42f4-bae0-22136a2d6a92",
+        "component": "combo_piece",
+        "name": "Chocobo Racetrack",
+        "type_line": "Artifact",
+        "uri": "https://api.scryfall.com/cards/1565813b-6912-42f4-bae0-22136a2d6a92"
+      },
+      {
+        "object": "related_card",
+        "id": "8632216a-33c3-4d16-bf25-42e41af53986",
+        "component": "token",
+        "name": "Bird",
+        "type_line": "Token Creature — Bird",
+        "uri": "https://api.scryfall.com/cards/8632216a-33c3-4d16-bf25-42e41af53986"
+      }
+    ],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:15.061983+00:00",
     "candidate": true
   },
   {
@@ -6866,6 +7179,42 @@
     "candidate": false
   },
   {
+    "id": "0866a630-d962-4aa9-a15f-08b2947540ef",
+    "key": "cosmic-cube",
+    "name": "Cosmic Cube",
+    "manaCost": "{5}",
+    "manaValue": 5.0,
+    "typeLine": "Artifact",
+    "types": [
+      "Artifact"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "Ward {2}\nWhenever you attack, look at the top six cards of your library. You may cast a spell from among them with mana value less than or equal to the greatest power among attacking creatures you control without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [
+      "Ward"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/0866a630-d962-4aa9-a15f-08b2947540ef.jpg",
+    "backImage": null,
+    "printId": "d1cf1ead-fe91-4328-89ab-6d0bc9ff6cbe",
+    "set": "msh",
+    "collectorNumber": "245",
+    "source": "https://scryfall.com/card/msh/245/cosmic-cube?utm_source=api",
+    "rulings": [],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:15.737189+00:00",
+    "candidate": true
+  },
+  {
     "id": "28b46183-c62f-47b1-9fee-3ba148202cab",
     "key": "crop-rotation",
     "name": "Crop Rotation",
@@ -7407,6 +7756,58 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:31:28.787690+00:00",
+    "candidate": true
+  },
+  {
+    "id": "d82c77a1-2b81-415d-9f18-47e059c15e01",
+    "key": "doors-of-durin",
+    "name": "Doors of Durin",
+    "manaCost": "{3}{R}{G}",
+    "manaValue": 5.0,
+    "typeLine": "Legendary Artifact",
+    "types": [
+      "Artifact"
+    ],
+    "subtypes": [],
+    "supertypes": [
+      "Legendary"
+    ],
+    "oracleText": "Whenever you attack, scry 2, then you may reveal the top card of your library. If a creature card is revealed this way, put it onto the battlefield tapped and attacking. Until your next turn, it gains trample if you control a Dwarf and hexproof if you control an Elf.",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "colorIdentity": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Scry"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/d82c77a1-2b81-415d-9f18-47e059c15e01.jpg",
+    "backImage": null,
+    "printId": "8ebd8813-4aaf-48bf-9243-3ec4099b8372",
+    "set": "ltr",
+    "collectorNumber": "199",
+    "source": "https://scryfall.com/card/ltr/199/doors-of-durin?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "d82c77a1-2b81-415d-9f18-47e059c15e01",
+        "source": "wotc",
+        "published_at": "2023-06-16",
+        "comment": "If the creature put onto the battlefield this way is a Dwarf and/or Elf, Doors of Durin will see it when checking whether you control a Dwarf or Elf."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:16.428930+00:00",
     "candidate": true
   },
   {
@@ -15061,6 +15462,67 @@
     "candidate": true
   },
   {
+    "id": "ebcd864a-b7dd-4330-89e1-80576a9437ec",
+    "key": "mycosynth-golem",
+    "name": "Mycosynth Golem",
+    "manaCost": "{11}",
+    "manaValue": 11.0,
+    "typeLine": "Artifact Creature — Golem",
+    "types": [
+      "Artifact",
+      "Creature"
+    ],
+    "subtypes": [
+      "Golem"
+    ],
+    "supertypes": [],
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nArtifact creature spells you cast have affinity for artifacts. (They cost {1} less to cast for each artifact you control.)",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [
+      "Affinity"
+    ],
+    "power": "4",
+    "toughness": "5",
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/ebcd864a-b7dd-4330-89e1-80576a9437ec.jpg",
+    "backImage": null,
+    "printId": "c3200fa2-182f-4515-b326-ab4fdb95c8c1",
+    "set": "5dn",
+    "collectorNumber": "137",
+    "source": "https://scryfall.com/card/5dn/137/mycosynth-golem?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "ebcd864a-b7dd-4330-89e1-80576a9437ec",
+        "source": "wotc",
+        "published_at": "2004-12-01",
+        "comment": "The spells gain affinity for artifacts as they’re put onto the stack. They don’t have the ability while they’re cards in your hand."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "ebcd864a-b7dd-4330-89e1-80576a9437ec",
+        "source": "wotc",
+        "published_at": "2004-12-01",
+        "comment": "If Mycosynth Golem is sacrificed as part of the cost to cast a spell, the cost reduction will already be locked in, and the cost won’t be increased."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "ebcd864a-b7dd-4330-89e1-80576a9437ec",
+        "source": "wotc",
+        "published_at": "2004-12-01",
+        "comment": "Two or more instances of the affinity ability are cumulative, even if they’re both affinity for the same thing."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:17.168743+00:00",
+    "candidate": true
+  },
+  {
     "id": "bf690282-125f-431c-a363-39f6772324c8",
     "key": "myr",
     "name": "Myr",
@@ -16941,6 +17403,50 @@
     ],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:32:10.780407+00:00",
+    "candidate": true
+  },
+  {
+    "id": "853c6cc0-ed2b-4d65-add1-2449ade8cf68",
+    "key": "planar-bridge",
+    "name": "Planar Bridge",
+    "manaCost": "{6}",
+    "manaValue": 6.0,
+    "typeLine": "Legendary Artifact",
+    "types": [
+      "Artifact"
+    ],
+    "subtypes": [],
+    "supertypes": [
+      "Legendary"
+    ],
+    "oracleText": "{8}, {T}: Search your library for a permanent card, put it onto the battlefield, then shuffle.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/853c6cc0-ed2b-4d65-add1-2449ade8cf68.jpg",
+    "backImage": null,
+    "printId": "30879758-841c-46a9-a0b6-179ac163f0ac",
+    "set": "2x2",
+    "collectorNumber": "313",
+    "source": "https://scryfall.com/card/2x2/313/planar-bridge?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "853c6cc0-ed2b-4d65-add1-2449ade8cf68",
+        "source": "wotc",
+        "published_at": "2017-02-09",
+        "comment": "A permanent card is an artifact, creature, enchantment, land, or planeswalker card."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-13T14:30:17.853632+00:00",
     "candidate": true
   },
   {

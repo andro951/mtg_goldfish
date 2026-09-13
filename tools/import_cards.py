@@ -123,7 +123,9 @@ def main() -> None:
     records = parse_deck((ROOT / args.deck).read_text(encoding='utf-8'))
     requested = ROOT / 'data/expanded-card-names.txt'
     extra_names = requested.read_text(encoding='utf-8').splitlines() if requested.exists() else []
-    names = list(dict.fromkeys([*(r['name'] for r in records), *(n.strip() for n in extra_names if n.strip())]))
+    latest = ROOT / 'data/decks/2026-09-13-pool.txt'
+    latest_records = parse_deck(latest.read_text(encoding='utf-8')) if latest.exists() else []
+    names = list(dict.fromkeys([*(r['name'] for r in records), *(n.strip() for n in extra_names if n.strip()), *(r['name'] for r in latest_records)]))
     def aliases(raw):
         return {normalize(raw['name']), *(normalize(f['name']) for f in raw.get('card_faces', []))}
     def known_names():
