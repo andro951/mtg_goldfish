@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "version": "1.4.1",
-  "engineTestsPassed": 976,
-  "browserChecksPassed": 436,
+  "version": "1.4.2",
+  "engineTestsPassed": 987,
+  "browserChecksPassed": 466,
   "portableChecksPassed": 8,
   "failedOrSkippedChecks": 0,
   "candidateCards": 310,
@@ -14,13 +14,13 @@
   "reproducibleBuilds": [
     {
       "path": "index.html",
-      "bytes": 1567011,
-      "sha256": "bfc136d9307882b1dbc2ae0e061132be51b961f034632eb948a37b104e8c136c"
+      "bytes": 1572458,
+      "sha256": "91a1f2878c90adaaafc28632f6f31682929723cf9437b73af8b7b05868a3eb4d"
     },
     {
       "path": "Astra-standalone.html",
-      "bytes": 45734303,
-      "sha256": "5bcc35fef066a06ef2a27511ee6bf9d047bee25e7c03557c0e9629df461e33fb"
+      "bytes": 45739750,
+      "sha256": "379c335e3bfed72a2df54fb0acc43e94f62bbf4115ef561598d77a237b1d488a"
     }
   ],
   "archive": "dist/AstraSimulator.zip",
