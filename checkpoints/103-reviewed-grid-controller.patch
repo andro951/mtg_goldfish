@@ -1,0 +1,50 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -26 +26 @@
+- grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
++ grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText??data.deckText,deckReport:null,
+@@ -47 +47 @@
+-function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
++function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
+@@ -112 +112 @@
+-    const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
++    const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height,prefs.gridViews?.[zone]?.columns);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
+@@ -132 +132 @@
+-function reflowDockGrid(zone=prefs.dock){
++function reflowDockGrid(zone=prefs.dock,force=false){
+@@ -135 +135,4 @@
+- const ids=g.state.zones[zone]||[],objects=ids.map(id=>g.object(id)).filter(Boolean),grid=gridLayout(objects,ui.grids[zone],surface.clientWidth,surface.clientHeight);
++ const width=surface.clientWidth,height=surface.clientHeight,previous=prefs.gridViews?.[zone];
++ const resized=force||!previous||previous.width!==width||previous.height!==height;
++ const objects=(g.state.zones[zone]||[]).map(id=>g.object(id)).filter(Boolean);
++ const grid=gridLayout(objects,ui.grids[zone],width,height,resized?null:previous.columns);
+@@ -137 +140,2 @@
+- for(const c of grid.cards){const el=surface.querySelector(`[data-position="${CSS.escape(c.id)}"]`);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;}
++ const nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
++ for(const c of grid.cards){const el=nodes.get(c.id);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;}
+@@ -139 +143,6 @@
+- if(owned.length)prefs.cameras[zone]=fitCamera(owned,surface.clientWidth,surface.clientHeight,8);
++ if(resized&&owned.length){
++   prefs.cameras[zone]=fitCamera(owned,width,height,8);
++   prefs.gridViews||={};prefs.gridViews[zone]={width,height,columns:grid.shape.columns};
++ }
++ // An inspector opening, a selection, or a completed card drag is not a resize.
++ // Do not overwrite manual zoom/pan or move a dropped card under the pointer.
+@@ -248 +257 @@
+- if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText||data.deckText;}
++ if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText??data.deckText;}
+@@ -256 +265 @@
+- const result=run({type:'LAYOUT',anchor:'corner-v2',grid:zone!=='battlefield',order:ids,updates});if(result.ok){if(zone==='battlefield')fit(zone);else reflowDockGrid(zone);}}
++ const result=run({type:'LAYOUT',anchor:'corner-v2',grid:zone!=='battlefield',order:ids,updates});if(result.ok){if(zone==='battlefield')fit(zone);else {reflowDockGrid(zone,true);savePreferences();}}}
+@@ -406 +415,3 @@
+- if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
++ if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;ui.deckReport=null;
++  const status=overlay.querySelector('.deck-live-status');if(status){status.className='deck-live-status';status.querySelector('strong').textContent='Not validated';status.querySelector('span').textContent='Validate to check your edited list.';}
++  overlay.querySelector('.deck-text-issues')?.remove();savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
+@@ -439 +450 @@
+-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
++let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
+@@ -444 +455 @@
+- if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
++ if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
