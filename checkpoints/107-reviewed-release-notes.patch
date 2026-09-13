@@ -1,0 +1,30 @@
+diff --git a/tests/ui_acceptance_expansion.py b/tests/ui_acceptance_expansion.py
+--- a/tests/ui_acceptance_expansion.py
++++ b/tests/ui_acceptance_expansion.py
+@@ -47 +47 @@
+- choose_option(p,'untap');check('finished effect removes its target arrow',p.locator('#target-links [data-link-stack]').count()==0)
++ choose_option(p,'untap');p.wait_for_function('()=>document.querySelectorAll("#target-links [data-link-stack]").length===0');check('finished effect removes its target arrow',p.locator('#target-links [data-link-stack]').count()==0)
+ diff --git a/docs/1.4.2-REVIEW.md b/docs/1.4.2-REVIEW.md
+new file mode 100644
+--- /dev/null
++++ b/docs/1.4.2-REVIEW.md
+@@ -0,0 +1,19 @@
++# 1.4.2 review
++
++The separate text editor is retained alongside the visual builder. Both use the same deck source. Validation displays unsupported names and parse errors without silently dropping them, and an empty draft is preserved through reopen and reload. Text editing does not change a game already in progress. The textarea and footer are checked at desktop and small-screen sizes.
++
++## Corrections made during review
++
++The first responsive-grid implementation refitted the camera on every table render, including ordinary card inspection and the end of a drag or pan. This overwrote user zoom and could move a card away from its drop point. Refitting now happens only on a real surface-size change, an initial legacy-session layout, or an explicit grid reset. Dimensions and column count are saved alongside the camera so reload does not undo the chosen view.
++
++The initial grid calculation used Map.size to count cells. Multiple empty slots collapse to one null key in a Map, undercounting the occupied slot span. The layout now uses the full slot-array length and preserves holes. Between resizes, the column count stays fixed so detaching a tail card or adding another card does not unexpectedly reorganize earlier slots.
++
++Manually detached cards retain their world coordinates. Resizing refits the grid-owned cards; the grid button explicitly reattaches all cards. Wide docks are no longer truncated to 900 pixels in saved preferences. Keyboard and pointer resizing use the available viewport width.
++
++## Visual and interaction checks
++
++The 27-card graveyard is rendered at 250, 470 and 780 pixel dock widths, producing four, five and seven columns respectively. Screenshots are captured at each size and the test checks that all cards fit and that the grid occupies more than 75% of both surface dimensions. Smaller browser geometry and an enlarged hand row are also checked. Exile and outside-the-game use the same implementation and receive their own resize checks.
++
++Browser tests cover manual zoom followed by inspection, completed panning, exact card-drop placement, detached positions after resize, grid reset, wide-dock session import, HTTP reload, text/visual round trips, validation, both presets, empty drafts and starting a game from the edited list.
++
++Target-overlay drawing is intentionally coalesced to an animation frame. Its existing disappearance regression now waits for the rendered result instead of racing that frame. Full release evidence is in the engine, browser and portable reports; in-memory authored-HTML checks alone are not accepted as release verification.
