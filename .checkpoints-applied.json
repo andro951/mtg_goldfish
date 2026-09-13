@@ -83,5 +83,6 @@
   "checkpoints/103-reviewed-grid-controller.patch": "b02b2797c18b8ba310d8ccd467311e84d972db316af8c27af7d40d4897a7e90d",
   "checkpoints/104-reviewed-grid-preferences.patch": "57cea6dda3bc826bf485856a2bb184a1b1d0f3546ef84706d40f94c3ee1ba224",
   "checkpoints/105-separate-text-editor.patch": "af3a3e643861bd78ef94da8ad79c4ec4f3434360a335e42aadc6fb8413d9851d",
-  "checkpoints/106-grid-text-release-gates.patch": "9f6b97db169b5d221ccad8e7fa76df0b662b24f84e103621058dc978612d5400"
+  "checkpoints/106-grid-text-release-gates.patch": "9f6b97db169b5d221ccad8e7fa76df0b662b24f84e103621058dc978612d5400",
+  "checkpoints/107-reviewed-release-notes.patch": "041ccddb938e07926bd949c41805e92715041863cff58cf480c04cc240154e4d"
 }

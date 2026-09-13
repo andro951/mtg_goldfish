@@ -44,7 +44,7 @@ def expansion_arrows(p):
  menu(p);check('target overlay hides behind application menus',not p.locator('#target-links').is_visible());close(p)
  shot(p,'20-stack-target-arrows.png')
  click(p,'resolve','.stack-window');check('target arrows remain visible while effect waits on a resolution choice',arrow.count()==1)
- choose_option(p,'untap');check('finished effect removes its target arrow',p.locator('#target-links [data-link-stack]').count()==0)
+ choose_option(p,'untap');p.wait_for_function('()=>document.querySelectorAll("#target-links [data-link-stack]").length===0');check('finished effect removes its target arrow',p.locator('#target-links [data-link-stack]').count()==0)
  activate(p,'Codex Shredder','mill');choose_option(p,2);p.wait_for_selector('#target-links [data-link-target="player:2"]')
  check('player targets point at the correct opponent total',p.locator('#target-links [data-link-target="player:2"]').count()==1);click(p,'resolve','.stack-window')
  activate(p,'Buried Ruin','recover');choose_cards(p,[obj(p,'Sol Ring','graveyard')['id']]);pay(p);p.wait_for_timeout(100)
