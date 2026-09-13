@@ -19,7 +19,7 @@ export const eventMethods = {
       }
     }
     const current = Object.values(this.state.instances).filter(o => o.zone !== 'void');
-    const sources = [...current, ...previousSources].filter((o, i, all) => all.findIndex(p => sameRef(p, o)) === i);
+    const seen=new Set(),sources=[...current,...previousSources].filter(o=>{const key=`${o.id}:${o.oid}`;if(seen.has(key))return false;seen.add(key);return true;});
     for (const source of sources) {
       const module = this.module(source);
       for (const trigger of module.triggers || []) {

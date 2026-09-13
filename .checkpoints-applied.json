@@ -110,5 +110,6 @@
   "checkpoints/112e-browser-wiring.patch": "dfea8d0db9f8827e24c56fcefdb7781c271ad3722b12236b15d2329ff6ed150e",
   "checkpoints/112f-menus-count.patch": "2ebb326032452712b72e04a293b96b3ac483025cf08f93b7fa0b6ec3889c2fc2",
   "checkpoints/112g-utility-land-actions.patch": "d77f4540fc3c4e31bc2a1a7ee413cd8c00d0f6c227167447e4132e4717d9bad2",
-  "checkpoints/113a-ask-defaults-loyalty.patch": "53f99c5dcfac1575a2eda67786c96caee646e40873844632ad5dbec8ef13cefa"
+  "checkpoints/113a-ask-defaults-loyalty.patch": "53f99c5dcfac1575a2eda67786c96caee646e40873844632ad5dbec8ef13cefa",
+  "checkpoints/113b-compact-history.patch": "8792e499cea7b865fafd183376fde68772177995a167ab15dcd6a2fe863bd10f"
 }

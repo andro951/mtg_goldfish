@@ -1,4 +1,4 @@
-import { RULES_PACK, VERSION, COLORS, ZONES, STEPS, clone, ref, sameRef, asArray, unique, sum, isMain, requireRule, RuleError, integer, stateHash, diffState, applyPatches, assertSerializable, shuffled } from './util.js';
+import { RULES_PACK, VERSION, COLORS, ZONES, STEPS, clone, ref, sameRef, asArray, unique, sum, isMain, requireRule, RuleError, integer, stateHash, diffState, applyPatches, assertSerializable, shuffled, freezeDeep } from './util.js';
 import { createGameState, makeInstance, validateState } from './deck.js';
 import { candidates, matches, validateSelection } from './selectors.js';
 
@@ -149,13 +149,23 @@ export class Engine {
     if (this.transaction) this.transaction.events.push(event);
     return event;
   }
+  snapshotState(state=this.state) {
+    // Provenance records and the initial deck are append-only historical data.
+    // Sharing frozen records avoids copying all previous zone changes for every
+    // tap, target or drag. The arrays themselves remain independently mutable.
+    const {provenance,initialDeck}=state;
+    for(const entry of provenance)freezeDeep(entry);
+    freezeDeep(initialDeck);
+    const copy=clone({...state,initialDeck:null,provenance:[]});
+    copy.initialDeck=initialDeck;copy.provenance=provenance.slice();return copy;
+  }
   perform(action) {
     if (!action || typeof action.type !== 'string') return { ok: false, error: { message: 'Invalid action.', code: 'INVALID_ACTION' } };
     this.lastActionEvents = [];
     if (action?.type === 'UNDO') return this.undo();
     if (action?.type === 'REDO') return this.redo();
-    const attemptBefore = clone(this.state), newTransaction = !this.transaction;
-    if (newTransaction) this.transaction = { before: clone(this.state), intents: [], events: [], label: action.type };
+    const attemptBefore = this.snapshotState(), newTransaction = !this.transaction;
+    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type };
     const previousIntents = this.transaction.intents.length, previousEvents = this.transaction.events.length;
     try {
       requireRule(action && typeof action.type === 'string', 'Invalid action.');
@@ -191,7 +201,7 @@ export class Engine {
     this.transaction = null;
   }
   undo() {
-    if (this.transaction) { this.state = clone(this.transaction.before); this.transaction = null; this.touch(); this.notify(); return { ok: true }; }
+    if (this.transaction) { this.state = this.snapshotState(this.transaction.before); this.transaction = null; this.touch(); this.notify(); return { ok: true }; }
     if (!this.cursor) return { ok: false, error: { message: 'Nothing to undo.' } };
     this.state = applyPatches(this.state, this.history[--this.cursor].patches, true);
     this.touch(); this.lastError = null; this.notify(); return { ok: true };
@@ -201,10 +211,15 @@ export class Engine {
     this.state = applyPatches(this.state, this.history[this.cursor++].patches);
     this.touch(); this.lastError = null; this.notify(); return { ok: true };
   }
-  exportSession() {
+  manualActionCount() {
+    this._manualCounts ||= new WeakMap();let total=0;
+    for(let i=0;i<this.cursor;i++){const entry=this.history[i];let n=this._manualCounts.get(entry);if(n===undefined){n=entry.events.filter(e=>/DEBUG|MANUAL/.test(e.type)).length;this._manualCounts.set(entry,n);}total+=n;}
+    return total;
+  }
+  exportSession({ copyHistory = true } = {}) {
     return { format: 'astra-goldfish-session', schemaVersion: 1, version: VERSION, rulesPack: RULES_PACK,
-      initialState: clone(this.initialState), currentState: clone(this.state), history: clone(this.history), cursor: this.cursor,
-      transaction: clone(this.transaction), stateChecksum: stateHash(this.state), manualActions: this.history.slice(0, this.cursor).flatMap(h => h.events).filter(e => /DEBUG|MANUAL/.test(e.type)).length };
+      initialState: copyHistory ? clone(this.initialState) : this.initialState, currentState: clone(this.state), history: copyHistory ? clone(this.history) : this.history.slice(), cursor: this.cursor,
+      transaction: clone(this.transaction), stateChecksum: stateHash(this.state), manualActions: this.manualActionCount() };
   }
   static importSession(registry, document) {
     assertSerializable(document);

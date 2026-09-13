@@ -32,7 +32,29 @@ export function stableJSON(value) {
   if (value && typeof value === 'object') return '{' + Object.keys(value).filter(k => value[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + stableJSON(value[k])).join(',') + '}';
   return JSON.stringify(value);
 }
-export const stateHash = state => hashText(stableJSON(state));
+const frozenJSON=new WeakMap(),deeplyFrozenJSON=new WeakSet();
+/** Feed the same canonical JSON into FNV without building a giant string. */
+export function stateHash(state) {
+  let h=2166136261;
+  const feed=text=>{for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}};
+  const visit=value=>{
+    if(value&&typeof value==='object'&&deeplyFrozenJSON.has(value)){let text=frozenJSON.get(value);if(text===undefined){text=stableJSON(value);frozenJSON.set(value,text);}feed(text);return;}
+    if(Array.isArray(value)){feed('[');for(let i=0;i<value.length;i++){if(i)feed(',');visit(value[i]===undefined?null:value[i]);}feed(']');}
+    else if(value&&typeof value==='object'){feed('{');let first=true;for(const key of Object.keys(value).sort()){if(value[key]===undefined)continue;if(!first)feed(',');first=false;feed(JSON.stringify(key));feed(':');visit(value[key]);}feed('}');}
+    else feed(JSON.stringify(value));
+  };
+  visit(state);return (h>>>0).toString(16).padStart(8,'0');
+}
+/** Equality for serializable game data, without allocating JSON strings. */
+export function jsonEqual(a,b) {
+  if(Object.is(a,b))return true;
+  if(!a||!b||typeof a!=='object'||typeof b!=='object')return false;
+  if(Array.isArray(a)!==Array.isArray(b))return false;
+  if(Array.isArray(a)){if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(!jsonEqual(a[i],b[i]))return false;return true;}
+  const keys=Object.keys(a),other=Object.keys(b);if(keys.length!==other.length)return false;
+  for(const key of keys)if(!Object.hasOwn(b,key)||!jsonEqual(a[key],b[key]))return false;
+  return true;
+}
 export function seedState(seed) { return { value: parseInt(hashText(String(seed)), 16) || 0x9e3779b9, count: 0 }; }
 export function randomUnit(rng) {
   let x = rng.value >>> 0;
@@ -46,7 +68,7 @@ export function shuffled(values, rng) {
   return result;
 }
 export function freezeDeep(value) {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freezeDeep); Object.freeze(value); }
+  if (value && typeof value === 'object' && !deeplyFrozenJSON.has(value)) { Object.values(value).forEach(freezeDeep); Object.freeze(value); deeplyFrozenJSON.add(value); }
   return value;
 }
 
@@ -54,7 +76,13 @@ export function freezeDeep(value) {
 export function diffState(before, after, path = [], patches = []) {
   if (Object.is(before, after)) return patches;
   const plain = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-  if (plain(before) && plain(after)) {
+  if (Array.isArray(before) && Array.isArray(after)) {
+    let start=0,endBefore=before.length,endAfter=after.length;
+    while(start<endBefore&&start<endAfter&&jsonEqual(before[start],after[start]))start++;
+    while(endBefore>start&&endAfter>start&&jsonEqual(before[endBefore-1],after[endAfter-1])){endBefore--;endAfter--;}
+    if(start!==endBefore||start!==endAfter)patches.push({op:'splice',path,index:start,beforeLength:before.length,afterLength:after.length,
+      before:clone(before.slice(start,endBefore)),after:clone(after.slice(start,endAfter)),hadBefore:true,hadAfter:true});
+  } else if (plain(before) && plain(after)) {
     for (const key of unique([...Object.keys(before), ...Object.keys(after)])) {
       const b = Object.hasOwn(before, key), a = Object.hasOwn(after, key);
       if (!b || !a) patches.push({ path: [...path, key], before: b ? clone(before[key]) : null, after: a ? clone(after[key]) : null, hadBefore: b, hadAfter: a });
@@ -69,6 +97,19 @@ export function applyPatches(state, patches, backwards = false) {
   let result = state;
   for (const patch of backwards ? [...patches].reverse() : patches) {
     requireRule(Array.isArray(patch.path) && patch.path.every(k => typeof k === 'string' && !['__proto__', 'constructor', 'prototype'].includes(k)), 'Unsafe session patch.', 'INVALID_SESSION');
+    if(patch.op==='splice') {
+      let parent=null,array=result;
+      for(const key of patch.path){requireRule(array&&Object.hasOwn(array,key),'Session patch path is invalid.','INVALID_SESSION');parent=array;array=array[key];}
+      const removed=backwards?patch.after:patch.before,inserted=backwards?patch.before:patch.after;
+      const length=backwards?patch.afterLength:patch.beforeLength;
+      requireRule(Array.isArray(array)&&Array.isArray(removed)&&Array.isArray(inserted)&&Number.isSafeInteger(patch.index)&&patch.index>=0&&
+        array.length===length&&patch.index+removed.length<=length&&
+        length-removed.length+inserted.length===(backwards?patch.beforeLength:patch.afterLength),'Invalid array patch.','INVALID_SESSION');
+      const next=array.slice(0,patch.index).concat(clone(inserted),array.slice(patch.index+removed.length));
+      if(parent)parent[patch.path.at(-1)]=next;else result=next;
+      continue;
+    }
+    requireRule(!patch.op,'Unknown session patch operation.','INVALID_SESSION');
     const value = clone(backwards ? patch.before : patch.after);
     const present = backwards ? patch.hadBefore : patch.hadAfter;
     if (!patch.path.length) { result = value; continue; }
