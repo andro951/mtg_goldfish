@@ -1,0 +1,41 @@
+diff --git a/tests/browser_tabletop.py b/tests/browser_tabletop.py
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -26,4 +26,6 @@
+ from ui_acceptance_146 import ask_loyalty, journal_persistence
+ 
++from ui_acceptance_attachments import attachment_controls, attachment_groups, attachment_persistence, soulbond_connections
++
+ server=None
+ if not args.memory:
+@@ -33,5 +35,5 @@
+   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+   for group in groups:
+diff --git a/tests/make_ui_fixtures.mjs b/tests/make_ui_fixtures.mjs
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -87,2 +87,20 @@
+  fs.writeFileSync(new URL('long-journal.json',out),JSON.stringify(long.exportSession()));
+ }
++
++// Attachment scenarios use actual object references, never proximity inference.
++{
++ const at=(x,y)=>({location:{x,y,anchor:'corner-v2'}});
++ for(const [name,attached] of [['attachment-resolve',false],['attachment-fan',true],['attachment-edge',true]]){
++  const g=fixture({libraryActive:[],battlefield:[
++   {name:'Metalworker',props:at(name==='attachment-edge'?10:350,name==='attachment-edge'?164:340)},
++   {name:'Walking Atlas',props:at(670,340)},
++   {name:'Lightning Greaves',props:at(100,250)},
++   ...(attached?[{name:'Flayer Husk',props:at(150,250)},{name:'Smoke Blessing',props:at(190,250)},{name:'The Reality Chip',props:at(250,250)}]:[]),
++  ],hand:['Mox Opal']},{mana:{U:2,C:8}});
++  const host=g.controlled().find(o=>g.definition(o).name==='Metalworker');
++  if(attached)for(const o of g.controlled().slice(2))o.attachedTo={id:host.id,oid:host.oid};
++  g.state.initialDeck.scenario='UI acceptance: '+name;g.state.settings.debug=false;
++  fs.writeFileSync(new URL(name+'.json',out),JSON.stringify(new Engine(registry,g.state).exportSession()));
++ }
++ save('soulbond-display',{battlefield:[{name:'Metalworker',props:{...at(350,340),modifications:[{keywords:['Soulbond']}]}},{name:'Krark-Clan Ironworks',props:at(100,350)}],hand:['Walking Atlas']},{mana:{C:2}});
++}
