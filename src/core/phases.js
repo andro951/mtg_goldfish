@@ -167,6 +167,6 @@ export const phaseMethods = {
     this.touch();
     this.tapObjects(entries.filter(a => !this.characteristics(a.id).keywords.includes('Vigilance')).map(a => a.id), true, 'attack');
     for (const attacker of entries) this.emit('ATTACK_DECLARED', { object: ref(this.object(attacker.id)), player: attacker.player, controller: 0 });
-    this.record('ATTACKERS_DECLARED', { attackers: entries });
+    this.emit('ATTACKERS_DECLARED', { attackers: entries, controller: 0 });
   },
 };

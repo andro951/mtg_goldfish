@@ -6,6 +6,18 @@ export const eventMethods = {
     if(type==='SPELL_CAST')this.state.turnCounts[`spells:${detail.controller}`]=(this.state.turnCounts[`spells:${detail.controller}`]||0)+1;
     if(type==='DRAW'&&detail.abstract){const k=`draw:${detail.player}:${this.state.turnSerial}:${this.state.activePlayer}`;this.state.turnCounts[k]=(this.state.turnCounts[k]||0)+1;detail.first=this.state.turnCounts[k]===1;detail.amount=1;}
     const event = this.record(type, detail);
+    // Granted persist belongs to the dying object's LKI, not to its provider.
+    // Keep the graveyard identity: a blink/reanimation in response invalidates it.
+    if (type === 'LEAVE' && detail.change?.to === 'graveyard') {
+      const change=detail.change, lki=change.lki, c=lki.characteristics;
+      if (!(lki.counters['-1/-1'] > 0) && c.keywords.includes('Persist')) {
+        for (let i=0;i<(c.persistInstances || 1);i++) this.queueTrigger({
+          source:ref(lki),sourceCardId:lki.copy?.rulesId||lki.cardId,controller:lki.controller,
+          abilityId:'persist',label:`${c.name} — persist`,context:this.context(lki,{event}),
+          program:[{op:'move',ids:[change.afterRef],from:'graveyard',to:'battlefield',controller:lki.owner,counters:{'-1/-1':1}}],
+        });
+      }
+    }
     const current = Object.values(this.state.instances).filter(o => o.zone !== 'void');
     const sources = [...current, ...previousSources].filter((o, i, all) => all.findIndex(p => sameRef(p, o)) === i);
     for (const source of sources) {
@@ -33,6 +45,13 @@ export const eventMethods = {
       }
     }
     return event;
+  },
+  emitTargetEvents(stackObject) {
+    const seen=new Set();
+    for (const target of stackObject.targets || []) {
+      const o=target.ref&&this.object(target.ref);if(!o||seen.has(o.id))continue;
+      seen.add(o.id);this.emit('BECOMES_TARGET',{target:ref(o),controller:stackObject.controller,stackId:stackObject.id});
+    }
   },
   queueTrigger(trigger) {
     const object = { id: `s${this.state.nextStackId++}`, kind: 'trigger', ...clone(trigger), targets: [] };
@@ -109,6 +128,7 @@ export const eventMethods = {
     object.context = draft.context; object.targets = draft.targets || [];
     this.state.stack.push(object);
     this.state.actionDraft = null;
+    this.emitTargetEvents(object);
     this.record('TRIGGER_ON_STACK', { stackId: object.id, label: object.label, targets: object.targets });
     this.prepareNextTrigger();
   },

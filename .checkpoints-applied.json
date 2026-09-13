@@ -102,5 +102,6 @@
   "checkpoints/109d-final-engine-browser-tests.patch": "02f43e59ecde4b3066f300441b2a5548a2023508f3e9581681e0488ad7ba252a",
   "checkpoints/109e-final-browser-release.patch": "b334c05e3f27faa58e333f3cba5c7bf27528d9485155f44ce28d78574450e129",
   "checkpoints/110-visible-arrivals-focus.patch": "9eccd55d90bf56e74f9a52d5f2191a0ed91abedd43be2629168810cda0ca6ffe",
-  "checkpoints/111-canonical-requested-pool.patch": "c95aebcd09410e2b4d429e88b2faeeb359f663937fae4180a0e410e69b3862a1"
+  "checkpoints/111-canonical-requested-pool.patch": "c95aebcd09410e2b4d429e88b2faeeb359f663937fae4180a0e410e69b3862a1",
+  "checkpoints/112a-requested-rules-core.patch": "28a84e2793f41f9a762d7351461811ed234bcce8f1cd339f143d92349c1d8eab"
 }

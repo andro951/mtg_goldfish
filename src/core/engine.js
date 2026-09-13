@@ -57,7 +57,7 @@ export class Engine {
   baseCharacteristics(object) {
     const definition = this.definition(object), base = { ...definition, id: object.id, oid: object.oid,
       types: [...definition.types], subtypes: [...definition.subtypes], supertypes: [...definition.supertypes],
-      colors: [...definition.colors], keywords: [...definition.keywords], power: Number(definition.power) || 0,
+      colors: [...definition.colors], keywords: [...definition.keywords], persistInstances: definition.keywords.includes('Persist') ? 1 : 0, power: Number(definition.power) || 0,
       toughness: Number(definition.toughness) || 0, manaValue: Number(definition.manaValue) || 0 };
     if (object.zone === 'stackCards') base.manaValue += (object.flags.castX || 0) * (definition.manaCost.match(/\{X\}/g) || []).length;
     if (object.flags.prototype) Object.assign(base, clone(object.flags.prototype));
@@ -107,6 +107,7 @@ export class Engine {
       if (modification.removeTypes) c.types = c.types.filter(t => !modification.removeTypes.includes(t));
       if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
     }
+    if (layer === 6 && modification.persistInstances) c.persistInstances = (c.persistInstances || 0) + modification.persistInstances;
     if (layer === 6 && modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
     if (layer === 7.2) {
       if (modification.basePower != null) c.power = modification.basePower;

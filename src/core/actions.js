@@ -443,6 +443,7 @@ export const actionMethods = {
       this.runEffects();
     } else {
       this.state.stack.push(stackObject);
+      this.emitTargetEvents(stackObject);
       this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
       if (draft.kind === 'spell') this.emit('SPELL_CAST', { card: draft.source, controller: 0, characteristics: clone(this.characteristics(this.object(draft.source))), permission: draft.permission.id, stackId: stackObject.id, manaSources:clone(draft.context.spentManaSources||[]), castSnapshot:this.lastKnown(this.object(draft.source)) });
     }

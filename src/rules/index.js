@@ -1,3 +1,4 @@
+import { installLatest } from './latest.js';
 import { ACCEPTED_EXPANSION } from './accepted-expansion.js';
 import { installExpanded } from './expanded.js';
 import { ACCEPTED_CARDS } from './accepted-cards.js';
@@ -26,6 +27,7 @@ export function createRegistry(definitions) {
   installArtifactMechanics(registry);
   installSpecialMechanics(registry);
   installExpanded(registry);
+  installLatest(registry);
   for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
     if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for expanded goldfish scope; see the capability and interaction tests.' });
   }

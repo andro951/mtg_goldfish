@@ -276,7 +276,7 @@ export const zoneMethods = {
     source.attachedTo = ref(target); this.touch(); this.emit('ATTACHED', { object: ref(source), target: ref(target) });
   },
   checkStateActions() {
-    const death = [], keepChoices = [];
+    const death = [], keepChoices = [], cancelCounters = [];
     for (const object of this.objects('battlefield')) {
       const c = this.characteristics(object);
       if (c.types.includes('Creature') && (c.toughness <= 0 || (object.damage >= c.toughness && !c.keywords.includes('Indestructible')))) death.push({ id: ref(object), to: 'graveyard', cause: c.toughness <= 0 ? 'zero-toughness' : 'destroy' });
@@ -292,9 +292,13 @@ export const zoneMethods = {
       }
       if (c.subtypes.includes('Aura') && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
-      if (plus && minus) { const n = Math.min(plus, minus); object.counters['+1/+1'] -= n; object.counters['-1/-1'] -= n; this.touch(); }
+      if (plus && minus) cancelCounters.push({object:ref(object),amount:Math.min(plus,minus)});
     }
-    if (death.length) { this.moveBatch(death); return true; }
+    // Simultaneous SBAs use the pre-SBA last known counters for dying objects.
+    // Removing +1/+1 and -1/-1 counters first would wrongly enable persist.
+    if (death.length) this.moveBatch(death);
+    for (const cancel of cancelCounters) { const o=this.object(cancel.object);if(o){o.counters['+1/+1']-=cancel.amount;o.counters['-1/-1']-=cancel.amount;this.touch();} }
+    if (death.length) return true;
     for (const object of Object.values(this.state.instances)) {
       if (object.token && object.zone !== 'battlefield' && object.flags.hasBeenOnBattlefield && object.zone !== 'void') {
         const zone = this.state.zones[object.zone]; zone.splice(zone.indexOf(object.id), 1);
