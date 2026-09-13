@@ -67,5 +67,7 @@
   "checkpoints/088-expanded-engine.json": "09f9ac851d0e45d0a38d7de3214d24e301e2a052d721e9d0ebf3590c8f4b057b",
   "checkpoints/089-core-wiring.patch": "80df84e696cb85ae9702323edc37521c62dc8a75031877d58e80f68d16a1551e",
   "checkpoints/090-mana-acceptance.json": "06fbbf52f0085a87bb2aac98bacb07a9b29966c6c8cb278822b16eebd9a7784c",
-  "checkpoints/091-largest-pool-payment.patch": "43c957a3547a8a13e069d82b39b9e2caaedd27ff7fd4614a8aaaa6431e3e0dcb"
+  "checkpoints/091-largest-pool-payment.patch": "43c957a3547a8a13e069d82b39b9e2caaedd27ff7fd4614a8aaaa6431e3e0dcb",
+  "checkpoints/092-target-link-wiring.patch": "cc737d2837abadf164f683e34d46465ef8538690dbdfafb9b86c5e59e7795ed2",
+  "checkpoints/093-expanded-choice-corrections.patch": "066db0d5b7d23254599819ccd91b779670355a36bab5d4a425db4c01d6341f75"
 }

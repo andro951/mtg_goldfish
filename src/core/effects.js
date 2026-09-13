@@ -63,6 +63,9 @@ export const effectMethods = {
     switch (command.op) {
       case 'call': {
         const handler = this.registry.handlers.get(command.handler); requireRule(handler, `Missing effect handler ${command.handler}.`);
+        // Nested effect programs retain their variable references until they run.
+        // Resolving them here would erase choices produced by earlier branch steps.
+        for (const key of ['then', 'else', 'program']) if (command[key]) cmd[key] = clone(command[key]);
         const result = handler(this, context, cmd);
         if (result) this.insertEffects(asArray(result)); return;
       }
@@ -224,6 +227,7 @@ export const effectMethods = {
     let spec;
     if (cmd.options) {
       spec = { key, type: cmd.type || 'option', label: cmd.label, options: cmd.options, min: cmd.min ?? 1, max: cmd.max ?? 1, ordered: !!cmd.ordered };
+      if (!spec.options.length || spec.max === 0) { context.vars[key] = []; this.record('EMPTY_SELECTION', { key }); return; }
     } else {
       let selector = cmd.selector || { zones: ['battlefield'] };
       if (command.ids != null) {

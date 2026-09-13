@@ -67,3 +67,10 @@
 /* Read-only resource totals reserve no invisible space for manual controls. */
 .mana-row.read-only,.total-row.read-only{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:1px 4px}
 .mana-row.read-only>b,.total-row.read-only>b{min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Declared-target arrows remain pointer-transparent and unobtrusive at rest. */
+#target-links{position:fixed;inset:0;width:100vw;height:100dvh;z-index:1001;pointer-events:none;overflow:visible}
+#target-links *{pointer-events:none}.target-link{opacity:.13;stroke:var(--teal);fill:none;stroke-width:1.7;transition:opacity .1s}
+.target-link.spell{stroke:var(--gold)}.target-link.emphasized{opacity:.92;stroke-width:2.5}.target-link.offscreen>path{stroke-dasharray:5 4}
+.target-link circle{fill:var(--panel);stroke-width:1.2}.stack-card.target-selected{box-shadow:0 0 0 2px var(--gold)}
+@media(prefers-reduced-motion:reduce){.target-link{transition:none}}
