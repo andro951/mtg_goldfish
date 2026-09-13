@@ -1,5 +1,18 @@
 # Astra 1.4.5 — The Goldfish Lab
 
+## Visible automatic arrivals and the 13 September card pool
+
+Cards automatically entering the battlefield now use the **current visible battlefield**, including its actual size, pan and zoom. Lands prefer the lower third; other permanents prefer the upper two thirds. Crowded lanes use staggered overlap instead of adding offscreen rows. New arrivals appear above existing cards without moving them or changing the camera. Manual drops, saved positions and undo/redo retain their locations. On a surface smaller than a zoomed card, the largest possible part remains visible rather than silently changing the player's zoom.
+
+The exact 177-name request is available as **13 September · Requested 177-card pool** in the deck-preset selector. Its commander and 72 outside-the-game cards remain in their own sections. Existing saved decks are not replaced. All 177 names have explicit rules coverage, pinned canonical metadata and local images; the union with older supported lists is 317 candidates. `test-results/requested-card-audit.json` lists every requested name and its status.
+
+Seven missing implementations were added: Academy Ruins, Planar Bridge, Mycosynth Golem, Cauldron of Souls, Chocobo Racetrack, Doors of Durin and Cosmic Cube. The added regression suite covers their activations, triggers, costs and identity-sensitive interactions. Persist uses the dying object's last-known counters, including simultaneous state-based actions, and does not incorrectly return a card that changed graveyard identity in response.
+
+The Notes editor now receives focus synchronously. A delayed modal callback can no longer steal focus and cause Backspace to undo a game action. Regression tests prove both the text edit and unchanged, nonempty game history. The earlier Top ordering, Moraug delayed untap, Main 2 path and remaining-extra-combat indicator were retained and rechecked. The original intermittent Main 2 report was not conclusively reproduced; the explicit phase invariant and its tests remain.
+
+Browser and portable reports are now bound to the exact tested HTML SHA-256. Packaging rejects stale reports from a different build, even when the version number matches.
+
+
 ## Extra-combat phase visibility and Step sequencing (1.4.5)
 
 The phase bar now shows a compact **Extra ×N** chip only while one or more additional combat phases remain. The count includes the currently active extra combat, so two scheduled Moraug combats display `Extra ×2`, then `Extra ×1` when the second extra combat begins, and disappear after the extra-combat chain is finished. Hover the chip to see whether those phases were created during Main 1 or Main 2.
@@ -18,13 +31,13 @@ Moraug's additional combat is still scheduled directly by the resolving landfall
 
 Mana-color palettes are transient. Clicking anywhere except one of the displayed mana symbols closes the palette and cancels that uncommitted mana activation. The dismissing click is consumed, so it cannot accidentally tap or move a card underneath. During an existing spell/ability payment, dismissal restores that parent payment and preserves mana already produced by other sources. Escape continues to provide the same cancellation behavior.
 
-A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
+A compact, offline, rules-aware Magic testing table for the combined **317-card supported pool**. The battlefield fills the window; other controls appear only when needed.
 
 ## Open the application
 
 **No installation or internet connection is needed to play.**
 
-Open `Astra-standalone.html` in your browser. This single file contains the application, all 343 card/token/face images, and the real Magic card back. It can be moved on its own.
+Open `Astra-standalone.html` in your browser. This single file contains the application, all 351 card/token/face images, and the real Magic card back. It can be moved on its own.
 
 Alternatively, extract the source ZIP and open `AstraSimulator/index.html`. Keep the `assets` folder beside that file. Do not open the HTML from inside an unextracted ZIP.
 
@@ -59,7 +72,7 @@ Both keyboard activation and touch are supported. One touchscreen tap is handled
 
 **Generic mana allocation** reserves explicit colored/colorless requirements, uses real colorless for the numeric portion, then spends from the largest remaining eligible color pool. Restricted mana is considered only where permitted. Actual `{C}` costs still require colorless mana; numeric `{1}`, `{2}`, etc. are generic costs.
 
-The expansion includes suspend, dredge, offering, improvise, escape, warp, cascade/discover, station thresholds, transformed faces, linked graveyard-return effects and the relevant triggered/static mechanics. Suspend cards with no mana cost have a **Suspend** action instead of an illegal ordinary Cast action. Every new candidate has a focused mechanic test in addition to legal-entry/capability checks. `test-results/card-support.json` verifies all 310 names from both complete lists, including outside-the-game cards.
+The expansion includes suspend, dredge, offering, improvise, escape, warp, cascade/discover, station thresholds, transformed faces, linked graveyard-return effects and the relevant triggered/static mechanics. Suspend cards with no mana cost have a **Suspend** action instead of an illegal ordinary Cast action. Every new candidate has a focused mechanic test in addition to legal-entry/capability checks. `test-results/card-support.json` verifies all 317 names from all three complete lists, including outside-the-game cards.
 
 ## The compact table
 
@@ -141,7 +154,7 @@ Player rules run only at clean priority boundaries, after mandatory choices and 
 
 The original legacy preset contains 119 main-pool copies: 34 fixed lands, 65 selected nonlands in the active 99, and 20 reserve candidates. There is one commander and 41 outside-the-game cards. Reserve access is on by default in this edition and can be disabled in Settings. The supplied duplicate Scroll Rack is preserved and reported, not deleted. The harness is not a Commander deck-legality validator.
 
-**Menu → Deck editor** is a visual builder backed by the 310 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
+**Menu → Deck editor** is a visual builder backed by the 317 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
 
 For bulk edits, **Advanced text / paste list** remains available with `// Main`, `// Commander`, and `// Outside the Game` headings. Unsupported names stay visible so you can remove them and are reported rather than silently treated as implemented cards. Deck edits are saved locally and affect the next New test; they do not mutate the game already in progress.
 

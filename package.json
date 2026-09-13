@@ -3,7 +3,7 @@
   "version": "1.4.5",
   "private": true,
   "type": "module",
-  "description": "Offline rules-aware 310-card MTG goldfish laboratory",
+  "description": "Offline rules-aware 317-card MTG goldfish laboratory",
   "engines": { "node": ">=22" },
   "scripts": {
     "test": "node --test tests/*.test.js",

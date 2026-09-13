@@ -54,7 +54,7 @@ def expansion_arrows(p):
 
 
 def expansion_lists(p):
- menu(p,'deck');check('visual editor includes the complete 310-card union',p.locator('.deck-browser-card').count()==310)
+ menu(p,'deck');check('visual editor includes the complete 317-card union',p.locator('.deck-browser-card').count()==317)
  for name in ['Thrasios, Triton Hero','Captain Kathryn Janeway','Omni-Cheese Pizza','Transmute Artifact','Gifts Ungiven','Mox Jasper','Perennial Behemoth']:
   p.locator('#deck-search').fill(name);check('supported database finds '+name,p.locator('.deck-browser-card').count()==1)
  p.locator('#deck-search').fill('');p.locator('.deck-preset-picker summary').click();click(p,'deck-preset',extra='[data-preset=expanded]')
