@@ -1,0 +1,36 @@
+{
+  "format": "astra-text-edits-v1",
+  "files": {
+    "src/tabletop/card-actions.js": {
+      "baseSha256": "586b70cc90376fbf4c8a3a41a2503cd15a0b172abf9955bd4b45bd4d2dd4a816",
+      "sha256": "d9b297b722d9ceb1286b0937484a4355d0fb4980f8035f2369f9e71631cb8ee5",
+      "edits": [
+        {"old": "  const displayAbilities = [];let inserted = false;", "new": "  const unavailable = (engine.module(object).activated || []).filter(a => a.showWhenUnavailable && !abilities.some(b => b.id === a.id))\n    .map(a => ({...a, unavailable: true}));\n  const displayAbilities = [];let inserted = false;"},
+        {"old": "  const isLand = engine.characteristics(object).types.includes('Land');", "new": "  displayAbilities.push(...unavailable);\n  const isLand = engine.characteristics(object).types.includes('Land');"}
+      ]
+    },
+    "src/tabletop/views.js": {
+      "baseSha256": "ffac0fc2fe753b91e78da8566012ee10f5c5060e2a300d0774d783933ad0ac33",
+      "sha256": "24d2166b5922c310873e2bb1cfe3553af3bf274280b2c8421a99ca69680ba5fc",
+      "edits": [
+        {"old": "const unavailable=(a.tap&&(o.tapped||g.isSick(o)))", "new": "const unavailable=a.unavailable||(a.tap&&(o.tapped||g.isSick(o)))"},
+        {"old": "title=\"${h(a.tap&&o.tapped?'Already tapped'", "new": "title=\"${h(a.unavailable?a.showWhenUnavailable:a.tap&&o.tapped?'Already tapped'"}
+      ]
+    },
+    "src/rules/lands.js": {
+      "baseSha256": "9e9cb99aaf48eec458a265ece92714109c9e59f58dc2819dfa7535a78fb05d17",
+      "sha256": "3595702c70ad3b79ef2e6388aa4fee221546094727258831f144cfad46d39a7d",
+      "edits": [{"old": "id: 'tutor', label: 'Search for an artifact'", "new": "id: 'tutor', showWhenUnavailable: 'Requires three artifacts', label: 'Search for an artifact'"}]
+    },
+    "src/rules/expanded-special.js": {
+      "baseSha256": "2c6496a23283707cfaca7190e3840786c6a56904a00f67338917fb5ea1480eb3",
+      "sha256": "db931acad74d62a3a0e3145d4e4cd6352c7d1d45ca3100c5335d5be169d5136a",
+      "edits": [{"old": "id:'copy-graveyard',label:", "new": "id:'copy-graveyard',showWhenUnavailable:'Requires four card types in your graveyard',label:"}]
+    },
+    "tests/one-mana.test.js": {
+      "baseSha256": "47c5c1a37c48d725b052f64499a81e75336db432ea621ca7dc2756c4eca2c9d1",
+      "sha256": "bfe5764aa260705990d1c6d3b9504d04867511132dad38d26e9a7341521a43df",
+      "edits": [{"old": "if(actions.length&&actions.every(a=>single.grouped.includes(a.id)))assert.ok", "new": "if(actions.length&&!access.displayAbilities.some(a=>a.unavailable)&&actions.every(a=>single.grouped.includes(a.id)))assert.ok"}]
+    }
+  }
+}
