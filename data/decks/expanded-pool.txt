@@ -1,0 +1,295 @@
+1 Kuldotha Forgemaster
+1 Emry, Lurker of the Loch
+1 Thrasios, Triton Hero
+1 Clock of Omens
+1 Spine of Ish Sah
+1 Urza, Lord High Artificer
+1 Moonsilver Key
+1 Scrabbling Claws
+1 Master Transmuter
+1 Metalworker
+1 Mox Opal
+1 Expedition Map
+1 Sensei's Divining Top
+1 Unwinding Clock
+1 Tezzeret the Seeker
+1 Faith's Reward
+1 Goblin Welder
+1 Thought Monitor
+1 Codex Shredder
+1 Open the Vaults
+1 Aetherworks Marvel
+1 Grinding Station
+1 The Reality Chip
+1 Krark-Clan Ironworks
+1 Salvaging Station
+1 Mox Amber
+1 Crucible of Worlds
+1 Azusa, Lost but Seeking
+1 Gerrard's Hourglass Pendant
+1 Myr Battlesphere
+1 Repurposing Bay
+1 Whir of Invention
+1 Goblin Engineer
+1 Urza, Prince of Kroog
+1 Shimmer Dragon
+1 Gandalf the White
+1 Portal to Phyrexia
+1 Scourglass
+1 Oswald Fiddlebender
+1 Arcum Dagsson
+1 Scrap Mastery
+1 Esoteric Duplicator
+1 Displacer Kitten
+1 Uthros Research Craft
+1 Wake the Past
+1 Redress Fate
+1 Splendid Reclamation
+1 Second Sunrise
+1 Reshape the Earth
+1 Summer Bloom
+1 Transit Mage
+1 Pitiless Carnage
+1 Intuition
+1 Gifts Ungiven
+1 Origin Spellbomb
+1 Crystal Skull, Isu Spyglass
+1 Icetill Explorer
+1 Aesi, Tyrant of Gyre Strait
+1 Lumra, Bellow of the Woods
+1 Trade Routes
+1 Zuran Orb
+1 Lotus Petal
+1 Fateful Discovery
+1 Tireless Tracker
+1 Shorikai, Genesis Engine
+1 Nissa, Resurgent Animist
+1 Gonti's Aether Heart
+1 Tezzeret, Cruel Captain
+1 Rook Turret
+1 Ancient Greenwarden
+1 Valakut Exploration
+1 Golbez, Crystal Collector
+1 Empowered Autogenerator
+1 Oracle of Mul Daya
+1 Radiant Lotus
+1 Scapeshift
+1 Trinket Mage
+1 Life from the Loam
+1 Mana Vault
+1 Seedborn Muse
+1 Hullbreaker Horror
+1 Meloku the Clouded Mirror
+1 Quicksmith Genius
+1 Chromatic Orrery
+1 Llanowar Scout
+1 The Seriema
+1 Manabond
+1 Traveling Chocobo
+1 Tribute Mage
+1 Eusocial Engineering
+1 Six
+1 Hedron Crab
+1 Retreat to Coralhelm
+1 Sol Talisman
+1 Lotus Cobra
+1 Sarinth Steelseeker
+1 Contraband Kingpin
+1 Grim Monolith
+1 Transplant Theorist
+1 The Necrobloom
+1 Moraug, Fury of Akoum
+1 Kodama of the East Tree
+1 Rydia, Summoner of Mist
+1 Omnath, Locus of the Roil
+1 Tireless Provisioner
+1 Cultivator Colossus
+1 Patron of the Moon
+1 Thranduil the Strategist
+1 Mole Man, Moloid Master
+1 Exploration Broodship
+1 Nahiri's Lithoforming
+1 Tideforce Elemental
+1 Mina and Denn, Wildborn
+1 Sarinth Greatwurm
+1 Skyswimmer Koi
+1 The One Ring
+1 Tatyova, Benthic Druid
+1 Walking Atlas
+1 Ultron, Artificial Malevolence
+1 Claws of Gix
+1 Gandalf, Shadow's Foe
+1 Nissa, Worldsoul Speaker
+1 Roil Cartographer
+1 Aftermath Analyst
+1 PuPu UFO
+1 Sakura-Tribe Scout
+1 Mox Tantalite
+1 The Gitrog, Ravenous Ride
+1 Elven Raft-Steerer
+1 Budoka Gardener
+1 Storm Cauldron
+1 Ior Ruin Expedition
+1 Stone-Seeder Hierophant
+1 Transmute Artifact
+1 Dryad of the Ilysian Grove
+1 Crop Rotation
+1 Ghirapur Orrery
+1 Growth Spiral
+1 Exploration
+1 Hearthhull, the Worldseed
+1 Dread Tiller
+1 Need for Speed
+1 Mishra's Bauble
+1 Krosan Wayfarer
+1 The Gitrog Monster
+1 Scaled Herbalist
+1 Chulane, Teller of Tales
+1 Mox Jasper
+1 Captain Kathryn Janeway
+1 Urza's Bauble
+1 Loot, Exuberant Explorer
+1 Insidious Fungus
+1 Umbral Collar Zealot
+1 H.E.R.B.I.E. Scout Unit
+1 Skyshroud Ranger
+1 Gretchen Titchwillow
+1 Scaretiller
+1 Zimone and Dina
+1 Wight of the Reliquary
+1 Case of the Locked Hothouse
+1 Perennial Behemoth
+1 Wrenn and Seven
+1 Explore
+1 Elvish Reclaimer
+1 Squandered Resources
+1 Rites of Flourishing
+1 Spelunking
+1 Flubs, the Fool
+1 Phantom Train
+1 Urza's Saga
+1 Ancient Den
+1 Seat of the Synod
+1 Izzet Boilerworks
+1 Buried Ruin
+1 Tanglepool Bridge
+1 Fomori Vault
+1 Thornglint Bridge
+1 Inventors' Fair
+1 Razortide Bridge
+1 Rustvale Bridge
+1 Silverbluff Bridge
+1 Slagwoods Bridge
+1 Darksteel Citadel
+1 Scene of the Crime
+1 Power Depot
+1 Azorius Chancery
+1 Great Furnace
+1 Tree of Tales
+1 Simic Growth Chamber
+1 The Mycosynth Gardens
+1 Mishra's Workshop
+1 Treasure Vault
+1 Field of the Dead
+1 Goldmire Bridge
+1 Oboro, Palace in the Clouds
+1 Drossforge Bridge
+1 Vault of Whispers
+1 Darkmoss Bridge
+1 Mistvault Bridge
+1 Golgari Rot Farm
+1 Selesnya Sanctuary
+1 Gruul Turf
+1 Dimir Aqueduct
+
+// Commander
+1 The Wandering Minstrel
+
+// Outside the Game
+1 Slagstone Refinery
+1 Tundra
+1 Amulet of Vigor
+1 Boros Signet
+1 Genesis Wave
+1 Azorius Signet
+1 Blinkmoth Urn
+1 Ichor Wellspring
+1 Song of Creation
+1 Mystic Forge
+1 Tropical Island
+1 Ghirapur Aether Grid
+1 Myr Turbine
+1 Volcanic Island
+1 Terrarion
+1 Gilded Lotus
+1 Chromatic Star
+1 Temple of Epiphany
+1 Thran Dynamo
+1 Flayer Husk
+1 Vedalken Archmage
+1 Karn, Legacy Reforged
+1 The Everflowing Well
+1 Arcane Signet
+1 Scalding Tarn
+1 Selesnya Signet
+1 Misty Rainforest
+1 Akiri, Line-Slinger
+1 Jhoira, Weatherlight Captain
+1 Sol Ring
+1 Smelting Vat
+1 Amareth, the Lustrous
+1 Fabricate
+1 Conjurer's Bauble
+1 Scroll Rack
+1 Chromatic Lantern
+1 Command Tower
+1 Chimil, the Inner Sun
+1 Reshape
+1 Glimmervoid
+1 Muzzio, Visionary Architect
+1 Temple of Mystery
+1 Scrap Trawler
+1 Future Sight
+1 Trading Post
+1 Temple of Enlightenment
+1 Lotus Bloom
+1 Bootleggers' Stash
+1 Saheeli, the Sun's Brilliance
+1 Smothering Tithe
+1 Iron Man, Titan of Innovation
+1 Thousand Moons Smithy
+1 Unstable Glyphbridge
+1 Vessel of Volatility
+1 Nutrient Block
+1 Riddlesmith
+1 Ensnaring Bridge
+1 Weapons Manufacturing
+1 Apex Devastator
+1 Priest of Yawgmoth
+1 Steelfin Whale
+1 Roil Elemental
+1 Omni-Cheese Pizza
+1 Up the Beanstalk
+1 Defense Grid
+2 Arcbound Ravager
+1 Simulacrum Synthesizer
+1 Deadly Dispute
+1 Conduit of Worlds
+1 Reprocess
+1 Mesmeric Orb
+1 Shifting Woodland
+1 Implement of Combustion
+1 Surge Conductor
+1 Pull Through the Weft
+1 Uro, Titan of Nature's Wrath
+1 Zell Dincht
+1 Orzhov Basilica
+1 Toggo, Goblin Weaponsmith
+1 Boros Garrison
+1 Lion's Eye Diamond
+1 The World Tree
+1 Zimone, Quandrix Prodigy
+1 Burgeoning
+1 Thalia and The Gitrog Monster
+1 Worldsoul's Rage
+1 Wayward Swordtooth
