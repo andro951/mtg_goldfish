@@ -1,0 +1,76 @@
+diff --git a/README.md b/README.md
+index 907f7eb..3183c76 100644
+--- a/README.md
++++ b/README.md
+@@ -2,2 +2,15 @@
+ 
++## Visible automatic arrivals and the 13 September card pool
++
++Cards automatically entering the battlefield now use the **current visible battlefield**, including its actual size, pan and zoom. Lands prefer the lower third; other permanents prefer the upper two thirds. Crowded lanes use staggered overlap instead of adding offscreen rows. New arrivals appear above existing cards without moving them or changing the camera. Manual drops, saved positions and undo/redo retain their locations. On a surface smaller than a zoomed card, the largest possible part remains visible rather than silently changing the player's zoom.
++
++The exact 177-name request is available as **13 September · Requested 177-card pool** in the deck-preset selector. Its commander and 72 outside-the-game cards remain in their own sections. Existing saved decks are not replaced. All 177 names have explicit rules coverage, pinned canonical metadata and local images; the union with older supported lists is 317 candidates. `test-results/requested-card-audit.json` lists every requested name and its status.
++
++Seven missing implementations were added: Academy Ruins, Planar Bridge, Mycosynth Golem, Cauldron of Souls, Chocobo Racetrack, Doors of Durin and Cosmic Cube. The added regression suite covers their activations, triggers, costs and identity-sensitive interactions. Persist uses the dying object's last-known counters, including simultaneous state-based actions, and does not incorrectly return a card that changed graveyard identity in response.
++
++The Notes editor now receives focus synchronously. A delayed modal callback can no longer steal focus and cause Backspace to undo a game action. Regression tests prove both the text edit and unchanged, nonempty game history. The earlier Top ordering, Moraug delayed untap, Main 2 path and remaining-extra-combat indicator were retained and rechecked. The original intermittent Main 2 report was not conclusively reproduced; the explicit phase invariant and its tests remain.
++
++Browser and portable reports are now bound to the exact tested HTML SHA-256. Packaging rejects stale reports from a different build, even when the version number matches.
++
++
+ ## Extra-combat phase visibility and Step sequencing (1.4.5)
+@@ -20,3 +33,3 @@ Mana-color palettes are transient. Clicking anywhere except one of the displayed
+ 
+-A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
++A compact, offline, rules-aware Magic testing table for the combined **317-card supported pool**. The battlefield fills the window; other controls appear only when needed.
+ 
+@@ -26,3 +39,3 @@ A compact, offline, rules-aware Magic testing table for the combined **310-card
+ 
+-Open `Astra-standalone.html` in your browser. This single file contains the application, all 343 card/token/face images, and the real Magic card back. It can be moved on its own.
++Open `Astra-standalone.html` in your browser. This single file contains the application, all 351 card/token/face images, and the real Magic card back. It can be moved on its own.
+ 
+@@ -61,3 +74,3 @@ Both keyboard activation and touch are supported. One touchscreen tap is handled
+ 
+-The expansion includes suspend, dredge, offering, improvise, escape, warp, cascade/discover, station thresholds, transformed faces, linked graveyard-return effects and the relevant triggered/static mechanics. Suspend cards with no mana cost have a **Suspend** action instead of an illegal ordinary Cast action. Every new candidate has a focused mechanic test in addition to legal-entry/capability checks. `test-results/card-support.json` verifies all 310 names from both complete lists, including outside-the-game cards.
++The expansion includes suspend, dredge, offering, improvise, escape, warp, cascade/discover, station thresholds, transformed faces, linked graveyard-return effects and the relevant triggered/static mechanics. Suspend cards with no mana cost have a **Suspend** action instead of an illegal ordinary Cast action. Every new candidate has a focused mechanic test in addition to legal-entry/capability checks. `test-results/card-support.json` verifies all 317 names from all three complete lists, including outside-the-game cards.
+ 
+@@ -143,3 +156,3 @@ The original legacy preset contains 119 main-pool copies: 34 fixed lands, 65 sel
+ 
+-**Menu → Deck editor** is a visual builder backed by the 310 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
++**Menu → Deck editor** is a visual builder backed by the 317 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
+ 
+diff --git a/package.json b/package.json
+index 7289785..d49bcc8 100644
+--- a/package.json
++++ b/package.json
+@@ -5,3 +5,3 @@
+   "type": "module",
+-  "description": "Offline rules-aware 310-card MTG goldfish laboratory",
++  "description": "Offline rules-aware 317-card MTG goldfish laboratory",
+   "engines": { "node": ">=22" },
+diff --git a/tests/deck-editor.test.js b/tests/deck-editor.test.js
+index fbd1336..168a819 100644
+--- a/tests/deck-editor.test.js
++++ b/tests/deck-editor.test.js
+@@ -18,3 +18,3 @@ test('visual deck model preserves supplied quantities and sections',()=>{
+ test('database search is candidate-only and filters text, type, color and sort',()=>{
+-  assert.equal(supportedCards(registry).length,310);
++  assert.equal(supportedCards(registry).length,317);
+   assert.deepEqual(supportedCards(registry,{query:'mox opal'}).map(c=>c.name),['Mox Opal']);
+diff --git a/tests/integrity.test.js b/tests/integrity.test.js
+index 9eb63fe..29e7925 100644
+--- a/tests/integrity.test.js
++++ b/tests/integrity.test.js
+@@ -81,3 +81,3 @@ test('candidate construction keeps source copies and fixed lands in the active p
+   const g=Engine.create(registry,pool,'acceptance-partitions',{openingHand:0});
+-  assert.equal(cards.filter(c=>c.candidate).length,310);assert.equal(g.state.zones.libraryActive.length,99);
++  assert.equal(cards.filter(c=>c.candidate).length,317);assert.equal(g.state.zones.libraryActive.length,99);
+   assert.equal(g.state.zones.libraryReserve.length,20);assert.equal(g.state.zones.outside.length,41);
+diff --git a/tests/ui_acceptance_expansion.py b/tests/ui_acceptance_expansion.py
+index 3d9f85c..c20d6dd 100644
+--- a/tests/ui_acceptance_expansion.py
++++ b/tests/ui_acceptance_expansion.py
+@@ -56,3 +56,3 @@ def expansion_arrows(p):
+ def expansion_lists(p):
+- menu(p,'deck');check('visual editor includes the complete 310-card union',p.locator('.deck-browser-card').count()==310)
++ menu(p,'deck');check('visual editor includes the complete 317-card union',p.locator('.deck-browser-card').count()==317)
+  for name in ['Thrasios, Triton Hero','Captain Kathryn Janeway','Omni-Cheese Pizza','Transmute Artifact','Gifts Ungiven','Mox Jasper','Perennial Behemoth']:
