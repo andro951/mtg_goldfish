@@ -1,0 +1,20 @@
+--- a/src/rules/latest.js
++++ b/src/rules/latest.js
+@@ -3,4 +3,4 @@
+  */
+-import { ref, sameRef, asArray } from '../core/util.js';
+-import { BF, GY, target, mana, landfall, search, optional } from './helpers.js';
++import { ref, sameRef } from '../core/util.js';
++import { BF, GY, target, landfall, search, optional } from './helpers.js';
+ 
+@@ -13,3 +13,3 @@
+  const register=(name,module)=>registry.register(name,{status:'full',notes:'Explicit rules and interaction regressions in latest-cards.test.js.',...module});
+- register('Academy Ruins',{possibleMana:['C'],activated:[mana({C:1}),{id:'recover',label:'Put an artifact from your graveyard on top of your library',cost:'{1}{U}',tap:true,inputs:[target({...GY,artifact:true})],effect:()=>[{op:'library',ids:'$input.target',position:'top'}]}]});
++ register('Academy Ruins',{possibleMana:['C'],activated:[{id:'recover',label:'Put an artifact from your graveyard on top of your library',cost:'{1}{U}',tap:true,inputs:[target({...GY,artifact:true})],effect:()=>[{op:'library',ids:'$input.target',position:'top'}]}]});
+  register('Planar Bridge',{activated:[{id:'search',label:'Search for a permanent and put it onto the battlefield',cost:'{8}',tap:true,effect:()=>[search({permanent:true},'battlefield')]}]});
+--- a/tests/latest-cards.test.js
++++ b/tests/latest-cards.test.js
+@@ -17,2 +17,3 @@
+  const g=fixture({battlefield:['Academy Ruins'],graveyard:['Mox Opal','Sakura-Tribe Scout'],libraryActive:['Walking Atlas']},{mana:{U:1,C:1}});
++ assert.deepEqual(g.abilities(id(g,'Academy Ruins')).map(a=>a.id),['mana','recover']);
+  ability(g,'Academy Ruins','recover',{target:[id(g,'Mox Opal')]});assert.equal(g.state.stack.length,1);assert.equal(g.object(id(g,'Academy Ruins')).tapped,true);assert.equal(g.top().cardId,registry.get('Walking Atlas').id);
