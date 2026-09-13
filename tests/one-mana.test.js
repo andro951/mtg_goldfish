@@ -132,7 +132,7 @@ test('land face audit: every catalog land with a non-single-mana live action ope
   for(const grant of [[],['Chromatic Lantern'],['The World Tree',...lands],['Chromatic Lantern','The World Tree',...lands]]){
    const g=fixture({battlefield:[card.name,...grant,'Sol Ring','Walking Atlas','Mox Opal']});const source=g.object(id(g,card.name));const actions=g.abilities(source),single=oneManaOptions(g,source,actions),access=group(g,card.name);
    if(actions.some(a=>!single.grouped.includes(a.id)))assert.equal(access.quickMana,null,card.name);
-   if(actions.length&&actions.every(a=>single.grouped.includes(a.id)))assert.ok(access.quickMana,card.name);
+   if(actions.length&&!access.displayAbilities.some(a=>a.unavailable)&&actions.every(a=>single.grouped.includes(a.id)))assert.ok(access.quickMana,card.name);
    audited++;
   }
  }

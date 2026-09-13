@@ -10,11 +10,14 @@ export function cardActions(engine, objectOrId) {
   const grouped = single.grouped.length > 1;
   const group = grouped ? { id: ONE_MANA_ID, label: `Add one mana: ${single.choices.map(r => r.color).join(' / ')}`,
     mana: true, tap: true, singleManaGroup: true } : null;
+  const unavailable = (engine.module(object).activated || []).filter(a => a.showWhenUnavailable && !abilities.some(b => b.id === a.id))
+    .map(a => ({...a, unavailable: true}));
   const displayAbilities = [];let inserted = false;
   for (const ability of abilities) {
     if (grouped && single.grouped.includes(ability.id)) { if (!inserted) { displayAbilities.push(group); inserted = true; } }
     else displayAbilities.push(ability);
   }
+  displayAbilities.push(...unavailable);
   const isLand = engine.characteristics(object).types.includes('Land');
   const tapMana = displayAbilities.filter(a => a.mana && a.tap);
   const quickMana = isLand

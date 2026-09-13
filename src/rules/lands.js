@@ -31,7 +31,7 @@ export function installLands(registry) {
   const fairCondition = (g, controller = 0) => countType(g, 'Artifact', controller) >= 3;
   register(registry, 'Inventors\' Fair', { triggers: [upkeep('fair-life', 'Gain 1 life if you control three artifacts', () => [{ op: 'life', amount: 1 }], {
     test: (g, s, e) => e.player === s.controller && fairCondition(g, s.controller), interveningIf: (g, ctx) => fairCondition(g, ctx.controller),
-  })], activated: [{ id: 'tutor', label: 'Search for an artifact', cost: '{4}', tap: true, costs: [selfSacrifice], available: g => fairCondition(g), effect: () => [search({ artifact: true })] }] });
+  })], activated: [{ id: 'tutor', showWhenUnavailable: 'Requires three artifacts', label: 'Search for an artifact', cost: '{4}', tap: true, costs: [selfSacrifice], available: g => fairCondition(g), effect: () => [search({ artifact: true })] }] });
   register(registry, 'Fomori Vault', { activated: [{ id: 'vault', label: 'Look at top cards; keep one', cost: '{3}', tap: true, costs: [discardCost()],
     effect: (g, ctx) => [{ op: 'look', count: countType(g, 'Artifact', ctx.controller), key: 'vaultLook' },
       { op: 'choose', key: 'vaultKeep', label: 'Put one of these cards into your hand', ids: '$var.vaultLook', min: 1, max: 1 },

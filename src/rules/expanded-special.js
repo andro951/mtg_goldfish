@@ -40,7 +40,7 @@ export function installExpandedSpecial(registry){
   const candidates=g.select({zones:['battlefield'],controller:p,creature:true,power:{lte:2}},c);
   return [...(candidates.length?[{op:'choose',key:'glyphPlayer'+p,label:`Choose a power 2 or less creature controlled by ${g.state.players[p].name}`,ids:candidates,min:1,max:1}]:[]),call('glyph-choose',{player:p+1})];
  });
- register(registry,'Shifting Woodland',{entersTapped:false,entryTapped:(g,s)=>!g.count({...BF,controller:s.owner,subtype:'Forest'}),activated:[{id:'copy-graveyard',label:'Delirium: become a copy of target graveyard permanent until end of turn',cost:'{2}{G}{G}',available:(g,s)=>graveTypes(g,s.controller)>=4,inputs:[target({...GY,permanent:true})],effect:()=>[{op:'temporaryCopy',ids:'$source',target:'$input.target'}]}]});
+ register(registry,'Shifting Woodland',{entersTapped:false,entryTapped:(g,s)=>!g.count({...BF,controller:s.owner,subtype:'Forest'}),activated:[{id:'copy-graveyard',showWhenUnavailable:'Requires four card types in your graveyard',label:'Delirium: become a copy of target graveyard permanent until end of turn',cost:'{2}{G}{G}',available:(g,s)=>graveTypes(g,s.controller)>=4,inputs:[target({...GY,permanent:true})],effect:()=>[{op:'temporaryCopy',ids:'$source',target:'$input.target'}]}]});
  register(registry,'Apex Devastator',{triggers:Array.from({length:4},(_,n)=>({id:'cascade-'+n,label:'Cascade '+(n+1),zone:'stackCards',event:'SPELL_CAST',test:(g,s,e)=>sameRef(s,e.card),effect:()=>[call('cascade',{lessThan:10})]}))});
  register(registry,'Chimil, the Inner Sun',{spellsUncounterable:true,triggers:[endStep('discover','Discover 5',()=>[call('cascade',{discover:5})])]});
  registry.registerHandler('expanded.cascade',(g,c,cmd)=>{

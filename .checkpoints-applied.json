@@ -133,5 +133,6 @@
   "checkpoints/118a-mana-choice-wiring.patch": "b844f903daff4bc404eb86a3b94553310b39b4d4a73e1a5d607a97d3b287c921",
   "checkpoints/118b-single-mana-metadata.patch": "a5519a03a815c56a5348c64be58f4acdae23fcf795f586b141603bbd8282fcc9",
   "checkpoints/118c-land-click-shortcuts.patch": "5431f28456f8101d2c2f484df08a63e524e03c3cf9b5a69564e3890c28778b35",
-  "checkpoints/118d-mana-test-wiring.patch": "d7a3c673dc6d7907e4a1a3899918b80f80685555122baf4ddafca3ac3e2028a1"
+  "checkpoints/118d-mana-test-wiring.patch": "d7a3c673dc6d7907e4a1a3899918b80f80685555122baf4ddafca3ac3e2028a1",
+  "checkpoints/118e-disabled-utility-actions.json": "6db291b7bb64c946c1bc378c1eb85db0d580c06a3f132ec1e3ef8adc8d87a602"
 }
