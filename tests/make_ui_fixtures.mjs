@@ -62,3 +62,6 @@ save('saga-access',{battlefield:[{name:"Urza's Saga",lore:2,props:{flags:{sagaMa
 save('monolith-access',{battlefield:[{name:'Grim Monolith',tapped:true}]},{mana:{C:4}});
 save('granted-access',{battlefield:['Ancient Den',"Bootleggers' Stash",'Krark-Clan Ironworks']});
 save('ability-layers',{battlefield:['Treasure Vault','Ancient Den']});
+
+const gridCards=registry.list().filter(c=>c.candidate).slice(0,27).map(c=>c.name);
+save('grid-resize',{graveyard:gridCards,exile:gridCards,outside:gridCards});

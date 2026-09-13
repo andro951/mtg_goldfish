@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def menus(p):
- menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==11)
+ menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==12)
  click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 310 candidates',p.locator('.registry-card').count()==310)
  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
  p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))
@@ -19,12 +19,12 @@ def menus(p):
  p.locator('#deck-search').fill('');p.locator('#deck-type').select_option('Land');check('deck type filter shows only supported lands',p.locator('.deck-browser-card').count()>20)
  p.locator('#deck-type').select_option('');p.locator('#deck-color').select_option('M');check('deck color filter finds multicolor cards',p.locator('.deck-browser-card').count()>0)
  p.locator('#deck-color').select_option('');p.locator('#deck-sort').select_option('mv');check('deck sort control updates without losing the editor',p.locator('.deck-editor-modal').is_visible())
- p.locator('.deck-advanced summary').click();p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel\n// Outside the Game\n');click(p,'deck-apply-text','.modal')
+ click(p,'dialog',extra='[data-dialog=decktext]');p.locator('#deck-text').fill('1 Unsupported future card\n// Commander\n1 The Wandering Minstrel\n// Outside the Game\n');click(p,'deck-apply-text','.modal')
  check('advanced paste reports unsupported names instead of silently accepting them',not p.evaluate('astra.ui.deckReport.accepted') and p.locator('.deck-live-status.needs-work').count()==1)
  if not args.memory:
   with p.expect_download() as d:click(p,'export-report','.modal')
   d.value.save_as(OUT/'missing-test.json');check('missing card report downloads as JSON',json.loads((OUT/'missing-test.json').read_text())['missing'])
- click(p,'restore-pool','.modal');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
+ click(p,'restore-pool','.modal');click(p,'dialog',extra='[data-dialog=deck]');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
  for name in ['guide','settings','log','notes','save']:
   menu(p,name);check(f'{name} hidden menu opens and closes',p.locator('.modal').is_visible());close(p)
  menu(p,'settings');p.locator('[data-setting=manualControls]').check();check('card-size slider removed; geometry controls replace it',p.locator('#card-size,input[type=range]').count()==0)
