@@ -104,5 +104,6 @@
   "checkpoints/110-visible-arrivals-focus.patch": "9eccd55d90bf56e74f9a52d5f2191a0ed91abedd43be2629168810cda0ca6ffe",
   "checkpoints/111-canonical-requested-pool.patch": "c95aebcd09410e2b4d429e88b2faeeb359f663937fae4180a0e410e69b3862a1",
   "checkpoints/112a-requested-rules-core.patch": "28a84e2793f41f9a762d7351461811ed234bcce8f1cd339f143d92349c1d8eab",
-  "checkpoints/112b-catalog.patch": "1e9d6e2dc7dbd2d21d01f3affe0c937fbe2c99e73fe20a5065297d9797cb0eb6"
+  "checkpoints/112b-catalog.patch": "1e9d6e2dc7dbd2d21d01f3affe0c937fbe2c99e73fe20a5065297d9797cb0eb6",
+  "checkpoints/112c-build.patch": "3ecb06dc56ad097c117cd0c6b31540e049775c6b53371301a86473f1f245502a"
 }
