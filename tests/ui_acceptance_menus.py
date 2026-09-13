@@ -42,7 +42,16 @@ def menus(p):
  for i in [1,2,3]:
   p.locator(f'[data-action=resource][data-player="{i}"][data-delta="1"]').click();p.locator(f'[data-action=resource][data-player="{i}"][data-delta="-1"]').click()
  check('all compact opponent life controls work',all(state(p,f'state.players[{i}].life')==40 for i in [1,2,3]))
- menu(p,'notes');start=state(p,'state.notes.length');cursor=state(p,'cursor');p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Backspace');check('Backspace edits text without undoing game',p.locator('#note-text').input_value()=='Line tested <b>literal</b' and state(p,'cursor')==cursor);click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
+ menu(p,'notes');start=state(p,'state.notes.length');cursor=state(p,'cursor')
+ p.locator('#note-text').fill('Line tested <b>literal</b>');p.locator('#note-text').press('Control+End')
+ before=p.locator('#note-text').evaluate('(e)=>({text:e.value,start:e.selectionStart,end:e.selectionEnd,active:document.activeElement.id})')
+ p.locator('#note-text').press('Backspace')
+ after=p.locator('#note-text').evaluate('(e)=>({text:e.value,start:e.selectionStart,end:e.selectionEnd,active:document.activeElement.id})')
+ detail={'before':before,'after':after,'cursorBefore':cursor,'cursorAfter':state(p,'cursor')}
+ check('Backspace deletes exactly one character in Notes',after['text']=='Line tested <b>literal</b',detail)
+ check('Backspace in Notes leaves game history unchanged',state(p,'cursor')==cursor,detail)
+ check('Notes retains the active caret after editing',after['active']=='note-text' and after['start']==after['end']==len(after['text']),detail)
+ click(p,'note','.modal');check('notes stored without interpreting HTML',state(p,'state.notes.length')==start+1 and p.locator('.note b').count()==0)
  menu(p,'log');p.locator('.log-entry summary').first.click();check('action-log entry expands to events',p.locator('.log-entry[open] pre').is_visible());close(p)
  menu(p);click(p,'undo','.modal');check('Menu Undo is operational',state(p,'state.notes.length')==start);click(p,'redo','.modal');check('Menu Redo is operational',state(p,'state.notes.length')==start+1);close(p)
  menu(p,'guide');p.keyboard.press('Escape');check('Escape closes modal and restores table interaction',p.locator('.modal').count()==0 and not p.evaluate('document.getElementById("app").inert'))

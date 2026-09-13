@@ -1,3 +1,4 @@
+import { visiblePlacement } from './placement.js';
 import { cardActions } from './card-actions.js';
 import { isManaColorChoice } from './mana-choice.js';
 import { installTargetLinks } from './target-links.js';
@@ -40,7 +41,7 @@ const ctx=()=>({g,ui,prefs,registry,saveStatus,programs}),byId=id=>document.getE
 const targetLinks=installTargetLinks({get g(){return g;},ui});
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
-function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y};return result;}
+function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
 function exported(){return {...g.exportSession(),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
 async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}const seq=saveSequence,doc=exported();try{const at=await store.save(doc);if(seq===saveSequence){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}}catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}}
 function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
@@ -113,6 +114,14 @@ function makeLayouts(){
     const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height,prefs.gridViews?.[zone]?.columns);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
   }
   const list=cardLayout(objects,zone==='battlefield'?visibleWidth:prefs.dockWidth);
+  if(zone==='battlefield'){
+    for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
+      if(o.location)continue;
+      if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
+      else c.autoArrival=true;
+    }
+    ui.layouts[zone]=list;continue;
+  }
   const existing=list.filter(c=>{const o=g.object(c.id);return o.location||ui.memo[`${zone}/${o.id}:${o.oid}`];});
   for(const c of list){const o=g.object(c.id),key=`${zone}/${o.id}:${o.oid}`;
    if(o.location)continue; // Preserve the original implicit position for visual undo.
@@ -128,6 +137,27 @@ function makeLayouts(){
   }
   ui.layouts[zone]=list;
  }
+}
+// Called after DOM sizing: use the actual surface, including wrapped toolbars,
+// resized hand rows and open side zones. Only new object identities are placed;
+// rerenders, undo, reload and explicitly dropped cards retain their locations.
+function placeBattlefieldArrivals(){
+ const list=ui.layouts.battlefield||[],arrivals=list.filter(c=>c.autoArrival);
+ if(!arrivals.length)return;
+ const surface=document.querySelector('[data-surface="battlefield"]');if(!surface)return;
+ const viewport={width:surface.clientWidth,height:surface.clientHeight},rect=surface.getBoundingClientRect();
+ const camera=prefs.cameras.battlefield||{x:0,y:0,zoom:1};
+ const obstacles=[...floats.querySelectorAll('[data-floating]')].filter(el=>!el.hidden).map(el=>{
+   const r=el.getBoundingClientRect();return {left:r.left-rect.left,top:r.top-rect.top,right:r.right-rect.left,bottom:r.bottom-rect.top};
+ });
+ const existing=list.filter(c=>!c.autoArrival),nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
+ for(const c of arrivals){
+   const o=g.object(c.id),land=g.characteristics(o).types.includes('Land');
+   Object.assign(c,visiblePlacement(c,existing,viewport,camera,{land,obstacles}));delete c.autoArrival;
+   ui.memo[`battlefield/${o.id}:${o.oid}`]={x:c.x,y:c.y,z:c.z};existing.push(c);
+   const el=nodes.get(c.id);if(el){el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
+ }
+ targetLinks.schedule();
 }
 function applyCamera(zone){const surface=document.querySelector(`[data-surface="${zone}"]`),c=prefs.cameras[zone]||{x:0,y:0,zoom:1};if(surface){surface.querySelector('.world').style.transform=`translate(${c.x}px,${c.y}px) scale(${c.zoom})`;surface.querySelector('[data-zoom-label]').textContent=Math.round(c.zoom*100)+'%';}targetLinks.schedule();}
 function reflowDockGrid(zone=prefs.dock,force=false){
@@ -189,11 +219,17 @@ function render(){if(!g||rendering)return;rendering=true;try{
  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
  for(const el of floats.querySelectorAll('[data-resizable]')){const v=prefs.popupSizes?.[el.dataset.floating];if(v){el.style.width=Math.min(v.width,innerWidth-8)+'px';el.style.height=Math.min(v.height,innerHeight-40)+'px';}}
  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
- renderModal(false);size();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
+ renderModal(false);size();placeBattlefieldArrivals();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
  restoreFocus(focus);interactions?.refreshHover();
  }finally{rendering=false;}scheduleModeDefault();}
-function openDialog(name){clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(['deck','decktext'].includes(name))auditDeck();renderModal();requestAnimationFrame(()=>overlay.querySelector(name==='deck'?'#deck-search':name==='decktext'?'#deck-text':'input:not([type=checkbox]),textarea,button')?.focus({preventScroll:true}));}
+function openDialog(name){
+ clearTimeout(autoTimer);ui.modal=name;if(name==='new')ui.seed=newSeed();if(['deck','decktext'].includes(name))auditDeck();renderModal();
+ // The dialog exists now. A deferred focus callback can steal focus after the
+ // user has started typing (or after a different dialog has already opened).
+ const selector=name==='deck'?'#deck-search':name==='decktext'?'#deck-text':name==='notes'?'#note-text':'input:not([type=checkbox]),textarea,button';
+ overlay.querySelector(selector)?.focus({preventScroll:true});
+}
 function autoResolve(){
  clearTimeout(autoTimer);
  if(!g||programs.recording||programs.running||programs.model.paused||(g.state.settings.holdPriority&&!ui.resolveRequested)||!g.state.stack.length)return;
