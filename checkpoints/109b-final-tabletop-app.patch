@@ -1,0 +1,36 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+index d9c001c..f71aad9 100644
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -476,7 +476,7 @@ document.addEventListener('keydown',e=>{
+ });
+ let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.4'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.5'};
+ async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
+  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
+  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
+diff --git a/src/tabletop/dialogs.js b/src/tabletop/dialogs.js
+index b57fb8d..8aaa790 100644
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -56,7 +56,7 @@ function deckTextEditor(ctx){
+ export function dialogs(ctx){
+   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.4';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.5';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
+   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
+   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
+diff --git a/src/tabletop/styles.css b/src/tabletop/styles.css
+index 0a9b38e..66c4ff0 100644
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -99,3 +99,5 @@
+ 
+ .deck-text-issues{flex-shrink:0;max-height:100px;overflow:auto;white-space:pre-wrap;color:#ffc89c;font-size:11px;margin:0}
+ .deck-text-modal .modal-footer{flex-wrap:wrap;gap:6px;padding:8px 12px}
++
++.extra-combat-chip{display:inline-flex;align-items:center;justify-content:center;min-height:21px;padding:2px 6px;margin-left:2px;border:1px solid #7c6040;border-radius:10px;background:#2b241b;color:#e7c67f;font-size:9px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}.extra-combat-chip.active{border-color:var(--gold);background:#40331f;color:#ffe2a6;box-shadow:0 0 0 1px #d1b17822 inset}
