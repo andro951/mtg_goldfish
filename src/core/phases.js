@@ -38,20 +38,35 @@ export const phaseMethods = {
         return this.enterStep('beginCombat');
       }
     }
-    if (previous === 'endCombat' && this.state.extraCombatActive) {
-      const origin = this.state.currentExtraCombat.after;
-      const nextExtra = this.state.extraCombats.findIndex(c => c.after === origin && c.controller === this.state.activePlayer);
-      if (nextExtra >= 0) {
-        this.state.currentExtraCombat = this.state.extraCombats.splice(nextExtra, 1)[0];
-        return this.enterStep('beginCombat');
+    if (previous === 'endCombat') {
+      if (this.state.extraCombatActive) {
+        const origin = this.state.currentExtraCombat.after;
+        const nextExtra = this.state.extraCombats.findIndex(c => c.after === origin && c.controller === this.state.activePlayer);
+        if (nextExtra >= 0) {
+          this.state.currentExtraCombat = this.state.extraCombats.splice(nextExtra, 1)[0];
+          return this.enterStep('beginCombat');
+        }
+        const destination = this.state.combatReturn || 'main2';
+        this.state.extraCombatActive = false; this.state.currentExtraCombat = null; this.state.combatReturn = null;
+        return this.enterStep(destination);
       }
-      const destination = this.state.combatReturn || 'main2';
-      this.state.extraCombatActive = false; this.state.currentExtraCombat = null; this.state.combatReturn = null;
-      return this.enterStep(destination);
+      // Normal combat always flows into the postcombat main phase. Keeping this
+      // explicit prevents extra-combat bookkeeping from ever bypassing Main 2.
+      return this.enterStep('main2');
     }
     const index = STEPS.indexOf(previous);
     requireRule(index >= 0, 'Keep your hand before advancing.');
     return this.enterStep(STEPS[index + 1]);
+  },
+  extraCombatStatus(controller = this.state.activePlayer) {
+    const queued = this.state.extraCombats.filter(combat => combat.controller === controller);
+    const current = this.state.extraCombatActive && this.state.currentExtraCombat?.controller === controller ? this.state.currentExtraCombat : null;
+    const combats = current ? [current, ...queued] : queued;
+    return {
+      remaining: combats.length, current: !!current, queued: queued.length,
+      afterMain1: combats.filter(combat => combat.after === 'main1').length,
+      afterMain2: combats.filter(combat => combat.after === 'main2').length,
+    };
   },
   startNextTurn() {
     let next = this.state.activePlayer;

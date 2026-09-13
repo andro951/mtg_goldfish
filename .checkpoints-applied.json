@@ -94,5 +94,6 @@
   "checkpoints/104b2-card-order-views.json": "c06bdd545fe36c6d077c7919a7cc4044ea096ba935bfce87709364fd9c010c6a",
   "checkpoints/104b3-card-order-styles.patch": "3ced9e12e0a696c03b3c86f16689376a7868d7c8e6e7ffb96e993b7b0a39ef19",
   "checkpoints/104c-card-order-browser-release.patch": "98bf25d34f6352fcfaf7fbc942dd254b3e992c3b7b2ad76c8bca3d5dd698b98a",
-  "checkpoints/104d-card-order-version-docs.patch": "d1ea6f9e21f2166c50079506f2497098249f945f06f8870fd74ee28f037d3e93"
+  "checkpoints/104d-card-order-version-docs.patch": "d1ea6f9e21f2166c50079506f2497098249f945f06f8870fd74ee28f037d3e93",
+  "checkpoints/108a-final-core.json": "d78ba5119759b411cec0a034350dbb95261345a3b05e0d6a230c3e0af86758e5"
 }
