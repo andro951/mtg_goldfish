@@ -1,0 +1,114 @@
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -1,2 +1,3 @@
++import { attachmentLayout, attachmentBasis, followingParents, followsAttachment } from './attachments.js';
+ import { visiblePlacement } from './placement.js';
+ import { cardActions } from './card-actions.js';
+@@ -39,8 +40,8 @@
+ }});
+ const ctx=()=>({g,ui,prefs,registry,saveStatus,programs}),byId=id=>document.getElementById(id);
+-const targetLinks=installTargetLinks({get g(){return g;},ui});
++const targetLinks=installTargetLinks({get g(){return g;},get prefs(){return prefs;},ui});
+ function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
+ function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
+-function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
++function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{}),...(typeof p.attachmentBasis==='string'&&p.attachmentBasis.length<200?{attachmentBasis:p.attachmentBasis}:{})};return result;}
+ function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
+ let saveRevision=0,savedRevision=-1,saveFlight=null;
+@@ -136,4 +137,5 @@
+   if(zone==='battlefield'){
+     for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
++      if(memo?.attachmentBasis===attachmentBasis(o)){c.x=memo.x;c.y=memo.y;c.z=memo.z??c.z;continue;}
+       if(o.location)continue;
+       if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
+@@ -179,4 +181,17 @@
+  targetLinks.schedule();
+ }
++function placeAttachments(){
++ const list=ui.layouts.battlefield||[],parents=followingParents(g);
++ if(!parents.size)return;
++ const surface=document.querySelector('[data-surface="battlefield"]'),cam=prefs.cameras.battlefield||{x:0,y:0,zoom:1};
++ const viewport=surface?{left:-cam.x/cam.zoom,top:-cam.y/cam.zoom,right:(surface.clientWidth-cam.x)/cam.zoom,bottom:(surface.clientHeight-cam.y)/cam.zoom}:null;
++ const placed=attachmentLayout(g,list,parents,viewport),nodes=new Map([...document.querySelectorAll('[data-surface="battlefield"] [data-position]')].map(el=>[el.dataset.position,el]));
++ ui.layouts.battlefield=placed;
++ for(const c of placed){
++   if(parents.has(c.id)){const o=g.object(c.id);ui.memo[`battlefield/${o.id}:${o.oid}`]={x:c.x,y:c.y,z:c.z,attachmentBasis:attachmentBasis(o)};}
++   const el=nodes.get(c.id);if(el){el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
++ }
++ targetLinks.schedule();
++}
+ function applyCamera(zone){const surface=document.querySelector(`[data-surface="${zone}"]`),c=prefs.cameras[zone]||{x:0,y:0,zoom:1};if(surface){surface.querySelector('.world').style.transform=`translate(${c.x}px,${c.y}px) scale(${c.zoom})`;surface.querySelector('[data-zoom-label]').textContent=Math.round(c.zoom*100)+'%';}targetLinks.schedule();}
+ function reflowDockGrid(zone=prefs.dock,force=false){
+@@ -239,5 +254,5 @@
+  for(const el of floats.querySelectorAll('[data-resizable]')){const v=prefs.popupSizes?.[el.dataset.floating];if(v){el.style.width=Math.min(v.width,innerWidth-8)+'px';el.style.height=Math.min(v.height,innerHeight-40)+'px';}}
+  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
+- renderModal(false);size();placeBattlefieldArrivals();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
++ renderModal(false);size();placeBattlefieldArrivals();placeAttachments();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
+  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
+  restoreFocus(focus);interactions?.refreshHover();
+@@ -371,4 +386,6 @@
+  if(action==='next-player'){let p=g.state.activePlayer;for(let n=0;n<4;n++){p=(p+1)%4;if(!g.state.players[p].lost)break;}return run({type:'ADVANCE_PHASE',player:p,step:'main1',nextTurn:true});}
+  if(action==='opponent')return run({type:'ADVANCE_PHASE',player:Number(el.dataset.player),step:'main1'});
++ if(action==='inspect-link')return inspect(el.dataset.id);
++ if(action==='attachment-follow'){const o=g.object(el.dataset.id);if(!o)return;const pos=ui.layouts.battlefield?.find(c=>c.id===o.id);return run({type:'SET_ATTACHMENT_FOLLOW',id:o.id,enabled:!followsAttachment(o),...(pos?{position:{x:pos.x,y:pos.y}}:{})});}
+  if(action==='resolve')return run({type:'RESOLVE_TOP'});if(action==='resolve-all')return run({type:'RESOLVE_ALL'});if(action==='pass')return run({type:'PASS_PRIORITY'});
+  if(action==='zone'){prefs.dock=prefs.dock===el.dataset.zone?null:el.dataset.zone;ui.activeZone=prefs.dock||'battlefield';render();if(prefs.dock&&!prefs.cameras[prefs.dock])fit(prefs.dock);savePreferences();return;}
+@@ -434,5 +451,5 @@
+  if(action==='debug-shuffle')return run({type:'DEBUG_SHUFFLE'});
+ }
+-interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
++interactions=installInteractions({linksChanged:()=>targetLinks.schedule(),linksHighlight:()=>targetLinks.highlight(),get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
+ let outsideManaDismiss=null;
+ function manaPickerIsOpen(){return !!g&&isManaColorChoice(g.state.pending)&&!!floats.querySelector('.mana-window');}
+diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
+--- a/src/tabletop/interactions.js
++++ b/src/tabletop/interactions.js
+@@ -1,2 +1,3 @@
++import { attachmentDrag } from './attachments.js';
+ import { CARD_W,CARD_H,bounds,contains,overlaps,canonicalHit,worldPoint,screenBounds,anchorFromGrab,zoomAt,dropOrder,clamp } from './geometry.js';
+ import { picture } from './views.js';
+@@ -10,5 +11,5 @@
+   const hit=(el,p)=>canonicalHit(api.ui.layouts[el.dataset.surface]||[],worldPoint(p,rect(el),camera(el.dataset.surface)));
+   function handHit(p){return [...document.querySelectorAll('[data-hand-position]')].reverse().find(el=>contains(rect(el),p))?.dataset.handPosition||null;}
+-  function clearHover(){lifted?.classList.remove('hover-lift');lifted=null;}
++  function clearHover(){lifted?.classList.remove('hover-lift');lifted=null;if(api.ui.hoveredCard){api.ui.hoveredCard=null;api.linksHighlight?.();}}
+   function hover(p){
+     if(gesture||api.ui.modal){clearHover();return;}
+@@ -17,5 +18,5 @@
+     if(surface){const card=hit(surface,p);if(card)el=surface.querySelector(`[data-position="${card.id}"]`);}
+     else if(top?.closest('.hand')){const id=handHit(p);if(id)el=document.querySelector(`[data-hand-position="${id}"]`);}
+-    if(el!==lifted){clearHover();el?.classList.add('hover-lift');lifted=el;}
++    if(el!==lifted){clearHover();el?.classList.add('hover-lift');lifted=el;api.ui.hoveredCard=el?.dataset.position||el?.dataset.handPosition||null;api.linksHighlight?.();}
+   }
+   function endGhosts(){document.querySelectorAll('.drag-ghost,.marquee').forEach(el=>el.remove());document.querySelectorAll('.being-dragged,.drop-target').forEach(el=>el.classList.remove('being-dragged','drop-target'));}
+@@ -52,6 +53,7 @@
+         const r=rect(el),sourceZone=surface?.dataset.surface||object.zone,tapped=surface?object.tapped:false;
+         const base=(api.ui.layouts[sourceZone]||[]).find(c=>c.id===picked)||{x:0,y:0};
+-        const ids=surface&&api.ui.selected.has(picked)?[...api.ui.selected].filter(id=>api.g.object(id)?.zone===object.zone):[picked];
+-        gesture={kind:'card',id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
++        let ids=surface&&api.ui.selected.has(picked)?[...api.ui.selected].filter(id=>api.g.object(id)?.zone===object.zone):[picked];
++        const group=sourceZone==='battlefield'?attachmentDrag(api.g,api.ui.layouts.battlefield||[],ids,picked):{ids,manualIds:ids};ids=group.ids;
++        gesture={kind:'card',manualIds:group.manualIds,id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
+           inspectOnly:target.closest('[data-action="card-abilities"]')?.dataset.id===picked,
+           scale:r.width/(tapped?CARD_H:CARD_W),grab:{x:(p.x-r.left)/r.width,y:(p.y-r.top)/r.height},shift:e.shiftKey,
+@@ -89,5 +91,5 @@
+       const box={left:Math.min(a.x,b.x),right:Math.max(a.x,b.x),top:Math.min(a.y,b.y),bottom:Math.max(a.y,b.y)};
+       api.ui.selected=new Set(d.original);for(const card of api.ui.layouts[d.zone]||[])if(overlaps(bounds(card),box))api.ui.selected.add(card.id);
+-      d.el.querySelectorAll('[data-card]').forEach(el=>el.classList.toggle('selected',api.ui.selected.has(el.dataset.card)));
++      d.el.querySelectorAll('[data-card]').forEach(el=>el.classList.toggle('selected',api.ui.selected.has(el.dataset.card)));api.linksHighlight?.();
+       let m=d.el.querySelector('.marquee');if(!m){m=document.createElement('div');m.className='marquee';d.el.append(m);}
+@@ -99,5 +101,5 @@
+         d.active=true;
+       }
+-      if(d.active)ghosts(p);
++      if(d.active){ghosts(p);api.linksChanged?.();}
+     }
+   }
+@@ -125,5 +127,5 @@
+     const order=dropOrder(api.ui.layouts[zone]||[],d.items.map(i=>i.id),moved,world);
+     api.ui.lastPoint=p;
+-    if(d.zone===zone&&['battlefield','graveyard','exile','outside'].includes(zone))api.run({type:'LAYOUT',updates:moved.map(({id,x,y})=>({id,x,y})),order,anchor:'corner-v2'});
++    if(d.zone===zone&&['battlefield','graveyard','exile','outside'].includes(zone))api.run({type:'LAYOUT',manualIds:d.manualIds,updates:moved.map(({id,x,y})=>({id,x,y})),order,anchor:'corner-v2'});
+     else if(zone==='battlefield'){
+       // A cast/land play records placement as part of its own transaction.
