@@ -1,3 +1,4 @@
+import { attackCombatKey, attackSelectionReady, cleanAttackDraft, selectedAttackers, setAttackPick, toggleAttackPick } from './attack-selection.js';
 import { workspaceSnapshot, workspaceTransition, fitWorkspace } from './look-window.js';
 import { attachmentLayout, attachmentBasis, followingParents, followsAttachment } from './attachments.js';
 import { visiblePlacement } from './placement.js';
@@ -14,7 +15,7 @@ import { SessionStore } from '../ui/storage.js';
 import { createLab } from '../ui/labs.js';
 import { h, saveDownload } from '../ui/components.js';
 import { choiceOptions } from '../ui/views.js';
-import { toolbar, programControls, tabletop, stackPopup, inspectorPopup, decisionPopup, workspacePopup, openingPopup } from './views.js';
+import { toolbar, programControls, attackerControls, tabletop, stackPopup, inspectorPopup, decisionPopup, workspacePopup, openingPopup } from './views.js';
 import { dialogs } from './dialogs.js';
 import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
 import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
@@ -30,7 +31,7 @@ const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive){re
 const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,selected:new Set(),selectMode:false,
  grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText??data.deckText,deckReport:null,
  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
- noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null,ruleDraft:null,sequenceName:'',sequenceFuture:false,resolveRequested:false};
+ noteText:'',attackDraft:null,gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null,ruleDraft:null,sequenceName:'',sequenceFuture:false,resolveRequested:false};
 const saveStatus={text:'Opening browser storage…',error:false};
 let programRender=0,modalRendering=false;
 const programs=createProgramController({get g(){return g;},toast,changed(configuration=true){
@@ -45,7 +46,7 @@ const targetLinks=installTargetLinks({get g(){return g;},get prefs(){return pref
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
 function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{}),...(typeof p.attachmentBasis==='string'&&p.attachmentBasis.length<200?{attachmentBasis:p.attachmentBasis}:{})};return result;}
-function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
+function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot(),attackDraft:cleanAttackDraft(g,ui.attackDraft)};}
 let saveRevision=0,savedRevision=-1,saveFlight=null;
 async function saveNow(){
  if(!g)return;clearTimeout(saveTimer);clearTimeout(preferenceTimer);persistPreferences(prefs);
@@ -69,7 +70,7 @@ async function saveNow(){
 function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export your session.'):'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
 function savePreferences(){saveRevision++;clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null,workspaceRefit:false});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null,attackDraft=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',attackDraft:cleanAttackDraft(g,attackDraft),layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null,workspaceRefit:false});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
 function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
@@ -256,7 +257,7 @@ function positionPopups(){
 }
 function renderModal(preserve=true){if(modalRendering)return;modalRendering=true;try{const focus=preserve?focusSnapshot():null,scroll=overlay.querySelector('.modal-body')?.scrollTop||0,nested=new Map(preserve?[...overlay.querySelectorAll('[data-modal-scroll]')].map(el=>[el.dataset.modalScroll,[el.scrollLeft,el.scrollTop]]):[]);overlay.innerHTML=dialogs(ctx());root.inert=!!ui.modal;floats.inert=!!ui.modal;targetLinks.schedule();if(preserve){const body=overlay.querySelector('.modal-body');if(body)body.scrollTop=scroll;for(const el of overlay.querySelectorAll('[data-modal-scroll]')){const pos=nested.get(el.dataset.modalScroll);if(pos){el.scrollLeft=pos[0];el.scrollTop=pos[1];}}restoreFocus(focus);}}finally{modalRendering=false;}}
 function render(){if(!g||rendering)return;rendering=true;try{
- syncInspectorState();
+ syncInspectorState();ui.attackDraft=cleanAttackDraft(g,ui.attackDraft);
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
  prepareChoice();syncWorkspace();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
@@ -318,7 +319,30 @@ function selectChoice(id){const p=g.state.pending,ids=p?.candidates||p?.ids||[];
  }
  return true;
 }
+// Update only the attack controls and borders while picking. Do not rebuild
+// the battlefield, steal keyboard focus or put UI-only picks in undo history.
+function refreshAttackSelection(){
+ ui.attackDraft=cleanAttackDraft(g,ui.attackDraft);
+ for(const el of document.querySelectorAll('[data-surface="battlefield"] [data-card]')){
+  const picked=!!ui.attackDraft.cards[el.dataset.card]?.selected;
+  el.classList.toggle('attack-selected',picked);
+  const face=el.querySelector('.face');if(face?.hasAttribute('aria-pressed'))face.setAttribute('aria-pressed',String(picked));
+ }
+ const controls=document.querySelector('.attack-controls');if(controls)controls.innerHTML=attackerControls(ctx());
+ const confirm=overlay.querySelector('[data-action="attack-confirm"]');if(confirm)confirm.textContent=`Declare selected attackers (${selectedAttackers(g,ui.attackDraft).length})`;
+ targetLinks.schedule();scheduleSave();
+}
+function editAttackPick(id,options){
+ if(programs.running){toast('Stop the running sequence before selecting attackers.',true);return;}
+ const result=options?setAttackPick(g,ui.attackDraft,id,options):toggleAttackPick(g,ui.attackDraft,id);
+ ui.attackDraft=result.draft;
+ if(result.error){toast(result.error,true);return;}
+ programs.userAction();
+ if(ui.inspected){clearInspectorState();render();scheduleSave();}else refreshAttackSelection();
+}
 function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&selectChoice(id))return;
+ const creature=g.object(id);
+ if(attackSelectionReady(g)&&creature?.zone==='battlefield'&&g.characteristics(creature).types.includes('Creature')){editAttackPick(id);return;}
  if(ui.inspected===id){clearInspectorState();render();return;}
  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
  const o=g.object(id);if(!o)return;const p=g.state.pending;
@@ -337,7 +361,7 @@ function deckEdit(operation,message){updateDeckText(editDeck(ui.deckText,operati
 function exportJSON(){saveDownload(`astra-session-${g.state.seed.replace(/[^a-zA-Z0-9_-]/g,'-')}.json`,exported());toast('Session and table layout exported.');}
 async function importFile(file){if(!file)return;if(file.size>50*1024*1024)throw new Error('Session exceeds the 50 MB import limit.');const doc=JSON.parse(await file.text()),engine=Engine.importSession(registry,doc);
  if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText??data.deckText;}
- useEngine(engine,{memo:doc.tableView,grids:doc.tableGrids,playerPrograms:doc.playerPrograms});toast('Session restored, including unfinished choices.');}
+ useEngine(engine,{memo:doc.tableView,grids:doc.tableGrids,playerPrograms:doc.playerPrograms,attackDraft:doc.attackDraft});toast('Session restored, including unfinished choices.');}
 function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=(zone==='workspace'?fitWorkspace:fitCamera)(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
 function arrange(requested){const zone=requested||(ui.activeZone==='workspace'&&prefs.workspaceOpen?'workspace':prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield');if(zone==='workspace'){reflowWorkspace(true);savePreferences();return;}const el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
  let updates;
@@ -392,6 +416,10 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='clear-mana'){for(const c of COLORS)if(g.state.players[0].mana[c])run({type:'ADJUST_MANA',color:c,delta:-g.state.players[0].mana[c]});return;}
  if(action==='resource')return run({type:'ADJUST_PLAYER',player:Number(el.dataset.player),field:el.dataset.field,delta:Number(el.dataset.delta)});
  if(action==='keep')return run({type:'KEEP_HAND'});if(action==='mulligan')return run({type:'MULLIGAN'});
+ // A phase shortcut must not silently throw away attackers just selected on
+ // the table. Review/declare them first; an empty draft retains normal Step.
+ if(['phase','next','next-player','next-turn','opponent'].includes(action)&&attackSelectionReady(g)&&selectedAttackers(g,ui.attackDraft).length&&!(action==='phase'&&el.dataset.step==='attackers')){openDialog('combat');return;}
+ if(action==='attack-clear'){ui.attackDraft=cleanAttackDraft(g,null);refreshAttackSelection();if(ui.modal==='combat')renderModal();return;}
  if(action==='phase')return run({type:'ADVANCE_PHASE',step:el.dataset.step});if(action==='next')return run({type:'ADVANCE_PHASE',next:true});
  if(action==='next-turn')return run({type:'ADVANCE_PHASE',player:0,step:'main1',nextTurn:true});
  if(action==='next-player'){let p=g.state.activePlayer;for(let n=0;n<4;n++){p=(p+1)%4;if(!g.state.players[p].lost)break;}return run({type:'ADVANCE_PHASE',player:p,step:'main1',nextTurn:true});}
@@ -454,10 +482,10 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='export-report'){saveDownload('missing-cards-report.json',auditDeck());renderModal();return;}
  if(action==='export-json')return exportJSON();if(action==='export-text'){saveDownload('astra-action-log.txt',g.exportText(),'text/plain');return;}
  if(action==='verify-replay'){if(g.transaction)return toast('Finish or undo the current action before replay verification.',true);const r=g.verifyReplay();toast(`Replay verified: ${r.actions} actions · ${r.checksum}`);return;}
- if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);store.adopt(engine,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms});toast('Previous autosave recovered.');return;}
+ if(action==='restore-previous'){const prior=await store.get('previous');if(!prior)throw new Error('No previous autosave is available.');const engine=Engine.importSession(registry,prior.session);store.adopt(engine,prior.session);if(prior.session.uiLayout)prefs=cleanPreferences(prior.session.uiLayout);useEngine(engine,{memo:prior.session.tableView,grids:prior.session.tableGrids,playerPrograms:prior.session.playerPrograms,attackDraft:prior.session.attackDraft});toast('Previous autosave recovered.');return;}
  if(action==='zoom'){ui.previousModal=ui.modal;ui.zoomCard=el.dataset.cardId;ui.backFace=false;ui.modal='card';renderModal();return;}
  if(action==='zoom-back'){ui.modal=ui.previousModal;renderModal();return;}if(action==='flip'){ui.backFace=!ui.backFace;renderModal();return;}
- if(action==='attack-confirm'){const attackers=g.controlled().filter(o=>ui.selected.has(o.id)&&g.characteristics(o).types.includes('Creature')).map(o=>({id:o.id,player:ui.attacks[o.id]||1}));const result=run({type:'DECLARE_ATTACKERS',attackers});if(result.ok){ui.modal=null;ui.selected.clear();render();autoResolve();}return;}
+ if(action==='attack-confirm'){if(!attackSelectionReady(g)){toast('Finish the stack or pending choice before declaring attackers.',true);return;}const attackers=selectedAttackers(g,ui.attackDraft);const result=run({type:'DECLARE_ATTACKERS',attackers});if(result.ok){ui.modal=null;ui.attackDraft=cleanAttackDraft(g,null);render();autoResolve();}return;}
  if(action==='damage-confirm'){const result=run({type:'MANUAL_DAMAGE',player:Number(byId('damage-player').value),amount:Number(byId('damage-amount').value)});if(result.ok){ui.modal=null;render();}return;}
  if(action==='reset-layout'){const defaults=defaultPreferences();Object.assign(prefs,{sidebarWidth:defaults.sidebarWidth,handHeight:defaults.handHeight,dockWidth:defaults.dockWidth,cameras:{},popups:{}});ui.popupPositions={};render();savePreferences();return;}
  if(action==='debug-spawn'){const r=run({type:'DEBUG_SPAWN',cardId:byId('debug-card').value,zone:byId('debug-zone').value});if(r.ok){ui.modal=null;render();}return;}
@@ -546,7 +574,7 @@ document.addEventListener('change',e=>{const el=e.target;try{
  if(el.id==='deck-type'){ui.deckType=el.value;renderModal();}if(el.id==='deck-color'){ui.deckColor=el.value;renderModal();}if(el.id==='deck-sort'){ui.deckSort=el.value;renderModal();}
  if(el.dataset.deckQty!==undefined){deckEdit({type:'set',pool:el.dataset.pool,name:el.dataset.cardName,quantity:Number(el.value)});}
  if(el.dataset.playerField){const p=Number(el.dataset.player),field=el.dataset.playerField;run({type:'ADJUST_PLAYER',player:p,field,delta:Number(el.value)-g.state.players[p][field]});}
- if(el.dataset.attacker){el.checked?ui.selected.add(el.dataset.attacker):ui.selected.delete(el.dataset.attacker);}if(el.dataset.destination)ui.attacks[el.dataset.destination]=Number(el.value);
+ if(el.dataset.attacker)editAttackPick(el.dataset.attacker,{selected:el.checked});if(el.dataset.destination)editAttackPick(el.dataset.destination,{player:Number(el.value)});
  if(el.id==='session-file')importFile(el.files[0]).catch(error=>toast(error.message,true));
  }catch(error){toast(error.message,true);}});
 document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement)e.target.parentElement.classList.add('image-failed');},true);
@@ -562,11 +590,11 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.9'};
+window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.10'};
 async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
  if(engine&&doc)store.adopt(engine,doc);
- useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms});
+ useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms,attackDraft:doc?.attackDraft});
 }
 boot().catch(error=>{root.innerHTML=`<div class="fatal"><h1>Unable to start Astra</h1><p>${h(error.message)}</p><p>Open the standalone edition, or keep index.html together with the assets folder.</p></div>`;console.error(error);});
