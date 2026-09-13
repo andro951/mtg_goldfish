@@ -1,18 +1,30 @@
-# Astra 1.3 — The Goldfish Lab
+# Astra 1.4 — The Goldfish Lab
 
-A compact, offline, rules-aware Magic testing table for the supplied **160-card candidate pool**. The battlefield fills the window; other controls appear only when needed.
+A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
 
 ## Open the application
 
 **No installation or internet connection is needed to play.**
 
-Open `Astra-standalone.html` in your browser. This single file contains the application, all 175 card/token/derived images, and the real Magic card back. It can be moved on its own.
+Open `Astra-standalone.html` in your browser. This single file contains the application, all 343 card/token/face images, and the real Magic card back. It can be moved on its own.
 
 Alternatively, extract the source ZIP and open `AstraSimulator/index.html`. Keep the `assets` folder beside that file. Do not open the HTML from inside an unextracted ZIP.
 
 For a consistent local-server origin, Node.js 22 or later can run `npm start`; open `http://127.0.0.1:4173`. No `npm install` is required. The server binds to the local machine only. All network use belongs to optional developer import/test setup, not to gameplay.
 
 **Moving an existing game into this edition:** export its session JSON from the old application, open this edition, then use **Menu → Save / import**. This interface update retains the existing rules-pack/session compatibility. New games default to hold priority off and reserve access on; imported games keep their saved game settings.
+
+## New in 1.4
+
+**Manual controls default off.** Mana, life, energy and poison totals remain visible but their adjustment buttons are hidden. Use normal card actions to change them. **Menu → Settings → Manual resource controls** restores manual bookkeeping when deliberately needed. This is separate from developer overrides; opening a payment does not prevent legal mana activations.
+
+**Both supplied lists are included.** In **Menu → Deck editor → Load one of your supplied lists**, choose List 1 or List 2, then start a New test. Loading a list changes the editor, not a game already in progress. List 1 preserves 292 copies (including two Arcbound Ravagers), with 203 main-pool cards, one commander and 88 outside cards. List 2 preserves 168 copies: 126 main, one commander and 41 outside. The candidate harness selects an active 99 and retains the extra main-pool cards as reserve (104 or 27 respectively).
+
+**Target arrows** connect each stack object to its declared targets. They are faint by default and brighten when that stack card is hovered, focused or selected. Click a selected stack card again to dismiss its inspection. Arrows follow panning, zooming and dragging. A dashed endpoint on a zone button means the target is in a closed/offscreen zone. Costs are not targets and never receive misleading arrows; a card leaving and reentering is not silently retargeted.
+
+**Generic mana allocation** reserves explicit colored/colorless requirements, uses real colorless for the numeric portion, then spends from the largest remaining eligible color pool. Restricted mana is considered only where permitted. Actual `{C}` costs still require colorless mana; numeric `{1}`, `{2}`, etc. are generic costs.
+
+The expansion includes suspend, dredge, offering, improvise, escape, warp, cascade/discover, station thresholds, transformed faces, linked graveyard-return effects and the relevant triggered/static mechanics. Suspend cards with no mana cost have a **Suspend** action instead of an illegal ordinary Cast action. Every new candidate has a focused mechanic test in addition to legal-entry/capability checks. `test-results/card-support.json` verifies all 310 names from both complete lists, including outside-the-game cards.
 
 ## The compact table
 
@@ -92,9 +104,9 @@ Player rules run only at clean priority boundaries, after mandatory choices and 
 
 **Menu → New test** creates a seeded opening hand using the deck editor. The same deck and seed reproduce the initial active and reserve ordering. Keep or mulligan; the first multiplayer mulligan is free by default. Later London mulligans ask which cards to bottom. Laboratory offers five clearly labelled prepared scenarios; these are not randomized opening hands and do not enable developer overrides.
 
-The supplied main pool contains 119 copies: 34 fixed lands, 65 selected nonlands in the active 99, and 20 reserve candidates. There is one commander and 41 outside-the-game cards. Reserve access is on by default in this edition and can be disabled in Settings. The supplied duplicate Scroll Rack is preserved and reported, not deleted. The harness is not a Commander deck-legality validator.
+The original legacy preset contains 119 main-pool copies: 34 fixed lands, 65 selected nonlands in the active 99, and 20 reserve candidates. There is one commander and 41 outside-the-game cards. Reserve access is on by default in this edition and can be disabled in Settings. The supplied duplicate Scroll Rack is preserved and reported, not deleted. The harness is not a Commander deck-legality validator.
 
-**Menu → Deck editor** is a visual builder backed by the 160 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
+**Menu → Deck editor** is a visual builder backed by the 310 supported candidate cards. Search names, types or rules text; filter by card type or color identity; sort by name, mana value or type; then drag cards from the supported database into Main, Commander or Outside the Game. Drag existing deck entries between sections, drop them on Remove, or use the quantity controls for exact copy counts. Membership badges on search results show where copies already live. The editor continuously shows main-pool, land, reserve, commander and outside counts and reports whether the current list can start a New test.
 
 For bulk edits, **Advanced text / paste list** remains available with `// Main`, `// Commander`, and `// Outside the Game` headings. Unsupported names stay visible so you can remove them and are reported rather than silently treated as implemented cards. Deck edits are saved locally and affect the next New test; they do not mutate the game already in progress.
 
@@ -106,7 +118,7 @@ Shortcuts: **Escape** cancels/declines the current choice, cancels an in-progres
 
 ## Scope and verification
 
-This is the supplied-pool **goldfish** simulator, not a universal multiplayer Magic judge. Three opponents have abstract life, hand and creature counts. Blocking and combat-damage assignment remain explicitly user-assisted. Developer overrides are off by default, require opting in through Settings, and are marked in the action log.
+This is the supplied-pool **goldfish** simulator, not a universal multiplayer Magic judge. Three opponents have abstract life, hand and creature counts. Opponents have no blocker AI. **Deal unblocked damage** applies the goldfish combat step from the declared attackers, including first strike, vigilance and lifelink; it is not a general multiplayer combat judge. Developer overrides are off by default, require opting in through Settings, and are marked in the action log.
 
 The tests exercise legal entry of every supplied candidate, registered activated capabilities, targeted rule interactions, transaction/import integrity and the new tabletop through actual browser controls. The browser suite covers every menu, all phase buttons, mana/color/payment flows, whole sacrifice/recursion lines, library workspaces, triggers, crew, loyalty, meld, station, Plot, exact drag geometry, hover/layering, resize/pan cancellation, undo/redo, downloads and reload recovery. Desktop, laptop, tablet and phone-sized screenshots are included. Tests provide reproducible evidence of those cases, not a guarantee about every possible combination of Magic cards.
 
