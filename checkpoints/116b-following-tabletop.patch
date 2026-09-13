@@ -92,7 +92,7 @@ diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
 +        gesture={kind:'card',manualIds:group.manualIds,id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
            inspectOnly:target.closest('[data-action="card-abilities"]')?.dataset.id===picked,
            scale:r.width/(tapped?CARD_H:CARD_W),grab:{x:(p.x-r.left)/r.width,y:(p.y-r.top)/r.height},shift:e.shiftKey,
-@@ -89,5 +91,5 @@
+@@ -89,4 +91,4 @@
        const box={left:Math.min(a.x,b.x),right:Math.max(a.x,b.x),top:Math.min(a.y,b.y),bottom:Math.max(a.y,b.y)};
        api.ui.selected=new Set(d.original);for(const card of api.ui.layouts[d.zone]||[])if(overlaps(bounds(card),box))api.ui.selected.add(card.id);
 -      d.el.querySelectorAll('[data-card]').forEach(el=>el.classList.toggle('selected',api.ui.selected.has(el.dataset.card)));
