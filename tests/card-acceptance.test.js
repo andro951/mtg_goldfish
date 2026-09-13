@@ -11,16 +11,18 @@ const stable = ['The Wandering Minstrel','Metalwork Colossus', 'Walking Atlas', 
 const grave = ['Sol Ring','Scroll Rack','Scrap Trawler','Metalwork Colossus','Ancient Den','Tree of Tales',"Faith's Reward",'Manabond','Summon: Bahamut'];
 const library = ['Mox Amber','Sol Ring','Scroll Rack','Scrap Trawler','Krark-Clan Ironworks','Gilded Lotus','Metalwork Colossus','Urza, Lord High Artificer','The Wandering Minstrel','Ancient Den','Tree of Tales', ...Array(30).fill('Ancient Den')].filter(n=>registry.has(n));
 function setup(card, zone) {
-  const g=fixture({battlefield:stable.filter(n=>registry.has(n)&&n!==card.name), graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
+  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
   const d=registry.get(card.id), state=g.state;
   // Build explicit fixture state before the engine's initial snapshot is taken.
   const proto={id:'subject',oid:1,cardId:d.id,zone,owner:0,controller:0,tapped:false,counters:{},damage:0,token:false,commander:false,face:0,enteredTurn:0,controlledSince:-1,attachedTo:null,flags:{},modifications:[],copy:null,lastMove:null,attacksThisTurn:0,location:null};
   if(zone==='battlefield'){
     if(d.types.includes('Planeswalker'))proto.counters.loyalty=30;
-    Object.assign(proto.counters, {charge:15,burden:1,'+1/+1':1});
+    Object.assign(proto.counters, {charge:15,quest:3,burden:1,'+1/+1':1});
     const m=registry.module(d.id);if(m.saga){proto.counters.lore=1;proto.flags.sagaMana=true;}
   }
   state.instances.subject=proto;state.zones[zone].push('subject');state.settings.debug=false;
+  // The main fixture keeps its real commander identity even on the battlefield.
+  for(const o of Object.values(state.instances))if(registry.get(o.cardId).name==='The Wandering Minstrel')o.commander=true;
   for(const c of COLORS)state.players[0].mana[c]=500;
   state.players[0].life=10000;state.players[0].energy=50;
   for(const p of state.players.slice(1)){p.abstractCreatures=10;p.abstractHand=7;}
@@ -67,7 +69,12 @@ for(const card of cards.filter(c=>c.candidate)){
     assert.ok(card.image&&fs.existsSync(new URL('../'+card.image,import.meta.url)));
     assert.ok(card.oracleText||card.types.includes('Land'));
     const g=setup(card,'hand');
-    g.act({type:card.types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id:'subject',payment:'auto'});settle(g);
+    if(mod.suspend){
+      assert.equal(g.perform({type:'CAST_SPELL',id:'subject',payment:'auto'}).ok,false,'A card with no mana cost cannot be cast normally.');
+      g.act({type:'SPECIAL_ACTION',special:'suspend',id:'subject',payment:'auto'});settle(g);
+      assert.equal(g.object('subject').zone,'exile');
+      assert.equal(g.object('subject').counters.time,3);
+    }else {g.act({type:card.types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id:'subject',payment:'auto'});settle(g);}
     assert.notEqual(g.state.instances.subject.zone,'hand','The selected card must leave hand through the requested legal action.');
     verify(g);
   });

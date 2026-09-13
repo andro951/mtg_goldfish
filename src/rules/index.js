@@ -1,3 +1,4 @@
+import { ACCEPTED_EXPANSION } from './accepted-expansion.js';
 import { installExpanded } from './expanded.js';
 import { ACCEPTED_CARDS } from './accepted-cards.js';
 import { CardRegistry } from '../core/registry.js';
@@ -24,9 +25,9 @@ export function createRegistry(definitions) {
   installLibraryEngines(registry);
   installArtifactMechanics(registry);
   installSpecialMechanics(registry);
-  for (const name of ACCEPTED_CARDS) {
-    if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for rules-pack 1.0.0 goldfish scope; see the capability and interaction tests.' });
-  }
   installExpanded(registry);
+  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
+    if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for expanded goldfish scope; see the capability and interaction tests.' });
+  }
   return registry;
 }

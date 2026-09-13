@@ -1,0 +1,152 @@
+/** Explicit 1.4 expansion acceptance. Each named card has legal-entry coverage
+ * and focused mechanic assertions in tests/expanded-*.test.js. */
+export const ACCEPTED_EXPANSION = Object.freeze(`Akiri, Line-Slinger
+Amareth, the Lustrous
+Amulet of Vigor
+Apex Devastator
+Arcane Signet
+Arcbound Ravager
+Azorius Signet
+Blinkmoth Urn
+Bootleggers' Stash
+Boros Garrison
+Boros Signet
+Budoka Gardener
+Burgeoning
+Captain Kathryn Janeway
+Case of the Locked Hothouse
+Chimil, the Inner Sun
+Chromatic Lantern
+Chromatic Star
+Claws of Gix
+Command Tower
+Conduit of Worlds
+Conjurer's Bauble
+Contraband Kingpin
+Crop Rotation
+Deadly Dispute
+Defense Grid
+Dread Tiller
+Dryad of the Ilysian Grove
+Ensnaring Bridge
+Eusocial Engineering
+Exploration
+Exploration Broodship
+Explore
+Fabricate
+Flayer Husk
+Flubs, the Fool
+Future Sight
+Gandalf the White
+Genesis Wave
+Ghirapur Aether Grid
+Ghirapur Orrery
+Gifts Ungiven
+Gilded Lotus
+Glimmervoid
+Gonti's Aether Heart
+Gretchen Titchwillow
+Growth Spiral
+Hearthhull, the Worldseed
+Hedron Crab
+Hullbreaker Horror
+Ichor Wellspring
+Implement of Combustion
+Insidious Fungus
+Intuition
+Ior Ruin Expedition
+Iron Man, Titan of Innovation
+Karn, Legacy Reforged
+Krosan Wayfarer
+Life from the Loam
+Lion's Eye Diamond
+Loot, Exuberant Explorer
+Lotus Bloom
+Lotus Petal
+Meloku the Clouded Mirror
+Mesmeric Orb
+Mina and Denn, Wildborn
+Mishra's Bauble
+Misty Rainforest
+Mole Man, Moloid Master
+Mox Jasper
+Mox Tantalite
+Muzzio, Visionary Architect
+Mystic Forge
+Need for Speed
+Nissa, Worldsoul Speaker
+Nutrient Block
+Omnath, Locus of the Roil
+Omni-Cheese Pizza
+Oracle of Mul Daya
+Origin Spellbomb
+Orzhov Basilica
+Patron of the Moon
+Perennial Behemoth
+Pull Through the Weft
+Reprocess
+Reshape
+Reshape the Earth
+Riddlesmith
+Rites of Flourishing
+Roil Elemental
+Saheeli, the Sun's Brilliance
+Sarinth Greatwurm
+Scalding Tarn
+Scrap Mastery
+Selesnya Signet
+Shifting Woodland
+Simulacrum Synthesizer
+Skyshroud Ranger
+Skyswimmer Koi
+Slagstone Refinery
+Smothering Tithe
+Sol Ring
+Sol Talisman
+Song of Creation
+Spelunking
+Splendid Reclamation
+Steelfin Whale
+Stone-Seeder Hierophant
+Storm Cauldron
+Summer Bloom
+Surge Conductor
+Temple of Enlightenment
+Temple of Epiphany
+Temple of Mystery
+Terrarion
+Thalia and The Gitrog Monster
+The Everflowing Well
+The Gitrog, Ravenous Ride
+The Necrobloom
+The World Tree
+Thousand Moons Smithy
+Thran Dynamo
+Thranduil the Strategist
+Thrasios, Triton Hero
+Tireless Tracker
+Toggo, Goblin Weaponsmith
+Trading Post
+Transit Mage
+Transmute Artifact
+Tribute Mage
+Trinket Mage
+Tropical Island
+Tundra
+Unstable Glyphbridge
+Up the Beanstalk
+Uro, Titan of Nature's Wrath
+Urza's Bauble
+Vedalken Archmage
+Vessel of Volatility
+Volcanic Island
+Wayward Swordtooth
+Weapons Manufacturing
+Whir of Invention
+Wight of the Reliquary
+Worldsoul's Rage
+Wrenn and Seven
+Zell Dincht
+Zimone and Dina
+Zimone, Quandrix Prodigy
+Zuran Orb`.split('\n'));
