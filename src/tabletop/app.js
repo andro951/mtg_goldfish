@@ -1,3 +1,4 @@
+import { workspaceSnapshot, workspaceTransition, fitWorkspace } from './look-window.js';
 import { attachmentLayout, attachmentBasis, followingParents, followsAttachment } from './attachments.js';
 import { visiblePlacement } from './placement.js';
 import { cardActions } from './card-actions.js';
@@ -5,14 +6,14 @@ import { isManaColorChoice } from './mana-choice.js';
 import { installTargetLinks } from './target-links.js';
 import { createProgramController } from './program-controller.js';
 import { futurePrograms,programId } from './programs.js';
-import { gridLayout, cleanGrids } from './grid.js';
+import { gridLayout, cleanGrids, responsiveGrid } from './grid.js';
 import { Engine, RuleError, parseDeck, COLORS, suggestPayment } from '../core/index.js';
 import { createRegistry } from '../rules/index.js';
 import { SessionStore } from '../ui/storage.js';
 import { createLab } from '../ui/labs.js';
 import { h, saveDownload } from '../ui/components.js';
 import { choiceOptions } from '../ui/views.js';
-import { toolbar, programControls, tabletop, stackPopup, inspectorPopup, decisionPopup, openingPopup } from './views.js';
+import { toolbar, programControls, tabletop, stackPopup, inspectorPopup, decisionPopup, workspacePopup, openingPopup } from './views.js';
 import { dialogs } from './dialogs.js';
 import { CARD_W,CARD_H,cardLayout,fitCamera,clamp,popupPosition,avoidPopupOverlap,bounds,overlaps } from './geometry.js';
 import { defaultPreferences,cleanPreferences,loadPreferences,savePreferences as persistPreferences } from './preferences.js';
@@ -24,7 +25,7 @@ const root=document.getElementById('app'),overlay=document.getElementById('overl
 const floats=document.createElement('div');floats.id='floating-layer';document.body.append(floats);
 const newSeed=()=>`astra-${new Date().toISOString().slice(0,10)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
 let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,modeTimer,saveSequence=0,rendering=false,interactions;
-const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)positionPopups();});
+const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive){reflowWorkspace();positionPopups();}});
 const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,selected:new Set(),selectMode:false,
  grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText??data.deckText,deckReport:null,
  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
@@ -67,7 +68,7 @@ async function saveNow(){
 function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export your session.'):'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
 function savePreferences(){saveRevision++;clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
 function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
-function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
+function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;saveRevision++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null,workspaceRefit:false});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
 function prepareChoice(){const identity=draftIdentity();if(identity!==ui.lastDraftIdentity){ui.modeBypass=null;ui.playerBypass=null;ui.lastDraftIdentity=identity;}const p=g.state.pending;const key=p?JSON.stringify([p.kind,p.key,p.label,p.source,p.candidates,p.options,g.state.resolving?.pc,g.state.actionDraft?.context?.inputs]):null;
@@ -125,36 +126,32 @@ function estimatedDockSurface(){
  const width=Math.max(150,prefs.dockWidth),height=Math.max(140,innerHeight-toolbar-prefs.handHeight-33);
  return {width,height};
 }
+function syncWorkspace(){
+ const next=workspaceSnapshot(g,ui.choice),change=workspaceTransition(ui.lastWorkspace,next);
+ if(change.open){prefs.workspaceOpen=true;ui.workspaceRefit=!(ui.lastWorkspace===null&&prefs.gridViews?.workspace?.episode===next.episode);}
+ else if(change.close){prefs.workspaceOpen=false;if(ui.activeZone==='workspace')ui.activeZone=prefs.dock||'battlefield';}
+ ui.lastWorkspace=next;
+}
 function makeLayouts(){
  const visibleWidth=Math.max(220,innerWidth-prefs.sidebarWidth-(prefs.dock?prefs.dockWidth:0)),dockSize=estimatedDockSurface();
  for(const zone of ['battlefield','graveyard','exile','outside','workspace']){
-  const ids=zone==='workspace'?(g.state.lookWorkspace?.ids||[]):g.state.zones[zone];
+  const ids=zone==='workspace'?(ui.lastWorkspace?.ids||[]):g.state.zones[zone];
   const objects=ids.map(id=>g.object(id)).filter(Boolean);
   if(['graveyard','exile','outside'].includes(zone)){
-    const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height,prefs.gridViews?.[zone]?.columns);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
+    const v=prefs.gridViews?.[zone],grid=responsiveGrid(objects,ui.grids[zone],v?.width||dockSize.width,v?.height||dockSize.height,v);
+    ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
   }
-  const list=cardLayout(objects,zone==='battlefield'?visibleWidth:prefs.dockWidth);
-  if(zone==='battlefield'){
-    for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
-      if(memo?.attachmentBasis===attachmentBasis(o)){c.x=memo.x;c.y=memo.y;c.z=memo.z??c.z;continue;}
-      if(o.location)continue;
-      if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
-      else c.autoArrival=true;
-    }
-    ui.layouts[zone]=list;continue;
+  if(zone==='workspace'){
+    const v=prefs.gridViews?.workspace;
+    const grid=gridLayout(objects.map(o=>({...o,location:null,tapped:false})),[],v?.width||340,v?.height||300);
+    ui.layouts[zone]=grid.cards;continue;
   }
-  const existing=list.filter(c=>{const o=g.object(c.id);return o.location||ui.memo[`${zone}/${o.id}:${o.oid}`];});
-  for(const c of list){const o=g.object(c.id),key=`${zone}/${o.id}:${o.oid}`;
-   if(o.location)continue; // Preserve the original implicit position for visual undo.
-   if(ui.memo[key]){Object.assign(c,ui.memo[key]);continue;}
-   // Preserve existing card positions when another object enters/leaves.
-   let trial={...c};for(let step=0;step<300&&existing.some(other=>{
-     const pos=g.object(other.id)?.location?other:({...other,...ui.memo[`${zone}/${other.id}:${g.object(other.id)?.oid}`]});
-     return overlaps(bounds(trial),bounds(pos));});step++){
-      const column=step%Math.max(1,Math.floor((visibleWidth-CARD_H-20)/(CARD_W+12)));
-      trial.x=CARD_H+10+column*(CARD_W+12);trial.y=CARD_H+14+Math.floor(step/Math.max(1,Math.floor((visibleWidth-CARD_H-20)/(CARD_W+12))))*(CARD_H+16);
-   }
-   c.x=trial.x;c.y=trial.y;ui.memo[key]={x:c.x,y:c.y};existing.push(c);
+  const list=cardLayout(objects,visibleWidth);
+  for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
+    if(memo?.attachmentBasis===attachmentBasis(o)){c.x=memo.x;c.y=memo.y;c.z=memo.z??c.z;continue;}
+    if(o.location)continue;
+    if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
+    else c.autoArrival=true;
   }
   ui.layouts[zone]=list;
  }
@@ -194,24 +191,32 @@ function placeAttachments(){
  targetLinks.schedule();
 }
 function applyCamera(zone){const surface=document.querySelector(`[data-surface="${zone}"]`),c=prefs.cameras[zone]||{x:0,y:0,zoom:1};if(surface){surface.querySelector('.world').style.transform=`translate(${c.x}px,${c.y}px) scale(${c.zoom})`;surface.querySelector('[data-zoom-label]').textContent=Math.round(c.zoom*100)+'%';}targetLinks.schedule();}
+function positionGridNodes(surface,cards){
+ const nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
+ for(const c of cards){const el=nodes.get(c.id);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
+}
 function reflowDockGrid(zone=prefs.dock,force=false){
  if(!['graveyard','exile','outside'].includes(zone))return;
  const surface=document.querySelector(`[data-surface="${zone}"]`);if(!surface||surface.clientWidth<20||surface.clientHeight<20)return;
  const width=surface.clientWidth,height=surface.clientHeight,previous=prefs.gridViews?.[zone];
- const resized=force||!previous||previous.width!==width||previous.height!==height;
  const objects=(g.state.zones[zone]||[]).map(id=>g.object(id)).filter(Boolean);
- const grid=gridLayout(objects,ui.grids[zone],width,height,resized?null:previous.columns);
- ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;
- const nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
- for(const c of grid.cards){const el=nodes.get(c.id);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;}
+ const grid=responsiveGrid(objects,ui.grids[zone],width,height,previous,force);
+ ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;positionGridNodes(surface,grid.cards);
  const owned=grid.cards.filter(c=>c.gridSlot!==null);
- if(resized&&owned.length){
-   prefs.cameras[zone]=fitCamera(owned,width,height,8);
-   prefs.gridViews||={};prefs.gridViews[zone]={width,height,columns:grid.shape.columns};
- }
- // An inspector opening, a selection, or a completed card drag is not a resize.
- // Do not overwrite manual zoom/pan or move a dropped card under the pointer.
+ if(grid.changed&&owned.length)prefs.cameras[zone]=fitCamera(owned,width,height,8);
+ prefs.gridViews||={};prefs.gridViews[zone]=grid.view;
+ // A completed manual drag/inspection is not a membership change. It must not
+ // cancel the player's zoom or move a detached card under the pointer.
  applyCamera(zone);
+}
+function reflowWorkspace(force=false){
+ const surface=document.querySelector('[data-surface="workspace"]');if(!surface||surface.clientWidth<20||surface.clientHeight<20)return;
+ const width=surface.clientWidth,height=surface.clientHeight;
+ const objects=(ui.lastWorkspace?.ids||[]).map(id=>g.object(id)).filter(Boolean).map(o=>({...o,location:null,tapped:false}));
+ const grid=responsiveGrid(objects,[],width,height,prefs.gridViews?.workspace,force||ui.workspaceRefit);
+ ui.layouts.workspace=grid.cards;positionGridNodes(surface,grid.cards);
+ if(grid.changed)prefs.cameras.workspace=fitWorkspace(grid.cards,width,height);
+ ui.workspaceRefit=false;prefs.gridViews||={};prefs.gridViews.workspace={...grid.view,episode:ui.lastWorkspace?.episode||''};applyCamera('workspace');
 }
 function size(){
  const shell=document.querySelector('.table-shell');if(!shell)return;
@@ -226,7 +231,7 @@ function size(){
   const step=n>1?Math.max(0,Math.min(w+4,(handEl.clientWidth-8-w)/(n-1))):0;
   for(const [i,el]of [...handEl.children].entries()){el.style.width=w+'px';el.style.height=(hand-8)+'px';el.style.left=(4+i*step)+'px';}
  }
- reflowDockGrid();positionPopups();
+ reflowDockGrid();reflowWorkspace();positionPopups();
 }
 function positionPopups(){
  const occupied=[],viewport={width:innerWidth,height:innerHeight};
@@ -236,6 +241,12 @@ function positionPopups(){
   const measurement=el.getBoundingClientRect(),explicit=mini?null:prefs.popups[name];let anchor=ui.lastPoint;
   const cached=mini?null:ui.popupPositions[key],saved=explicit||cached;
   if(name==='stack'&&!saved)anchor={x:innerWidth-measurement.width-20,y:document.querySelector('.toolbar').getBoundingClientRect().bottom};
+  // Anchor Look near/over the side-zone area, not the last card clicked.
+  // It overlays the table and never takes layout width away from battlefield.
+  if(name==='workspace'&&!saved){
+    const area=(document.querySelector('.zone-dock')||document.querySelector('[data-surface="battlefield"]'))?.getBoundingClientRect();
+    if(area)anchor={x:(prefs.dock?area.left-measurement.width*.35:area.right-measurement.width-16)-12,y:area.top+12};
+  }
   let pos=popupPosition(anchor,measurement.width,measurement.height,viewport,saved);
   if(!explicit&&!mini)pos=avoidPopupOverlap(pos,measurement.width,measurement.height,viewport,occupied);
   ui.popupPositions[key]=pos;el.style.left=pos.x+'px';el.style.top=pos.y+'px';
@@ -247,10 +258,9 @@ function render(){if(!g||rendering)return;rendering=true;try{
  syncInspectorState();
  const focus=focusSnapshot(),scroll=new Map([...document.querySelectorAll('[data-scroll]')].map(el=>[el.dataset.scroll,el.scrollTop]));
  const expanded=[...floats.querySelectorAll('details[open]')].map(el=>el.className||el.querySelector('summary')?.textContent);
- if(prefs.dock==='workspace'&&!g.state.lookWorkspace?.ids?.length)prefs.dock=null;
- prepareChoice();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
+ prepareChoice();syncWorkspace();makeLayouts();root.innerHTML=toolbar(ctx())+tabletop(ctx());
  popupObserver.disconnect();
- floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
+ floats.innerHTML=workspacePopup(ctx())+openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
  for(const el of floats.querySelectorAll('[data-resizable]')){const v=prefs.popupSizes?.[el.dataset.floating];if(v){el.style.width=Math.min(v.width,innerWidth-8)+'px';el.style.height=Math.min(v.height,innerHeight-40)+'px';}}
  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
  renderModal(false);size();placeBattlefieldArrivals();placeAttachments();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
@@ -327,8 +337,8 @@ function exportJSON(){saveDownload(`astra-session-${g.state.seed.replace(/[^a-zA
 async function importFile(file){if(!file)return;if(file.size>50*1024*1024)throw new Error('Session exceeds the 50 MB import limit.');const doc=JSON.parse(await file.text()),engine=Engine.importSession(registry,doc);
  if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText??data.deckText;}
  useEngine(engine,{memo:doc.tableView,grids:doc.tableGrids,playerPrograms:doc.playerPrograms});toast('Session restored, including unfinished choices.');}
-function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=fitCamera(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
-function arrange(requested){const zone=requested||(prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield'),el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
+function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=(zone==='workspace'?fitWorkspace:fitCamera)(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
+function arrange(requested){const zone=requested||(ui.activeZone==='workspace'&&prefs.workspaceOpen?'workspace':prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield');if(zone==='workspace'){reflowWorkspace(true);savePreferences();return;}const el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
  let updates;
  if(['graveyard','exile','outside'].includes(zone)){
    ui.grids[zone]=[];updates=gridLayout(ids.map(id=>({...g.object(id),location:null})),[],el.clientWidth,el.clientHeight).cards.map(({id,x,y})=>({id,x,y}));
@@ -388,6 +398,9 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='inspect-link')return inspect(el.dataset.id);
  if(action==='attachment-follow'){const o=g.object(el.dataset.id);if(!o)return;const pos=ui.layouts.battlefield?.find(c=>c.id===o.id);return run({type:'SET_ATTACHMENT_FOLLOW',id:o.id,enabled:!followsAttachment(o),...(pos?{position:{x:pos.x,y:pos.y}}:{})});}
  if(action==='resolve')return run({type:'RESOLVE_TOP'});if(action==='resolve-all')return run({type:'RESOLVE_ALL'});if(action==='pass')return run({type:'PASS_PRIORITY'});
+ if(action==='zone'&&el.dataset.zone==='workspace'){prefs.workspaceOpen=!prefs.workspaceOpen;ui.activeZone=prefs.workspaceOpen?'workspace':prefs.dock||'battlefield';render();savePreferences();return;}
+ if(action==='close-workspace'){prefs.workspaceOpen=false;ui.activeZone=prefs.dock||'battlefield';render();savePreferences();return;}
+ if(action==='zoom-view'){const zone=el.dataset.zone,c=prefs.cameras[zone]||{x:0,y:0,zoom:1},surface=document.querySelector(`[data-surface="${zone}"]`);if(surface){const zoom=clamp(c.zoom*Number(el.dataset.scale),.18,3),x=surface.clientWidth/2,y=surface.clientHeight/2;prefs.cameras[zone]={zoom,x:x-(x-c.x)*zoom/c.zoom,y:y-(y-c.y)*zoom/c.zoom};applyCamera(zone);savePreferences();}return;}
  if(action==='zone'){prefs.dock=prefs.dock===el.dataset.zone?null:el.dataset.zone;ui.activeZone=prefs.dock||'battlefield';render();if(prefs.dock&&!prefs.cameras[prefs.dock])fit(prefs.dock);savePreferences();return;}
  if(action==='close-zone'){prefs.dock=null;ui.activeZone='battlefield';render();savePreferences();return;}
  if(action==='fit')return fit(el.dataset.zone);if(action==='arrange')return arrange(el.dataset.zone);
