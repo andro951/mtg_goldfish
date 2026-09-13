@@ -23,6 +23,8 @@ export function manaChoiceHTML(p){
   // keyboard users and screen readers. Escape cancels via the normal engine.
   return `<section class="floating mana-window" data-floating="decision" role="dialog" aria-modal="false" aria-label="Choose mana color"><div class="mana-options">${p.options.map((o,i)=>{
     const color=typeof o==='object'?o.value:o;
-    return `<button type="button" class="mana-choice" data-action="option" data-option="${i}" aria-label="Add ${h(MANA_NAMES[color].toLowerCase())} mana" title="${h(MANA_NAMES[color])} · Escape to cancel">${manaGlyph(color)}</button>`;
+    const restriction=typeof o==='object'&&o.restriction?({artifactSpellOrAbility:'Artifact spells or abilities only',artifactSpell:'Artifact spells only',notNonartifactSpell:'Cannot cast nonartifact spells',creatureSpell:'Creature spells only'}[o.restriction]||'Restricted mana'):'';
+    const label=MANA_NAMES[color]+(restriction?' — '+restriction:'');
+    return `<button type="button" class="mana-choice" data-action="option" data-option="${i}" aria-label="Add ${h(MANA_NAMES[color].toLowerCase())} mana${restriction?' — '+h(restriction):''}" title="${h(label)} · Escape to cancel">${manaGlyph(color)}</button>`;
   }).join('')}</div></section>`;
 }
