@@ -44,7 +44,7 @@ export function suggestPayment(cost, player, context = {}) {
     if (bucket.id) { const found = tagged.find(t => t.id === bucket.id); if (found) found.amount++; else tagged.push({ id: bucket.id, amount: 1 }); }
     else normal[bucket.color]++;
   };
-  for (const color of COLORS) for (let n = 0; n < (cost.colored[color] || 0); n++) {
+  for (const color of ['C', ...COLORS.filter(c => c !== 'C')]) for (let n = 0; n < (cost.colored[color] || 0); n++) {
     const exact = buckets.find(b => b.color === color && b.available > 0);
     const any = context.spendAsAny && color !== 'C' ? buckets.find(b => b.available > 0) : null;
     if (!(exact || any)) return null;

@@ -30,12 +30,12 @@ function deckEditor(ctx) {
       ${button('×','deck-remove',`data-card-name="${h(row.name)}" data-pool="${h(row.pool)}" title="Remove all copies of ${h(row.name)}" aria-label="Remove all copies of ${h(row.name)}"`,'quiet deck-remove')}
     </article>`;
   }).join('');
-  return `<div class="deck-editor-summary">
+  return `<details class="deck-preset-picker"><summary>Load one of your supplied lists</summary><p>Replaces the editor only, not your current game.</p><div class="row">${(globalThis.ASTRA_DATA?.deckPresets||[]).map(p=>button(h(p.label),'deck-preset',`data-preset="${h(p.id)}"`)).join('')}</div></details><div class="deck-editor-summary">
     <div><strong>${counts.main}</strong><small>Main pool</small></div><div><strong>${counts.lands}</strong><small>Fixed lands</small></div><div><strong>${counts.reserve}</strong><small>Seeded reserve</small></div><div><strong>${counts.command}</strong><small>Commander</small></div><div><strong>${counts.outside}</strong><small>Outside</small></div>
   </div>${status}
   <div class="deck-editor-shell">
     <section class="deck-browser-panel">
-      <div class="deck-search-tools"><input id="deck-search" value="${h(filters.query)}" placeholder="Search 160 supported cards…" autocomplete="off" aria-label="Search supported cards"><select id="deck-type" aria-label="Filter card type"><option value="">All types</option>${typeOptions.map(v=>`<option ${filters.type===v?'selected':''}>${v}</option>`).join('')}</select><select id="deck-color" aria-label="Filter color identity"><option value="">All colors</option><option value="C" ${filters.color==='C'?'selected':''}>Colorless</option>${['W','U','B','R','G'].map(v=>`<option value="${v}" ${filters.color===v?'selected':''}>${v}</option>`).join('')}<option value="M" ${filters.color==='M'?'selected':''}>Multicolor</option></select><select id="deck-sort" aria-label="Sort cards"><option value="name" ${filters.sort==='name'?'selected':''}>Name</option><option value="mv" ${filters.sort==='mv'?'selected':''}>Mana value</option><option value="type" ${filters.sort==='type'?'selected':''}>Type</option></select></div>
+      <div class="deck-search-tools"><input id="deck-search" value="${h(filters.query)}" placeholder="Search ${registry.list().filter(c=>c.candidate).length} supported cards…" autocomplete="off" aria-label="Search supported cards"><select id="deck-type" aria-label="Filter card type"><option value="">All types</option>${typeOptions.map(v=>`<option ${filters.type===v?'selected':''}>${v}</option>`).join('')}</select><select id="deck-color" aria-label="Filter color identity"><option value="">All colors</option><option value="C" ${filters.color==='C'?'selected':''}>Colorless</option>${['W','U','B','R','G'].map(v=>`<option value="${v}" ${filters.color===v?'selected':''}>${v}</option>`).join('')}<option value="M" ${filters.color==='M'?'selected':''}>Multicolor</option></select><select id="deck-sort" aria-label="Sort cards"><option value="name" ${filters.sort==='name'?'selected':''}>Name</option><option value="mv" ${filters.sort==='mv'?'selected':''}>Mana value</option><option value="type" ${filters.sort==='type'?'selected':''}>Type</option></select></div>
       <div class="deck-browser-heading"><span><b>${cards.length}</b> supported cards</span><small>Drag a card right, or press + to add to ${h(poolLabel(tab))}.</small></div>
       <div class="deck-browser-grid" data-modal-scroll="deck-browser">${browser||'<div class="deck-empty">No supported cards match those filters.</div>'}</div>
     </section>
@@ -51,7 +51,7 @@ function deckEditor(ctx) {
 export function dialogs(ctx){
   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
   if(!ui.modal)return '';
-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.3';narrow=true;body=menuBody(ctx);}
+  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4';narrow=true;body=menuBody(ctx);}
   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}

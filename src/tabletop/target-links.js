@@ -26,7 +26,7 @@ export function installTargetLinks(api){
   function highlight(){const active=hovered||focused||api.ui.stackSelection;for(const group of svg.querySelectorAll('[data-link-stack]'))group.classList.toggle('emphasized',group.dataset.linkStack===active);for(const card of document.querySelectorAll('.stack-card'))card.classList.toggle('target-selected',card.dataset.stackId===api.ui.stackSelection);}
   function paint(){
     frame=0;const g=api.g;if(!g)return;
-    svg.hidden=!!api.ui.modal;
+    svg.style.display=api.ui.modal?'none':'';
     const links=declaredLinks(g);lastLinks=links;
     if(!links.length){if(signature){svg.replaceChildren();signature='';}return;}
     const cards=new Map(),stacks=new Map(),players=new Map(),zones=new Map();
@@ -57,7 +57,7 @@ export function installTargetLinks(api){
     }
     highlight();
   }
-  function schedule(){if(!frame)frame=requestAnimationFrame(paint);}
+  function schedule(){svg.style.display=api.ui.modal?'none':'';if(!frame)frame=requestAnimationFrame(paint);}
   document.addEventListener('pointerover',e=>{const stack=e.target.closest?.('.stack-card');if(stack){hovered=stack.dataset.stackId;highlight();}});
   document.addEventListener('pointerout',e=>{if(e.target.closest?.('.stack-card')&&!e.relatedTarget?.closest?.('.stack-card')){hovered=null;highlight();}});
   document.addEventListener('focusin',e=>{focused=e.target.closest?.('.stack-card')?.dataset.stackId||null;highlight();});

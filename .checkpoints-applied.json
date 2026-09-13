@@ -70,5 +70,6 @@
   "checkpoints/091-largest-pool-payment.patch": "43c957a3547a8a13e069d82b39b9e2caaedd27ff7fd4614a8aaaa6431e3e0dcb",
   "checkpoints/092-target-link-wiring.patch": "cc737d2837abadf164f683e34d46465ef8538690dbdfafb9b86c5e59e7795ed2",
   "checkpoints/093-expanded-choice-corrections.patch": "066db0d5b7d23254599819ccd91b779670355a36bab5d4a425db4c01d6341f75",
-  "checkpoints/094-expanded-acceptance.patch": "6986edc66755b86d68125826bbf8762ec33044917ec52c78512b29ce32b09a3c"
+  "checkpoints/094-expanded-acceptance.patch": "6986edc66755b86d68125826bbf8762ec33044917ec52c78512b29ce32b09a3c",
+  "checkpoints/095-release-ui-integration.json": "1ba17acad568fcc8059b1764375bbad8f9504efc3e33e267b62c9d5d6ba9b0f5"
 }
