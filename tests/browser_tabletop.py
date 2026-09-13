@@ -29,6 +29,8 @@ from ui_acceptance_attachments import attachment_controls, attachment_groups, at
 
 from ui_acceptance_148 import look_popup,arrival_grids
 
+from ui_acceptance_149 import mana_union, mana_union_payment, mana_union_grants
+
 server=None
 if not args.memory:
  server=subprocess.Popen(['node','tools/serve.mjs'],cwd=ROOT,stdout=(OUT/'browser-server.log').open('w'),stderr=subprocess.STDOUT);time.sleep(1)
@@ -36,7 +38,7 @@ try:
  with sync_playwright() as pw:
   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
-  groups=[look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+  groups=[mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
   for group in groups:
    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)

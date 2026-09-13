@@ -27,8 +27,8 @@ def vault_ability_access(p):
  p.keyboard.press('Backspace');p.keyboard.press('Backspace')
  check('undo resolution and activation restores Vault and all six mana',checksum(p)==before)
  vault=obj(p,'Treasure Vault');card(p,vault['id'],'battlefield').click()
- check('clicking Vault artwork still taps immediately for one colorless mana',obj(p,'Treasure Vault')['tapped'] and state(p,'state.players[0].mana.C')==7 and pending(p) is None)
- access(p,'Treasure Vault').click()
+ check('clicking Vault artwork opens its choices without an accidental mana activation',not obj(p,'Treasure Vault')['tapped'] and state(p,'state.players[0].mana.C')==6 and pending(p) is None and p.locator('.inspector-window').count()==1)
+ click(p,'ability','.inspector-window','[data-ability=mana]');access(p,'Treasure Vault').click()
  check('already tapped Vault still inspects but cannot illegally activate either tap ability',p.locator('.inspector-window [data-ability="treasures"]').is_disabled() and p.locator('.inspector-window [data-ability="mana"]').is_disabled())
  check('single-purpose mana land does not get an unnecessary action badge',p.locator('[data-surface=battlefield] [data-card="'+obj(p,'Ancient Den')['id']+'"] [data-action=card-abilities]').count()==0)
 
@@ -39,7 +39,7 @@ def special_lands_access(p):
   check(name+' special ability is reachable by its visible left-click control',p.locator('.inspector-window [data-ability="'+ability_id+'"]').is_enabled() and checksum(p)==before)
   access(p,name).click()
  # Oboro can still return to hand even after its mana ability used its tap.
- oboro=obj(p,'Oboro, Palace in the Clouds');card(p,oboro['id'],'battlefield').click();access(p,'Oboro, Palace in the Clouds').click()
+ oboro=obj(p,'Oboro, Palace in the Clouds');card(p,oboro['id'],'battlefield').click();click(p,'ability','.inspector-window','[data-ability=mana]');access(p,'Oboro, Palace in the Clouds').click()
  check('tapped Oboro still exposes its non-tap return ability',p.locator('.inspector-window [data-ability="return"]').is_enabled())
  click(p,'ability','.inspector-window','[data-ability="return"]');pay(p);click(p,'resolve','.stack-window')
  check('Oboro return resolves from inspector without requiring an illegal untap',obj(p,'Oboro, Palace in the Clouds','hand') is not None and state(p,'state.players[0].mana.U')==1)
@@ -92,5 +92,6 @@ def ability_button_geometry(p):
   check('second touchscreen tap closes exactly once without a compatibility-click reopen',q.locator('.inspector-window').count()==0 and checksum(q)==before)
   land=card(q,obj(q,'Treasure Vault')['id'],'battlefield').bounding_box()
   q.touchscreen.tap(land['x']+land['width']/2,land['y']+land['height']/2)
-  check('touchscreen quick mana activates only once and does not open inspector afterward',obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==7 and q.locator('.inspector-window').count()==0)
+  check('touchscreen Vault face opens utility choices without an unintended activation',not obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==6 and q.locator('.inspector-window').count()==1)
+  click(q,'ability','.inspector-window','[data-ability=mana]');check('touch-inspected explicit mana activates exactly once',obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==7)
  finally:context.close()

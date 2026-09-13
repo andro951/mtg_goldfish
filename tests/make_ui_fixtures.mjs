@@ -111,3 +111,9 @@ save('look-scry',{hand:['Simulacrum Synthesizer'],libraryActive:['Ancient Den','
 save('look-surveil',{battlefield:['Golbez, Crystal Collector'],hand:['Ancient Den'],libraryActive:['Walking Atlas','Great Furnace']});
 save('growing-graveyard',{battlefield:Array(12).fill('Grinding Station'),libraryActive:Array(60).fill('Walking Atlas')});
 save('growing-exile',{battlefield:Array(12).fill('Scrabbling Claws'),graveyard:Array(28).fill('Walking Atlas'),hand:[],libraryActive:[]});
+
+// Land face routing and compatible one-mana shortcuts.
+save('mana-union',{battlefield:['Silverbluff Bridge','Darksteel Citadel','Chromatic Lantern','Dimir Aqueduct','Treasure Vault','The Mycosynth Gardens','Scene of the Crime','Walking Atlas','Krark-Clan Ironworks','Power Depot']},{mana:{C:6}});
+save('mana-union-payment',{battlefield:['Darksteel Citadel','Chromatic Lantern'],hand:['Walking Atlas']},{mana:{C:1}});
+save('mana-union-effect',{battlefield:[{name:'Mana Vault',tapped:true},'Darksteel Citadel','Chromatic Lantern','Grim Monolith']});
+save('mana-union-grants',{battlefield:['Chromatic Lantern','The World Tree','Ancient Den','Seat of the Synod','Vault of Whispers','Great Furnace','Dimir Aqueduct']});
