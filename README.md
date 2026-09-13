@@ -1,4 +1,16 @@
-# Astra 1.4.5 — The Goldfish Lab
+# Astra 1.4.6 — The Goldfish Lab
+
+## Performance, Ask defaults and loyalty (1.4.6)
+
+Optional choices start at **Ask**, including Tireless Provisioner. Choosing Food or Treasure once does not save a default; an explicit remembered preference still works. Old historical decisions replay under their original behavior, while new live choices use Ask.
+
+Planeswalkers show their **current loyalty number over the printed bottom-right shield**, rather than among top-left counters. The number updates when costs are paid and with undo/redo. Creature power/toughness overlays remain; an animated planeswalker can show both without overlap.
+
+The supplied 1.4.1 trace exposed repeated 3.6–5.2 second autosave stalls in code that was still present in 1.4.5. Autosave now uses transactional, incremental IndexedDB records, preserving current and previous recovery points. Unchanged flushes are skipped, concurrent changes are coalesced, and layout changes do not copy or rewrite historical actions. Undo records store changed array segments instead of duplicating the entire accumulated zone history. Frozen historical snapshots and streamed canonical hashes reduce action-time allocation. Old histories are compacted on import without dropping actions.
+
+**Before upgrading:** export your current session, close older Astra tabs, and open the new HTML. Import the exported session when needed. A blocked database migration is reported rather than silently switching to a separate save store. Very large old files may still take time to parse and validate on their first import. Session exports created by this version should be opened with this version or newer.
+
+See `docs/performance-146.md` and the build-bound `test-results/performance.json` for the trace findings and controlled before/after benchmark. Existing card support, targeting arrows, visible arrival placement, and automation controls are retained.
 
 ## Visible automatic arrivals and the 13 September card pool
 

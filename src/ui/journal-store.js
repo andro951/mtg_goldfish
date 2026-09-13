@@ -22,11 +22,12 @@ export class SessionStore {
         request.onupgradeneeded=()=>{for(const name of ['sessions','journal'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);};
         request.onsuccess=()=>{if(blocked){request.result.close();return;}resolve(request.result);};
         request.onerror=()=>reject(request.error);
-        request.onblocked=()=>{blocked=true;reject(new Error('Close another old Astra tab to enable autosave.'));};
+        request.onblocked=()=>{blocked=true;const error=new Error('Close older Astra tabs and reload to restore your existing autosave.');error.code='IDB_BLOCKED';reject(error);};
       });
       this.database.onversionchange=()=>{this.database.close();this.mode='memory';};
       this.mode='indexeddb';
-    } catch {
+    } catch(error) {
+      if(error?.code==='IDB_BLOCKED'){this.problem=error.message;this.mode='memory';return this;}
       try{localStorage.setItem('astra-storage-test','1');localStorage.removeItem('astra-storage-test');this.mode='localstorage';}catch{this.mode='memory';}
     }
     return this;

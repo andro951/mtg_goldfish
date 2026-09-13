@@ -77,3 +77,12 @@ save('latest-affinity',{battlefield:['Mycosynth Golem','Ancient Den'],hand:['Wal
 save('latest-persist',{battlefield:['Cauldron of Souls','Metalworker','Krark-Clan Ironworks']});
 save('latest-doors',{battlefield:['Doors of Durin','Metalworker'],libraryActive:['Skyshroud Ranger','Ancient Den']},{step:'attackers'});
 save('latest-cube',{battlefield:['Cosmic Cube',{name:'Metalworker',counters:{'+1/+1':1}}],libraryActive:['Walking Atlas','Ancient Den','Seat of the Synod','Planar Bridge','Cosmic Cube','Cauldron of Souls','Great Furnace']},{step:'attackers'});
+save('ask-loyalty',{battlefield:['Tireless Provisioner','Azusa, Lost but Seeking','Manabond','Kodama of the East Tree','Tezzeret the Seeker','Walking Atlas'],hand:['Ancient Den','Tree of Tales','Great Furnace']});
+save('loyalty-double',{battlefield:[{name:'Tezzeret the Seeker',counters:{loyalty:12,charge:2}},{name:'Tezzeret, Cruel Captain',counters:{loyalty:8},props:{modifications:[{addTypes:['Creature'],basePower:3,baseToughness:4}]}}]});
+// A long real history, built offline rather than mutating state through the UI.
+{
+ const g=fixture({battlefield:['Mana Vault'],libraryActive:[]});g.state.initialDeck.scenario='UI acceptance: long-journal';
+ const long=new Engine(registry,g.state),card=long.controlled()[0].id;
+ for(let i=0;i<160;i++)long.act({type:'DEBUG_MOVE',id:card,zone:i%2?'battlefield':'graveyard'});
+ fs.writeFileSync(new URL('long-journal.json',out),JSON.stringify(long.exportSession()));
+}

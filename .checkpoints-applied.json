@@ -114,5 +114,6 @@
   "checkpoints/113b-compact-history.patch": "8792e499cea7b865fafd183376fde68772177995a167ab15dcd6a2fe863bd10f",
   "checkpoints/113c-autosave-coalescing.patch": "9e8eed84c2b35aa3d1bb3c6bfcfaec5263da5485c4fe12a0e418cbd6f10d333f",
   "checkpoints/113d-legacy-session-migration.patch": "88191d8c92f95af9bf562d060fd9331e719f6d5e7368f4840141376bd44876d3",
-  "checkpoints/113e-pending-legacy-replay.patch": "338bc04669ab0ed37cf77389224e4ac3eda1b272721c678bd2f0ab9dab3f7a2f"
+  "checkpoints/113e-pending-legacy-replay.patch": "338bc04669ab0ed37cf77389224e4ac3eda1b272721c678bd2f0ab9dab3f7a2f",
+  "checkpoints/114-1.4.6-release.patch": "3155383b0e2584df4cd19399d8f5071766d2a8dec10aa4e2f41d0985a156a768"
 }

@@ -21,7 +21,7 @@ try:
   for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_6',ROOT/'index.html')]:
    context=browser.new_context(viewport={'width':1366,'height':768});page=context.new_page();page.set_default_timeout(15000)
    page.on('pageerror',lambda e:errors.append(str(e)))
-   text=file.read_text();page.route(url+'/',lambda route,body=text:route.fulfill(status=200,content_type='text/html',body=body))
+   text=file.read_text();page.route(url+'/',lambda route:route.fulfill(status=200,content_type='text/html',body=text))
    page.goto(url);page.wait_for_function('()=>window.astra?.engine')
    page.locator('[data-action=menu]').click();page.locator('[data-dialog=save]').click()
    page.locator('#session-file').set_input_files({'name':'benchmark.json','mimeType':'application/json','buffer':json.dumps(long).encode()})
