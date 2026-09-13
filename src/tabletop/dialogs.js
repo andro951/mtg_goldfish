@@ -45,16 +45,22 @@ function deckEditor(ctx) {
       <div class="deck-entry-list" data-deck-drop="${h(tab)}" data-modal-scroll="deck-list">${entries||`<div class="deck-empty">Drop supported cards here to add them to ${h(poolLabel(tab))}.</div>`}</div>
     </section>
   </div>
-  <details class="deck-advanced"><summary>Advanced text / paste list</summary><p class="muted">You can still paste a quantity/name list. Visual edits preserve supported and unsupported names; Validate reports anything the engine cannot use.</p><textarea id="deck-text" rows="10" spellcheck="false" aria-label="Deck list">${h(ui.deckText)}</textarea><div class="row" style="margin-top:6px">${button('Apply text list','deck-apply-text','','primary')}<small>Sections: // Main, // Commander, // Outside the Game</small></div></details>`;
+`;
+}
+function deckTextEditor(ctx){
+  const {ui,registry}=ctx,counts=deckCounts(ui.deckText,registry),report=ui.deckReport;
+  const status=report?`<div class="deck-live-status ${report.accepted?'ready':'needs-work'}"><strong>${report.accepted?'Ready for New test':'Needs attention'}</strong><span>${h(report.summary)}</span></div>`:'';
+  return `<div class="deck-text-toolbar"><div><strong>${counts.main}</strong> main · <strong>${counts.command}</strong> commander · <strong>${counts.outside}</strong> outside · <strong>${counts.reserve}</strong> reserve</div><small>Old-style quantity/name editor. Visual and text editors use the same deck.</small></div>${status}${report&&!report.accepted?`<pre class="deck-text-issues" role="status">${h(report.details)}</pre>`:''}<textarea id="deck-text" data-modal-scroll="deck-text" class="deck-text-area" spellcheck="false" aria-label="Deck list">${h(ui.deckText)}</textarea><div class="deck-text-help"><code>// Main</code><code>// Commander</code><code>// Outside the Game</code><span>One entry per line, e.g. <b>2 Arcbound Ravager</b>.</span></div>`;
 }
 
 export function dialogs(ctx){
   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
   if(!ui.modal)return '';
-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.1';narrow=true;body=menuBody(ctx);}
+  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.2';narrow=true;body=menuBody(ctx);}
   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
-  else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
+  else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
+  else if(ui.modal==='decktext'){title='Deck text editor';sub='The original quantity/name editor, kept separate from the visual builder.';body=deckTextEditor(ctx);footer=button('Visual editor','dialog','data-dialog="deck"')+button('Load List 1','deck-preset','data-preset="expanded"')+button('Load List 2','deck-preset','data-preset="refined"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate','deck-apply-text')+button('Done','close-dialog','','primary');}
   else if(ui.modal==='settings'){
     title='Settings';sub='Your table layout is saved automatically.';
     const setting=(key,name,help)=>`<div class="setting-row"><input id="setting-${key}" type="checkbox" data-setting="${key}" ${s.settings[key]?'checked':''}><label for="setting-${key}"><strong>${name}</strong><small>${help}</small></label></div>`;
@@ -76,6 +82,6 @@ export function dialogs(ctx){
     body=`<label class="setting-row"><input type="checkbox" data-setting="manualControls" ${s.settings.manualControls?'checked':''}><span><strong>Manual controls</strong><small>Off by default. Show manual mana, life, energy, poison and opponent adjustments. Rules-generated changes remain automatic.</small></span></label>`+body;
     if(!s.settings.manualControls)body=body.replace(/<input([^>]*data-player-field[^>]*)>/g,'<input disabled$1>');
   }
-  const extraClass=ui.modal==='deck'?'deck-editor-modal':'';
+  const extraClass=ui.modal==='deck'?'deck-editor-modal':ui.modal==='decktext'?'deck-text-modal':'';
   return `<div class="modal-backdrop" data-action="backdrop"><section class="modal ${narrow?'narrow':''} ${extraClass}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><h2 id="modal-title">${h(title)}</h2><p>${h(sub)}</p></div>${button('×','close-dialog','aria-label="Close dialog"','quiet')}</header><div class="modal-body" data-scroll="modal">${body}</div>${footer?`<footer class="modal-footer">${footer}</footer>`:''}</section></div>`;
 }
