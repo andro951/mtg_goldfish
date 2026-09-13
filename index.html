@@ -1997,7 +1997,7 @@ class Engine {
     if (action?.type === 'UNDO') return this.undo();
     if (action?.type === 'REDO') return this.redo();
     const attemptBefore = this.snapshotState(), newTransaction = !this.transaction;
-    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type };
+    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type, choiceDefaults: 'ask' };
     const previousIntents = this.transaction.intents.length, previousEvents = this.transaction.events.length;
     try {
       requireRule(action && typeof action.type === 'string', 'Invalid action.');
@@ -2026,7 +2026,7 @@ class Engine {
     if (patches.length || transaction.events.length) {
       this.history.splice(this.cursor);
       this.history.push({ index: this.cursor + 1, label: transaction.label, actions: transaction.intents, events: transaction.events,
-        patches, beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
+        patches, choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
         rngBefore: transaction.before.rng.count, rngAfter: this.state.rng.count });
       this.cursor = this.history.length;
     }
@@ -2060,7 +2060,19 @@ class Engine {
     requireRule(document.stateChecksum === stateHash(document.currentState), 'Session checksum does not match. The file may be damaged.', 'INVALID_SESSION');
     const engine = new Engine(registry, document.initialState);
     requireRule(Array.isArray(document.history) && document.history.length <= 100000, 'Invalid session history.', 'INVALID_SESSION');
-    engine.history = clone(document.history); engine.cursor = integer(document.cursor, 0, engine.history.length);
+    engine._rewrittenHistory=new WeakSet();
+    engine.history=document.history.map(entry=>{
+      requireRule(entry&&Array.isArray(entry.actions)&&Array.isArray(entry.events)&&Array.isArray(entry.patches),'Invalid history entry.','INVALID_SESSION');
+      const {patches,...metadata}=entry;let rewritten=false;
+      const compact=patches.flatMap(patch=>{
+        if(!patch.op&&patch.hadBefore&&patch.hadAfter&&Array.isArray(patch.before)&&Array.isArray(patch.after)){
+          rewritten=true;return diffState(patch.before,patch.after,patch.path);
+        }
+        return [clone(patch)];
+      });
+      const copy={...clone(metadata),patches:compact};if(rewritten)engine._rewrittenHistory.add(copy);return copy;
+    });
+    engine.cursor = integer(document.cursor, 0, engine.history.length);
     let reconstructed = clone(document.initialState);
     let cursorState = clone(reconstructed);
     for (const [index, entry] of engine.history.entries()) {
@@ -2077,15 +2089,25 @@ class Engine {
       requireRule(stateHash(document.transaction.before) === stateHash(cursorState), 'Pending transaction does not match history.', 'INVALID_SESSION');
       requireRule(Array.isArray(document.transaction.intents) && Array.isArray(document.transaction.events), 'Invalid pending transaction.', 'INVALID_SESSION');
       const pendingReplay = new Engine(registry, cursorState);
-      for (const intent of document.transaction.intents) pendingReplay.act(intent);
+      for (const [i,intent] of document.transaction.intents.entries()) {
+        pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask'||i<(document.transaction.legacyIntentCount||0);
+        pendingReplay.act(intent);
+      }
       requireRule(stateHash(pendingReplay.state) === document.stateChecksum, 'Pending choices do not reproduce the session.', 'INVALID_SESSION');
     }
-    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction); return engine;
+    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction);
+    if(engine.transaction&&engine.transaction.choiceDefaults!=='ask'){
+      engine.transaction.legacyIntentCount=engine.transaction.intents.length;engine.transaction.choiceDefaults='ask';
+    }
+    return engine;
   }
   verifyReplay() {
     const replay = new Engine(this.registry, this.initialState);
     for (const entry of this.history.slice(0, this.cursor)) {
-      for (const action of entry.actions) replay.act(action);
+      for (const [i,action] of entry.actions.entries()) {
+        replay._legacyReplayDefaults=entry.choiceDefaults!=='ask'||i<(entry.legacyIntentCount||0);
+        replay.act(action);
+      }
       requireRule(stateHash(replay.state) === entry.afterHash, `Replay diverged at action ${entry.index}.`, 'REPLAY_MISMATCH');
     }
     return { ok: true, actions: this.cursor, checksum: stateHash(replay.state) };
@@ -3254,7 +3276,9 @@ const effectMethods = {
       if (!ids.length || max === 0) { context.vars[key] = []; this.record('EMPTY_SELECTION', { key }); return; }
     }
     const policyKey = command.policyKey ? `${context.sourceCardId}/${command.policyKey}` : null;
-    const preference = policyKey ? this.state.optionalPreferences[policyKey] || 'ASK' : null;
+    // Historical replay alone retains the old implicit choice. Live games always ask.
+    const legacy=this._legacyReplayDefaults?(command.legacyDefaultValue||command.defaultValue):null;
+    const preference = policyKey ? this.state.optionalPreferences[policyKey] || legacy || 'ASK' : null;
     if (preference && preference !== 'ASK' && spec.options?.some(o => o.value === preference)) {
       context.vars[key] = preference; this.record('OPTIONAL_POLICY_APPLIED', { key: policyKey, value: preference }); return;
     }
@@ -5111,7 +5135,7 @@ function installLandfall(registry) {
   register(registry, 'Seedborn Muse', { opponentUntap: (g, source, object) => source.controller === object.controller });
   register(registry, 'Unwinding Clock', { opponentUntap: (g, source, object) => source.controller === object.controller && g.characteristics(object).types.includes('Artifact') });
   register(registry, 'Lotus Cobra', { triggers: [landfall('mana', 'Add one mana of any color', () => chooseColorMana())] });
-  register(registry, 'Tireless Provisioner', { triggers: [landfall('provision', 'Create a Treasure or Food', () => [{ op: 'choose', key: 'tokenKind', label: 'Create Treasure or Food', options: options(['Treasure', 'Food']), policyKey: 'token-kind' }, { op: 'token', card: '$var.tokenKind' }])] });
+  register(registry, 'Tireless Provisioner', { triggers: [landfall('provision', 'Create a Treasure or Food', () => [{ op: 'choose', key: 'tokenKind', label: 'Create Treasure or Food', options: options(['Treasure', 'Food']), policyKey: 'token-kind', legacyDefaultValue: 'Treasure' }, { op: 'token', card: '$var.tokenKind' }])] });
   register(registry, 'Roil Cartographer', { triggers: [landfall('energy', 'Get an energy counter', () => [{ op: 'energy', amount: 1 }])], activated: [{ id: 'draw-three', label: 'Pay six energy: draw three cards', tap: true, energy: 6, effect: () => [draw(3)] }] });
   register(registry, 'Fateful Discovery', { triggers: [{ id: 'artifact-draw', label: 'Draw a card', event: 'ENTER', test: typeEntered('Artifact'), effect: () => [draw()] }] });
   register(registry, 'Nissa, Resurgent Animist', { triggers: [landfall('animist', 'Add mana; second resolution reveals an Elf or Elemental', () => [...chooseColorMana(), { op: 'call', handler: 'landfall.nissa' }])] });
