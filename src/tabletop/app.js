@@ -23,7 +23,7 @@ const newSeed=()=>`astra-${new Date().toISOString().slice(0,10)}-${crypto.getRan
 let prefs=loadPreferences(),g,unsubscribe,saveTimer,preferenceTimer,autoTimer,modeTimer,saveSequence=0,rendering=false,interactions;
 const popupObserver=new ResizeObserver(()=>{if(!rendering&&!ui.gestureActive)positionPopups();});
 const ui={modal:null,previousModal:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,stackLabel:null,selected:new Set(),selectMode:false,
- grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText||data.deckText,deckReport:null,
+ grids:{},playerBypass:null,askOnce:{},lastPoint:{x:innerWidth*.48,y:innerHeight*.38},layouts:{},memo:{},popupPositions:{},seed:newSeed(),deckText:prefs.deckText??data.deckText,deckReport:null,
  cardFilter:'',cardType:'',showDerived:false,zoomCard:null,backFace:false,pendingKey:null,choice:[],choiceFilter:'',number:0,payment:null,paymentEdited:false,
  noteText:'',attacks:{},gestureActive:false,activeZone:'battlefield',lastWorkspace:null,deckSearch:'',deckType:'',deckColor:'',deckSort:'name',deckTab:'main',deckDrag:null,ruleDraft:null,sequenceName:'',sequenceFuture:false,resolveRequested:false};
 const saveStatus={text:'Opening browser storage…',error:false};
@@ -44,7 +44,7 @@ function exported(){return {...g.exportSession(),uiLayout:cleanPreferences(prefs
 async function saveNow(){if(!g)return;clearTimeout(saveTimer);if(ui.gestureActive){saveTimer=setTimeout(()=>saveNow().catch(()=>{}),400);return;}const seq=saveSequence,doc=exported();try{const at=await store.save(doc);if(seq===saveSequence){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}}catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}}
 function scheduleSave(){clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
 function savePreferences(){clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
-function newEngine(engine){const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
+function newEngine(engine){prefs.gridViews={};const state=structuredClone(engine.state);state.settings.holdPriority=prefs.holdPriority;state.settings.orderTriggers=prefs.orderTriggers;state.reserveAccess=prefs.reserveAccess;state.settings.manualControls=prefs.manualControls;return new Engine(registry,state);}
 function useEngine(engine,{save=true,memo={},grids={},playerPrograms=null}={}){unsubscribe?.();clearTimeout(autoTimer);clearTimeout(modeTimer);clearTimeout(saveTimer);g=engine;targetLinks.clear();programs.reset(playerPrograms,prefs.savedPrograms);ui.ruleDraft=null;ui.resolveRequested=false;saveSequence++;Object.assign(ui,{pendingKey:null,inspected:null,inspectDefinition:null,inspectOrigin:null,inspectorActivation:null,modeBypass:null,playerBypass:null,askOnce:{},lastDraftIdentity:null,stackLabel:null,modal:null,noteText:'',layouts:{},memo:cleanMemo(memo),grids:cleanGrids(grids),popupPositions:{},lastWorkspace:null});ui.selected.clear();unsubscribe=g.subscribe(()=>{try{render();}catch(error){rendering=false;toast(`View error: ${error.message}`,true);console.error(error);}scheduleSave();});render();if(save)scheduleSave();}
 function focusSnapshot(){const el=document.activeElement;if(!el?.id)return null;let start=null,end=null;try{start=el.selectionStart;end=el.selectionEnd;}catch{}return{id:el.id,start,end};}
 function restoreFocus(value){const el=value&&byId(value.id);if(!el)return;el.focus({preventScroll:true});if(typeof value.start==='number')try{el.setSelectionRange(value.start,value.end);}catch{}}
@@ -109,7 +109,7 @@ function makeLayouts(){
   const ids=zone==='workspace'?(g.state.lookWorkspace?.ids||[]):g.state.zones[zone];
   const objects=ids.map(id=>g.object(id)).filter(Boolean);
   if(['graveyard','exile','outside'].includes(zone)){
-    const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
+    const grid=gridLayout(objects,ui.grids[zone],dockSize.width,dockSize.height,prefs.gridViews?.[zone]?.columns);ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;continue;
   }
   const list=cardLayout(objects,zone==='battlefield'?visibleWidth:prefs.dockWidth);
   const existing=list.filter(c=>{const o=g.object(c.id);return o.location||ui.memo[`${zone}/${o.id}:${o.oid}`];});
@@ -129,14 +129,23 @@ function makeLayouts(){
  }
 }
 function applyCamera(zone){const surface=document.querySelector(`[data-surface="${zone}"]`),c=prefs.cameras[zone]||{x:0,y:0,zoom:1};if(surface){surface.querySelector('.world').style.transform=`translate(${c.x}px,${c.y}px) scale(${c.zoom})`;surface.querySelector('[data-zoom-label]').textContent=Math.round(c.zoom*100)+'%';}targetLinks.schedule();}
-function reflowDockGrid(zone=prefs.dock){
+function reflowDockGrid(zone=prefs.dock,force=false){
  if(!['graveyard','exile','outside'].includes(zone))return;
  const surface=document.querySelector(`[data-surface="${zone}"]`);if(!surface||surface.clientWidth<20||surface.clientHeight<20)return;
- const ids=g.state.zones[zone]||[],objects=ids.map(id=>g.object(id)).filter(Boolean),grid=gridLayout(objects,ui.grids[zone],surface.clientWidth,surface.clientHeight);
+ const width=surface.clientWidth,height=surface.clientHeight,previous=prefs.gridViews?.[zone];
+ const resized=force||!previous||previous.width!==width||previous.height!==height;
+ const objects=(g.state.zones[zone]||[]).map(id=>g.object(id)).filter(Boolean);
+ const grid=gridLayout(objects,ui.grids[zone],width,height,resized?null:previous.columns);
  ui.grids[zone]=grid.slots;ui.layouts[zone]=grid.cards;
- for(const c of grid.cards){const el=surface.querySelector(`[data-position="${CSS.escape(c.id)}"]`);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;}
+ const nodes=new Map([...surface.querySelectorAll('[data-position]')].map(el=>[el.dataset.position,el]));
+ for(const c of grid.cards){const el=nodes.get(c.id);if(!el)continue;el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;}
  const owned=grid.cards.filter(c=>c.gridSlot!==null);
- if(owned.length)prefs.cameras[zone]=fitCamera(owned,surface.clientWidth,surface.clientHeight,8);
+ if(resized&&owned.length){
+   prefs.cameras[zone]=fitCamera(owned,width,height,8);
+   prefs.gridViews||={};prefs.gridViews[zone]={width,height,columns:grid.shape.columns};
+ }
+ // An inspector opening, a selection, or a completed card drag is not a resize.
+ // Do not overwrite manual zoom/pan or move a dropped card under the pointer.
  applyCamera(zone);
 }
 function size(){
@@ -245,7 +254,7 @@ function deckEdit(operation,message){updateDeckText(editDeck(ui.deckText,operati
 
 function exportJSON(){saveDownload(`astra-session-${g.state.seed.replace(/[^a-zA-Z0-9_-]/g,'-')}.json`,exported());toast('Session and table layout exported.');}
 async function importFile(file){if(!file)return;if(file.size>50*1024*1024)throw new Error('Session exceeds the 50 MB import limit.');const doc=JSON.parse(await file.text()),engine=Engine.importSession(registry,doc);
- if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText||data.deckText;}
+ if(doc.uiLayout){prefs=cleanPreferences(doc.uiLayout);persistPreferences(prefs);ui.deckText=prefs.deckText??data.deckText;}
  useEngine(engine,{memo:doc.tableView,grids:doc.tableGrids,playerPrograms:doc.playerPrograms});toast('Session restored, including unfinished choices.');}
 function fit(zone){const el=document.querySelector(`[data-surface="${zone}"]`);if(el){prefs.cameras[zone]=fitCamera(ui.layouts[zone]||[],el.clientWidth,el.clientHeight);applyCamera(zone);savePreferences();}}
 function arrange(requested){const zone=requested||(prefs.dock&&ui.activeZone===prefs.dock?prefs.dock:'battlefield'),el=document.querySelector(`[data-surface="${zone}"]`);const ids=ui.layouts[zone].map(c=>c.id),columns=Math.max(1,Math.floor((el.clientWidth-CARD_H-18)/(CARD_W+12)));
@@ -253,7 +262,7 @@ function arrange(requested){const zone=requested||(prefs.dock&&ui.activeZone===p
  if(['graveyard','exile','outside'].includes(zone)){
    ui.grids[zone]=[];updates=gridLayout(ids.map(id=>({...g.object(id),location:null})),[],el.clientWidth,el.clientHeight).cards.map(({id,x,y})=>({id,x,y}));
  }else updates=ids.map((id,i)=>({id,x:CARD_H+10+(i%columns)*(CARD_W+12),y:CARD_H+14+Math.floor(i/columns)*(CARD_H+16)}));
- const result=run({type:'LAYOUT',anchor:'corner-v2',grid:zone!=='battlefield',order:ids,updates});if(result.ok){if(zone==='battlefield')fit(zone);else reflowDockGrid(zone);}}
+ const result=run({type:'LAYOUT',anchor:'corner-v2',grid:zone!=='battlefield',order:ids,updates});if(result.ok){if(zone==='battlefield')fit(zone);else {reflowDockGrid(zone,true);savePreferences();}}}
 function closeInspector(){clearInspectorState();render();}
 function readRuleForm(){
  const r=ui.ruleDraft;if(!r||!byId('rule-form'))return;
@@ -403,7 +412,9 @@ document.addEventListener('drop',e=>{
 document.addEventListener('dragend',()=>{ui.orderDrag=null;if(!ui.deckDrag)return;ui.deckDrag=null;clearDeckDragVisuals();});
 document.addEventListener('input',e=>{const el=e.target;
  if(el.id==='sequence-name')ui.sequenceName=el.value;
- if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
+ if(el.id==='deck-text'){ui.deckText=el.value;prefs.deckText=el.value;ui.deckReport=null;
+  const status=overlay.querySelector('.deck-live-status');if(status){status.className='deck-live-status';status.querySelector('strong').textContent='Not validated';status.querySelector('span').textContent='Validate to check your edited list.';}
+  overlay.querySelector('.deck-text-issues')?.remove();savePreferences();}if(el.id==='deck-search'){ui.deckSearch=el.value;renderModal();}if(el.id==='new-seed')ui.seed=el.value;if(el.id==='note-text')ui.noteText=el.value;if(el.id==='number-choice')ui.number=Number(el.value);
  if(el.id==='card-search'){ui.cardFilter=el.value;renderModal();}if(el.id==='choice-filter'){ui.choiceFilter=el.value;const q=el.value.toLowerCase();for(const card of floats.querySelectorAll('.decision-gallery [data-card]')){const d=g.definition(card.dataset.card);card.hidden=!`${d.name} ${d.typeLine}`.toLowerCase().includes(q);}}
  if(el.dataset.payment){ui.payment||={normal:{},tagged:[]};ui.payment.normal[el.dataset.payment]=Number(el.value);ui.paymentEdited=true;}
  if(el.dataset.tagged){ui.payment||={normal:{},tagged:[]};const item=ui.payment.tagged.find(v=>v.id===el.dataset.tagged);if(item)item.amount=Number(el.value);else ui.payment.tagged.push({id:el.dataset.tagged,amount:Number(el.value)});ui.paymentEdited=true;}
@@ -436,12 +447,12 @@ document.addEventListener('keydown',e=>{
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();run({type:e.shiftKey?'REDO':'UNDO'});}
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();run({type:'REDO'});}
 });
-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive)size();},80);});
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
 window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.2'};
 async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
- if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText||data.deckText;}
+ if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
  useEngine(engine||newEngine(Engine.create(registry,data.pool,ui.seed)),{save:false,memo:doc?.tableView,grids:doc?.tableGrids,playerPrograms:doc?.playerPrograms});
 }
 boot().catch(error=>{root.innerHTML=`<div class="fatal"><h1>Unable to start Astra</h1><p>${h(error.message)}</p><p>Open the standalone edition, or keep index.html together with the assets folder.</p></div>`;console.error(error);});

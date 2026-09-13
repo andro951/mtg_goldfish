@@ -79,5 +79,6 @@
   "checkpoints/100-special-ability-access.json": "1b43296738d352bd5d47b78b3b7e44b0d9b7f44e16ccbb683c8460a41fbd4c9c",
   "checkpoints/101-ability-access-verification.json": "231f3999e83fa6494d293d025772dd426fab6ee5afc232d8d44b3525cef72c78",
   "checkpoints/102a-grid-text-docs.patch": "9bd6c9d53d1e52f13531e5f98ee9d94aa08a07aa2b2853d815ecd4394ef58c95",
-  "checkpoints/102b-grid-text-app.patch": "fc97e989217446421930c22005e0c7f73805daa162adedfe7bb011db18623c78"
+  "checkpoints/102b-grid-text-app.patch": "fc97e989217446421930c22005e0c7f73805daa162adedfe7bb011db18623c78",
+  "checkpoints/103-reviewed-grid-controller.patch": "b02b2797c18b8ba310d8ccd467311e84d972db316af8c27af7d40d4897a7e90d"
 }
