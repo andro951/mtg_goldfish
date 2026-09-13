@@ -48,3 +48,16 @@ export function cleanGrids(value){
     result[zone]=value[zone].slice(0,5000).map(k=>typeof k==='string'&&/^[\w-]+:\d+$/.test(k)?k:null);
   return result;
 }
+
+/** Membership, not just viewport size, owns a responsive grid. Ordinary
+ * inspection/dragging keeps the existing camera; arrivals and departures
+ * recompute columns so an initially empty zone cannot grow one endless row.
+ * Coordinates are excluded deliberately: moving a card is not a new arrival.
+ */
+export function gridMembership(objects){return objects.map(key).sort().join('|');}
+export function responsiveGrid(objects,slots,width,height,previous=null,force=false){
+  const members=gridMembership(objects);
+  const changed=force||!previous||previous.width!==width||previous.height!==height||previous.members!==members;
+  const grid=gridLayout(objects,slots,width,height,changed?null:previous.columns);
+  return {...grid,changed,view:{width,height,columns:grid.shape.columns,members}};
+}
