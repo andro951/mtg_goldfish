@@ -1,0 +1,7 @@
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -80 +80,3 @@
+- card(p,obj(p,"Mishra's Workshop")['id'],'battlefield').click();check('restricted mana source works while paying',state(p,'state.players[0].restrictedMana.length')==1)
++ card(p,obj(p,"Mishra's Workshop")['id'],'battlefield').click()
++ check('multi-mana land opens its inspector during payment without spending its tap',pending(p)['kind']=='payment' and not obj(p,"Mishra's Workshop")['tapped'])
++ click(p,'ability','.inspector-window','[data-ability=mana]');check('restricted mana source works while paying',state(p,'state.players[0].restrictedMana.length')==1)
