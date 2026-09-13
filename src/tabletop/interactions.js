@@ -7,13 +7,15 @@ export function installInteractions(api){
   const pointer=e=>({x:e.clientX,y:e.clientY});
   const rect=el=>el.getBoundingClientRect();
   const camera=zone=>api.prefs.cameras[zone]||{x:0,y:0,zoom:1};
-  const getSurface=p=>[...document.querySelectorAll('[data-surface]')].find(el=>contains(rect(el),p));
+  // The topmost DOM surface wins when Look overlaps the battlefield. Never
+  // pick a card through a floating window or use the hidden surface behind it.
+  const getSurface=p=>document.elementFromPoint(p.x,p.y)?.closest('[data-surface]')||null;
   const hit=(el,p)=>canonicalHit(api.ui.layouts[el.dataset.surface]||[],worldPoint(p,rect(el),camera(el.dataset.surface)));
   function handHit(p){return [...document.querySelectorAll('[data-hand-position]')].reverse().find(el=>contains(rect(el),p))?.dataset.handPosition||null;}
   function clearHover(){lifted?.classList.remove('hover-lift');lifted=null;if(api.ui.hoveredCard){api.ui.hoveredCard=null;api.linksHighlight?.();}}
   function hover(p){
     if(gesture||api.ui.modal){clearHover();return;}
-    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.opening-prompt,.view-control')){clearHover();return;}
+    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.opening-prompt,.view-control')||(top?.closest('.floating')&&!top.closest('[data-surface=workspace]'))){clearHover();return;}
     const surface=getSurface(p);let el;
     if(surface){const card=hit(surface,p);if(card)el=surface.querySelector(`[data-position="${card.id}"]`);}
     else if(top?.closest('.hand')){const id=handHit(p);if(id)el=document.querySelector(`[data-hand-position="${id}"]`);}
@@ -21,7 +23,7 @@ export function installInteractions(api){
   }
   function endGhosts(){document.querySelectorAll('.drag-ghost,.marquee').forEach(el=>el.remove());document.querySelectorAll('.being-dragged,.drop-target').forEach(el=>el.classList.remove('being-dragged','drop-target'));}
   function ghosts(p){
-    const d=gesture,dest=d.surfaces.find(s=>contains(s.box,p))?.el,zone=dest?.dataset.surface;
+    const d=gesture,dest=getSurface(p),zone=dest?.dataset.surface;
     const scale=dest?camera(zone).zoom:d.scale,anchor=anchorFromGrab({x:0,y:0},d.grab,d.tapped);
     if(!d.ghosts){d.ghosts=d.items.map(item=>{
       const ghost=document.createElement('div');ghost.className='drag-ghost';ghost.dataset.ghost=item.id;
@@ -40,7 +42,7 @@ export function installInteractions(api){
     if(popupResize){e.preventDefault();const el=popupResize.closest('.floating'),r=rect(el);gesture={kind:'popup-resize',id:e.pointerId,key:popupResize.dataset.resizePopup,start:p,width:r.width,height:r.height,el,old:structuredClone(api.prefs)};}
     else if(resize){e.preventDefault();gesture={kind:'resize',id:e.pointerId,key:resize.dataset.resize,start:p,old:structuredClone(api.prefs)};}
     else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f,old:structuredClone(api.prefs)};}
-    else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
+    else if(target.closest('.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line')||(target.closest('.floating')&&!target.closest('[data-surface=workspace]')))return;
     else{
       const surface=getSurface(p),hand=target.closest('.hand'),rail=target.closest('.rail');
       let picked=surface?hit(surface,p)?.id:hand?handHit(p):rail?target.closest('[data-card]')?.dataset.card:null;
@@ -71,7 +73,7 @@ export function installInteractions(api){
     if(d.kind==='popup-resize'){
       const width=clamp(d.width+dx,280,innerWidth-8),height=clamp(d.height+dy,160,innerHeight-40);
       api.prefs.popupSizes||={};api.prefs.popupSizes[d.key]={width,height};
-      d.el.style.width=width+'px';d.el.style.height=height+'px';return;
+      d.el.style.width=width+'px';d.el.style.height=height+'px';if(d.key==='workspace')api.size();return;
     }
     if(d.kind==='resize'){
       if(d.key==='sidebar')api.prefs.sidebarWidth=clamp(d.old.sidebarWidth+dx,92,Math.min(260,innerWidth*.45));
@@ -135,7 +137,7 @@ export function installInteractions(api){
   }
   document.addEventListener('pointerup',e=>finish(e));document.addEventListener('pointercancel',e=>finish(e,true));
   document.addEventListener('wheel',e=>{
-    if(api.ui.modal||gesture)return;const target=e.target;if(target.closest('.floating,.view-control'))return;
+    if(api.ui.modal||gesture)return;const target=e.target;if(target.closest('.view-control')||(target.closest('.floating')&&!target.closest('[data-surface=workspace]')))return;
     const surface=target.closest('[data-surface]');if(!surface)return;e.preventDefault();
     const zone=surface.dataset.surface;api.prefs.cameras[zone]=zoomAt(camera(zone),pointer(e),rect(surface),e.deltaY*(e.deltaMode===1?16:1));
     api.applyCamera(zone);api.savePreferences();hover(pointer(e));
@@ -153,7 +155,7 @@ export function installInteractions(api){
     if(popup&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
       e.preventDefault();const el=popup.closest('.floating'),r=rect(el),amount=e.shiftKey?30:10,key=popup.dataset.resizePopup;
       const width=clamp(r.width+(e.key==='ArrowRight'?amount:e.key==='ArrowLeft'?-amount:0),280,innerWidth-8),height=clamp(r.height+(e.key==='ArrowDown'?amount:e.key==='ArrowUp'?-amount:0),160,innerHeight-40);
-      api.prefs.popupSizes||={};api.prefs.popupSizes[key]={width,height};el.style.width=width+'px';el.style.height=height+'px';api.savePreferences();return;
+      api.prefs.popupSizes||={};api.prefs.popupSizes[key]={width,height};el.style.width=width+'px';el.style.height=height+'px';if(key==='workspace')api.size();api.savePreferences();return;
     }
     const divider=e.target.closest('[data-resize]');
     if(divider&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){

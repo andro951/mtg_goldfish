@@ -125,5 +125,6 @@
   "checkpoints/116f-connection-browser-fixtures.patch": "62201ca19b454bcf7e18bad97c2633349db31bcc954a23262257395f8cb064a2",
   "checkpoints/117-1.4.7-release.patch": "ab2052324e5e48b2bf5ec22c2bb6fe64a96009f457f500f25502bfaa72503496",
   "checkpoints/117a-live-grids-look-preferences.patch": "4462962c75e07b1ab5f2b80dfbbcb556c08f543f4bdc9d09d5bf249b08f4d58c",
-  "checkpoints/117b-floating-look-app.patch": "17c38a1561fc2a96d36294b600dc08d6ede5e906e77f92c9658c89ed07109916"
+  "checkpoints/117b-floating-look-app.patch": "17c38a1561fc2a96d36294b600dc08d6ede5e906e77f92c9658c89ed07109916",
+  "checkpoints/117c-look-interactions-style.patch": "b8de964cd33411a1f8f0f147a5b5c62c3be5b81fab50fc355bb4442ac83b1369"
 }
