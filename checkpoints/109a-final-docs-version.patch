@@ -1,0 +1,29 @@
+diff --git a/README.md b/README.md
+index 82eec08..907f7eb 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,11 @@
+-# Astra 1.4.4 — The Goldfish Lab
++# Astra 1.4.5 — The Goldfish Lab
++
++## Extra-combat phase visibility and Step sequencing (1.4.5)
++
++The phase bar now shows a compact **Extra ×N** chip only while one or more additional combat phases remain. The count includes the currently active extra combat, so two scheduled Moraug combats display `Extra ×2`, then `Extra ×1` when the second extra combat begins, and disappear after the extra-combat chain is finished. Hover the chip to see whether those phases were created during Main 1 or Main 2.
++
++**Step →** has an explicit invariant: after an ordinary combat's End combat step it always enters **Main 2**. Moraug combats created in Main 1 are inserted before the normal combat, after which Step proceeds to Main 2. A Moraug combat created during Main 2 correctly proceeds to End after the final extra combat because that Main 2 has already happened; the chip tooltip calls this out so the two cases are not visually ambiguous.
++
+ 
+ ## Card ordering and Moraug timing (1.4.4)
+ 
+ diff --git a/package.json b/package.json
+index ea51a51..7289785 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.4",
++  "version": "1.4.5",
+   "private": true,
+   "type": "module",
+   "description": "Offline rules-aware 310-card MTG goldfish laboratory",
