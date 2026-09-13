@@ -1,0 +1,77 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -63,4 +63,15 @@
+       p[field] += delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
+     }
++    if (type === 'SET_ATTACHMENT_FOLLOW') {
++      const object=this.object(action.id);
++      requireRule(object?.zone==='battlefield'&&typeof action.enabled==='boolean','Choose a battlefield attachment.');
++      requireRule(object.attachedTo||this.characteristics(object).subtypes.some(t=>t==='Equipment'||t==='Aura'),'Only attachments can follow a host.');
++      if(action.position){const {x,y}=action.position;
++        requireRule(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=100000&&Math.abs(y)<=100000,'Invalid table position.');
++        object.location={x,y,anchor:'corner-v2'};
++      }
++      object.flags.followAttached=action.enabled;
++      this.record('ATTACHMENT_FOLLOW_CHANGED',{object:ref(object),enabled:action.enabled});return;
++    }
+     if (type === 'LAYOUT') {
+       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
+@@ -71,4 +82,8 @@
+         object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot} : {}) };
+       }
++      if(action.manualIds){
++        requireRule(Array.isArray(action.manualIds)&&action.manualIds.every(id=>updates.some(u=>u.id===id)),'Invalid manually dragged cards.');
++        for(const id of action.manualIds){const o=this.object(id);if(o.zone==='battlefield'&&o.attachedTo)o.flags.followAttached=false;}
++      }
+       if (action.order) {
+         requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');
+diff --git a/src/core/effects.js b/src/core/effects.js
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -141,4 +141,6 @@
+         source.copy = this.copiableValues(target, cmd.exceptions || {}); this.touch(); this.emit('COPIED', { object: ref(source), copied: ref(target) }); return;
+       }
++      case 'soulbond': this.soulbondChoice(cmd,context);return;
++      case 'pair': this.finishPair(cmd,context);return;
+       case 'attach': this.attach(cmd.source || context.source, asArray(cmd.target)[0] || null); return;
+       case 'modify': {
+diff --git a/src/core/events.js b/src/core/events.js
+--- a/src/core/events.js
++++ b/src/core/events.js
+@@ -7,4 +7,5 @@
+     if(type==='DRAW'&&detail.abstract){const k=`draw:${detail.player}:${this.state.turnSerial}:${this.state.activePlayer}`;this.state.turnCounts[k]=(this.state.turnCounts[k]||0)+1;detail.first=this.state.turnCounts[k]===1;detail.amount=1;}
+     const event = this.record(type, detail);
++    if(type==='ENTER')this.soulbondTriggers(event);
+     // Granted persist belongs to the dying object's LKI, not to its provider.
+     // Keep the graveyard identity: a blink/reanimation in response invalidates it.
+diff --git a/src/core/index.js b/src/core/index.js
+--- a/src/core/index.js
++++ b/src/core/index.js
+@@ -1,2 +1,3 @@
++import { pairingMethods } from './pairing.js';
+ import { installExpandedEngine } from './expanded-core.js';
+ import { sequenceMethods } from './sequences.js';
+@@ -7,5 +8,5 @@
+ import { effectMethods } from './effects.js';
+ import { eventMethods } from './events.js';
+ import { phaseMethods } from './phases.js';
+-Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods);
++Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods, pairingMethods);
+ installExpandedEngine(Engine);
+ export { Engine };
+diff --git a/src/core/zones.js b/src/core/zones.js
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -60,4 +60,5 @@
+       const spawnCopy = object.token && from === 'workspace' ? clone(object.copy) : null;
+       const meldParts = clone(object.flags.meldParts || null);
++      if(object.pairedWith)this.breakPair(object);
+       object.oid++; object.face=proposal.face??0; object.zone = to; object.controller = proposal.controller ?? object.owner;
+       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
+@@ -277,4 +278,5 @@
+   },
+   checkStateActions() {
++    this.clearInvalidPairs();
+     const death = [], keepChoices = [], cancelCounters = [];
+     for (const object of this.objects('battlefield')) {
