@@ -1,0 +1,27 @@
+--- a/README.md
++++ b/README.md
+@@ -1 +1,11 @@
+-# Astra 1.4.8 — The Goldfish Lab
++# Astra 1.4.9 — The Goldfish Lab
++
++## Utility-land clicks and combined single-mana choices (1.4.9)
++
++**Treasure Vault and other utility lands open their inspector when clicked**, rather than automatically spending their tap on mana. Conditional utility actions remain visible but disabled when their requirements are not met.
++
++**Compatible tap-for-one-mana abilities share one selector.** A colored land with Chromatic Lantern or an active World Tree opens the five-color picker directly; a land with a genuine colorless option offers all six mana types. Duplicate colors are shown once, and the selected real ability activates once. Restrictions on spending that mana are retained.
++
++**Bounce lands still open the inspector.** Their native two-mana action remains separate from a granted one-mana choice. Multi-mana, extra-cost, sacrifice and utility abilities are not silently merged. Escape from a nested mana picker returns to the original spell/effect payment without discarding floated mana.
++
++All 49 catalog lands are audited in four configurations (196 cases). See `docs/mana-clicks-149.md` and `test-results/land-click-audit.json` for scope. The floating Look window, responsive zone grids, attachment following, Ask defaults, loyalty overlays and incremental autosave remain intact.
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -86,0 +87,3 @@
++subprocess.run(['node', 'tools/verify-land-clicks.mjs'], cwd=ROOT, check=True)
++land_clicks = read_json('test-results/land-click-audit.json')
++require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 49 and land_clicks['cases'] == 196, 'Land click audit is incomplete.')
+@@ -105 +108 @@
+-    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']),
++    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']), 'landClickCasesPassed': land_clicks['cases'],
+@@ -120 +123 @@
+-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json'):
++for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json'):
