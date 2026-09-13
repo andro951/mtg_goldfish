@@ -1,0 +1,27 @@
+{
+  "format": "astra-text-edits-v1",
+  "files": {
+    "src/tabletop/views.js": {
+      "baseSha256": "0382fe6189544418c5d4fbbd6f0d93b54ae46c88331bd9ed10753d4499db5b83",
+      "sha256": "aec4dbbee297966325b5cd6a1b70559571d22417179cf880c94da3ed2cf5b167",
+      "edits": [
+        {
+          "old": "${['graveyard','exile',...(s.lookWorkspace?.ids?.length?['workspace']:[]),'outside'].map(z=>tool(z,'zone',`data-zone=\"${z}\" data-count=\"${z==='workspace'?s.lookWorkspace.ids.length:s.zones[z].length}\"`,prefs.dock===z)).join('')}",
+          "new": "${['graveyard','exile','workspace','outside'].map(z=>tool(z,'zone',`data-zone=\"${z}\" data-count=\"${z==='workspace'?s.lookWorkspace?.ids?.length||0:s.zones[z].length}\"`,(z==='workspace'?prefs.workspaceOpen:prefs.dock===z))).join('')}"
+        },
+        {
+          "old": "{selected:ui.selected.has(c.id),legal:legal.includes(c.id)}",
+          "new": "{preview:zone==='workspace',selected:ui.selected.has(c.id)||ui.choice?.includes(c.id),legal:legal.includes(c.id)}"
+        },
+        {
+          "old": "const {g,ui,prefs}=ctx,s=g.state,dock=prefs.dock;",
+          "new": "const {g,ui,prefs}=ctx,s=g.state,dock=['graveyard','exile','outside'].includes(prefs.dock)?prefs.dock:null;"
+        },
+        {
+          "old": "export function openingPopup({g}){",
+          "new": "/** The read-only Look surface has its own camera; library cards never become\n * battlefield objects simply because their previews are dragged or inspected. */\nexport function workspacePopup(ctx){\n if(!ctx.prefs.workspaceOpen)return '';\n const snapshot=ctx.ui.lastWorkspace,w=ctx.g.state.lookWorkspace,label=w?.label||'Look';\n const title=label==='Look at library'?'Look':label;\n const caption=`<div class=\"workspace-caption\"><span>${h(snapshot?.source||'Cards from the resolving effect')}</span><small>${snapshot?.ids?.length||0} card${snapshot?.ids?.length===1?'':'s'} · ${h(w?.visibility||'private')} look</small></div>`;\n const controls=button('−','zoom-view','data-zone=\"workspace\" data-scale=\"0.8333333333\" title=\"Zoom out\" aria-label=\"Zoom out Look\"')+button('+','zoom-view','data-zone=\"workspace\" data-scale=\"1.2\" title=\"Zoom in\" aria-label=\"Zoom in Look\"')+tool('arrange','arrange','data-zone=\"workspace\" title=\"Refresh Look grid\"')+tool('close','close-workspace','title=\"Hide Look (does not cancel the effect)\" aria-label=\"Hide Look\"');\n return floating('workspace',title,caption+surfaceHTML(ctx,'workspace',ctx.ui.layouts.workspace||[]),controls,'workspace-window')\n  .replace('data-floating=\"workspace\"','data-floating=\"workspace\" data-resizable=\"true\"')\n  .replace('</section>','<div class=\"popup-resize\" data-resize-popup=\"workspace\" title=\"Resize Look window\" role=\"separator\" aria-label=\"Resize Look window\" tabindex=\"0\"></div></section>');\n}\nexport function openingPopup({g}){"
+        }
+      ]
+    }
+  }
+}
