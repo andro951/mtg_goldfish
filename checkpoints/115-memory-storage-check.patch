@@ -1,0 +1,8 @@
+--- a/tests/ui_acceptance_persistence.py
++++ b/tests/ui_acceptance_persistence.py
+@@ -7,2 +7,5 @@
+  if args.memory:
++  # The restored mana palette intentionally consumes the first outside click.
++  # Dismiss it explicitly before checking the Menu's unavailable-storage status.
++  p.keyboard.press('Escape');check('memory storage check preserves parent payment',pending(p)['kind']=='payment')
+   menu(p);p.wait_for_timeout(500);check('unavailable storage is reported honestly',p.locator('#save-status').evaluate('(e)=>e.classList.contains("error")'));close(p)
