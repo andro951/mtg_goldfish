@@ -59,6 +59,7 @@ export const zoneMethods = {
       const castX = object.flags.castX || 0, prototype = clone(object.flags.prototype || null);
       const spawnCopy = object.token && from === 'workspace' ? clone(object.copy) : null;
       const meldParts = clone(object.flags.meldParts || null);
+      if(object.pairedWith)this.breakPair(object);
       object.oid++; object.face=proposal.face??0; object.zone = to; object.controller = proposal.controller ?? object.owner;
       object.tapped = false; object.counters = {}; object.damage = 0; object.attachedTo = null;
       object.modifications = []; object.copy = spawnCopy; object.attacksThisTurn = 0; object.location = null;
@@ -276,6 +277,7 @@ export const zoneMethods = {
     source.attachedTo = ref(target); this.touch(); this.emit('ATTACHED', { object: ref(source), target: ref(target) });
   },
   checkStateActions() {
+    this.clearInvalidPairs();
     const death = [], keepChoices = [], cancelCounters = [];
     for (const object of this.objects('battlefield')) {
       const c = this.characteristics(object);

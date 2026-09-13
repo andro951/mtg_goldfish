@@ -6,6 +6,7 @@ export const eventMethods = {
     if(type==='SPELL_CAST')this.state.turnCounts[`spells:${detail.controller}`]=(this.state.turnCounts[`spells:${detail.controller}`]||0)+1;
     if(type==='DRAW'&&detail.abstract){const k=`draw:${detail.player}:${this.state.turnSerial}:${this.state.activePlayer}`;this.state.turnCounts[k]=(this.state.turnCounts[k]||0)+1;detail.first=this.state.turnCounts[k]===1;detail.amount=1;}
     const event = this.record(type, detail);
+    if(type==='ENTER')this.soulbondTriggers(event);
     // Granted persist belongs to the dying object's LKI, not to its provider.
     // Keep the graveyard identity: a blink/reanimation in response invalidates it.
     if (type === 'LEAVE' && detail.change?.to === 'graveyard') {

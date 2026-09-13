@@ -140,6 +140,8 @@ export const effectMethods = {
         if (!source || !target || source.zone !== 'battlefield' || target.zone !== 'battlefield') return;
         source.copy = this.copiableValues(target, cmd.exceptions || {}); this.touch(); this.emit('COPIED', { object: ref(source), copied: ref(target) }); return;
       }
+      case 'soulbond': this.soulbondChoice(cmd,context);return;
+      case 'pair': this.finishPair(cmd,context);return;
       case 'attach': this.attach(cmd.source || context.source, asArray(cmd.target)[0] || null); return;
       case 'modify': {
         const ids = command.selector ? this.select(cmd.selector, context) : this.effectIds(command.ids, context);

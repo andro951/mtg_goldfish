@@ -62,6 +62,17 @@ export const actionMethods = {
       requireRule(field === 'life' || p[field] + delta >= 0, 'This total cannot be negative.');
       p[field] += delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
     }
+    if (type === 'SET_ATTACHMENT_FOLLOW') {
+      const object=this.object(action.id);
+      requireRule(object?.zone==='battlefield'&&typeof action.enabled==='boolean','Choose a battlefield attachment.');
+      requireRule(object.attachedTo||this.characteristics(object).subtypes.some(t=>t==='Equipment'||t==='Aura'),'Only attachments can follow a host.');
+      if(action.position){const {x,y}=action.position;
+        requireRule(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=100000&&Math.abs(y)<=100000,'Invalid table position.');
+        object.location={x,y,anchor:'corner-v2'};
+      }
+      object.flags.followAttached=action.enabled;
+      this.record('ATTACHMENT_FOLLOW_CHANGED',{object:ref(object),enabled:action.enabled});return;
+    }
     if (type === 'LAYOUT') {
       const updates = action.updates || [{ id: action.id, x: action.x, y: action.y }];
       for (const [slot, update] of updates.entries()) {
@@ -69,6 +80,10 @@ export const actionMethods = {
         requireRule(object && ['battlefield','graveyard','exile','outside','workspace'].includes(object.zone), 'This zone cannot be repositioned.');
         requireRule(Number.isFinite(update.x) && Number.isFinite(update.y) && Math.abs(update.x) <= 100000 && Math.abs(update.y) <= 100000, 'Invalid table position.');
         object.location = { x: update.x, y: update.y, ...(action.anchor === 'corner-v2' ? {anchor:'corner-v2'} : {}), ...(action.grid ? {grid: object.zone, slot} : {}) };
+      }
+      if(action.manualIds){
+        requireRule(Array.isArray(action.manualIds)&&action.manualIds.every(id=>updates.some(u=>u.id===id)),'Invalid manually dragged cards.');
+        for(const id of action.manualIds){const o=this.object(id);if(o.zone==='battlefield'&&o.attachedTo)o.flags.followAttached=false;}
       }
       if (action.order) {
         requireRule(Array.isArray(action.order) && unique(action.order).length === action.order.length, 'Invalid layer order.');

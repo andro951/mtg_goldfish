@@ -1,3 +1,4 @@
+import { pairingMethods } from './pairing.js';
 import { installExpandedEngine } from './expanded-core.js';
 import { sequenceMethods } from './sequences.js';
 import { Engine } from './engine.js';
@@ -6,7 +7,7 @@ import { zoneMethods } from './zones.js';
 import { effectMethods } from './effects.js';
 import { eventMethods } from './events.js';
 import { phaseMethods } from './phases.js';
-Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods);
+Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods, pairingMethods);
 installExpandedEngine(Engine);
 export { Engine };
 export { CardRegistry } from './registry.js';
