@@ -2,6 +2,7 @@ import { clone, ref, sameRef, asArray, unique, requireRule, integer, COLORS, ZON
 import { candidates, validateSelection } from './selectors.js';
 import { parseManaCost, suggestPayment, spendPayment, validatePayment, manaCostText } from './mana.js';
 import { makeInstance } from './deck.js';
+import { beginOneMana, acceptOneMana, ONE_MANA_ACTION } from './one-mana.js';
 
 const list = (value, engine, source, context) => typeof value === 'function' ? value(engine, source, context) : value || [];
 const costKey = (cost, index) => cost.key || `cost-${index}`;
@@ -12,6 +13,9 @@ export const actionMethods = {
     if (type === 'RUN_SEQUENCE')return this.runSequence(action);
     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
     if (type === 'CANCEL') {
+      if (this.state.pending?.kind === 'oneManaChoice' && this.state.pending.parent) {
+        this.state.pending=this.state.pending.parent;this.record('MANA_CHOICE_CANCELLED',{});return;
+      }
       // Cancel just the uncommitted nested mana activation. The outer casting
       // payment remains open, including mana already produced by other sources.
       if (this.state.actionDraft?.kind === 'ability' && this.state.pending?.kind === 'draft') {
@@ -96,6 +100,7 @@ export const actionMethods = {
     }
     if (type.startsWith('DEBUG_')) return this.debugAction(action);
     if (type === 'REVISE_DRAFT_INPUT') return this.reviseDraftInput(action);
+    if (type === ONE_MANA_ACTION) return beginOneMana(this, action);
     if (this.state.pending || this.state.actionDraft) {
       if (type === 'ACTIVATE_ABILITY' && ['payment', 'effectPayment'].includes(this.state.pending?.kind)) return this.beginPaymentManaAbility(action);
       requireRule(false, 'Finish the highlighted choice before taking another action.', 'CHOICE_PENDING');
@@ -486,6 +491,7 @@ export const actionMethods = {
   acceptChoice(value, action = {}) {
     const pending = this.state.pending; requireRule(pending, 'No choice is pending.');
     this.record('CHOICE_MADE', { kind: pending.kind, key: pending.key || null, value: clone(value) });
+    if (pending.kind === 'oneManaChoice') return acceptOneMana(this, value);
     if (pending.kind === 'miracleReveal') {
       const option = asArray(value)[0]; requireRule(['reveal', 'decline'].includes(option), 'Reveal the card or decline miracle.');
       const card = this.object(pending.object), continuation = this.state.drawContinuation;

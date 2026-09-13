@@ -3,7 +3,7 @@ import { requireRule } from '../core/util.js';
 
 export const PROGRAM_LIMIT = 256;
 export const programId=prefix=>prefix+'-'+Array.from(crypto.getRandomValues(new Uint32Array(4)),x=>x.toString(16).padStart(8,'0')).join('');
-export const ACTION_TYPES = ['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
+export const ACTION_TYPES = ['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
 export const EVENTS = [
   ['afterResolve','After an effect resolves'],['beforeResolve','Before an effect resolves'],
   ['untapped','When a permanent untaps'],['tapped','When a permanent taps'],
@@ -71,7 +71,7 @@ export function captureStep(g,action){
   const a=clone(action);delete a.placement;
   if(a.type==='CHOOSE'&&['payment','effectPayment'].includes(g.state.pending?.kind)&&a.value!=='decline')a.value='auto';
   const source=g.object(a.id),frame=g.state.resolving,top=g.state.stack.at(-1),draft=g.state.actionDraft,p=g.state.pending;
-  const label=source?`${a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
+  const label=source?`${a.type==='ACTIVATE_SINGLE_MANA'?'Choose one mana':a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
     a.type==='RESOLVE_TOP'?`Resolve — ${top?.label||'top of stack'}`:p?`${p.label}: ${Array.isArray(a.value)?a.value.map(id=>g.object(id)?g.definition(id).name:String(id)).join(', '):String(a.value)}`:a.type;
   const guard=p?{kind:p.kind,key:p.key||null,cardId:draft?.context?.sourceCardId||frame?.context?.sourceCardId||null,abilityId:draft?.abilityId||frame?.object?.abilityId||null}:
     a.type==='RESOLVE_TOP'?{stackCardId:top?.sourceCardId,stackAbilityId:top?.abilityId||null,stackKind:top?.kind}:null;

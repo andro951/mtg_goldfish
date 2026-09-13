@@ -2,6 +2,7 @@ import { workspaceSnapshot, workspaceTransition, fitWorkspace } from './look-win
 import { attachmentLayout, attachmentBasis, followingParents, followsAttachment } from './attachments.js';
 import { visiblePlacement } from './placement.js';
 import { cardActions } from './card-actions.js';
+import { ONE_MANA_ACTION, ONE_MANA_ID } from '../core/one-mana.js';
 import { isManaColorChoice } from './mana-choice.js';
 import { installTargetLinks } from './target-links.js';
 import { createProgramController } from './program-controller.js';
@@ -88,7 +89,7 @@ function syncInspectorState(){
   if(ui.inspected&&ui.inspectOrigin&&!sameOrigin(ui.inspectOrigin))clearInspectorState();
   const activation=ui.inspectorActivation;if(!activation)return;
   if(!sameOrigin(activation.origin)){clearInspectorState();return;}
-  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&e.abilityId===activation.abilityId)){clearInspectorState();return;}
+  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&(e.abilityId===activation.abilityId||activation.abilityId===ONE_MANA_ID))){clearInspectorState();return;}
   const stillDraft=g.state.actionDraft?.kind==='ability'&&g.state.actionDraft?.source?.id===activation.origin.id;
   if(!g.transaction&&!stillDraft){
     const committed=g.cursor>activation.cursor;
@@ -322,7 +323,7 @@ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&sele
  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
  const o=g.object(id);if(!o)return;const p=g.state.pending;
  if(o.zone==='battlefield'&&!o.tapped&&!g.isSick(o)&&(!p||['payment','effectPayment'].includes(p.kind))){
-  const {quickMana}=cardActions(g,o);if(quickMana){run({type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
+  const {quickMana}=cardActions(g,o);if(quickMana){run(quickMana.singleManaGroup?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
  }
  inspect(id,point);
 }
@@ -409,10 +410,10 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='combat-auto')return run({type:'GOLDFISH_COMBAT_DAMAGE'});
  if(action==='cast')return run({type:g.characteristics(id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id});
  if(action==='ability'){
-  const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
+  const source=g.object(id),grouped=el.dataset.ability===ONE_MANA_ID,ability=source&&(grouped?cardActions(g,source).displayAbilities:g.abilities(source)).find(a=>a.id===el.dataset.ability);
   const marker=ui.inspected===id&&source&&ability?{origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor}:null;
   if(marker)ui.inspectorActivation=marker;
-  const result=run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
+  const result=run(grouped?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
   if(marker&&!result.ok)ui.inspectorActivation=null;
   return result;
  }

@@ -1,5 +1,5 @@
 import { requireRule, clone } from './util.js';
-const allowed=new Set(['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
+const allowed=new Set(['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
 export const sequenceMethods={
   runSequence(action){
     requireRule(!this.state.pending&&!this.state.actionDraft&&!this.state.resolving,'Finish the current decision before running a sequence.','SEQUENCE_BUSY');
