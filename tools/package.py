@@ -84,6 +84,9 @@ require(len(performance['checks']) >= 6 and all(performance['checks'].values()) 
 
 subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
 support = read_json('test-results/card-support.json')
+subprocess.run(['node', 'tools/verify-land-clicks.mjs'], cwd=ROOT, check=True)
+land_clicks = read_json('test-results/land-click-audit.json')
+require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 49 and land_clicks['cases'] == 196, 'Land click audit is incomplete.')
 require(support['allRequestedNamesSupported'] and support['allNewNamesHaveFocusedTests'], 'Requested card support is incomplete.')
 
 builds = []
@@ -102,7 +105,7 @@ for name, report_path, arguments in (
 report = {
     'status': 'passed', 'version': read_json('package.json')['version'],
     'engineTestsPassed': engine_tests, 'browserChecksPassed': browser['checksPassed'],
-    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']),
+    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']), 'landClickCasesPassed': land_clicks['cases'],
     'candidateCards': 317, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'],
     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
     'scope': 'supplied-pool goldfish; abstract opponents, automatic unblocked combat damage, no blocker AI',
@@ -117,7 +120,7 @@ for folder in ('src', 'data', 'assets', 'tools', 'tests', 'docs', '.github', 'ch
     for path in (ROOT / folder).rglob('*'):
         if path.is_file() and '__pycache__' not in path.parts and path.suffix not in ('.pyc', '.log'):
             names.add(path.relative_to(ROOT).as_posix())
-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json'):
+for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json'):
     names.add('test-results/' + name)
 for path in (OUT / 'screenshots').glob('*.png'):
     if not path.name.startswith('FAIL-'):

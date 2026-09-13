@@ -135,5 +135,6 @@
   "checkpoints/118c-land-click-shortcuts.patch": "5431f28456f8101d2c2f484df08a63e524e03c3cf9b5a69564e3890c28778b35",
   "checkpoints/118d-mana-test-wiring.patch": "d7a3c673dc6d7907e4a1a3899918b80f80685555122baf4ddafca3ac3e2028a1",
   "checkpoints/118e-disabled-utility-actions.json": "6db291b7bb64c946c1bc378c1eb85db0d580c06a3f132ec1e3ef8adc8d87a602",
-  "checkpoints/118f-release-1.4.9.patch": "d34469ed400e618a52e098f3ce235a8d88f51d77e67a52f8a6f4195d89ae5dfc"
+  "checkpoints/118f-release-1.4.9.patch": "d34469ed400e618a52e098f3ce235a8d88f51d77e67a52f8a6f4195d89ae5dfc",
+  "checkpoints/118g-land-audit-release-docs.patch": "66d2303cf1175c40e69405323de317994a1f3b0e04b93df5e918f8f1e0ac3159"
 }

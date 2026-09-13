@@ -1,4 +1,14 @@
-# Astra 1.4.8 — The Goldfish Lab
+# Astra 1.4.9 — The Goldfish Lab
+
+## Utility-land clicks and combined single-mana choices (1.4.9)
+
+**Treasure Vault and other utility lands open their inspector when clicked**, rather than automatically spending their tap on mana. Conditional utility actions remain visible but disabled when their requirements are not met.
+
+**Compatible tap-for-one-mana abilities share one selector.** A colored land with Chromatic Lantern or an active World Tree opens the five-color picker directly; a land with a genuine colorless option offers all six mana types. Duplicate colors are shown once, and the selected real ability activates once. Restrictions on spending that mana are retained.
+
+**Bounce lands still open the inspector.** Their native two-mana action remains separate from a granted one-mana choice. Multi-mana, extra-cost, sacrifice and utility abilities are not silently merged. Escape from a nested mana picker returns to the original spell/effect payment without discarding floated mana.
+
+All 49 catalog lands are audited in four configurations (196 cases). See `docs/mana-clicks-149.md` and `test-results/land-click-audit.json` for scope. The floating Look window, responsive zone grids, attachment following, Ask defaults, loyalty overlays and incremental autosave remain intact.
 
 ## Floating Look and automatic zone grids (1.4.8)
 
