@@ -1,0 +1,36 @@
+--- a/src/tabletop/attachments.js
++++ b/src/tabletop/attachments.js
+@@ -1,2 +1,2 @@
+-import { bounds, CARD_H, round } from './geometry.js';
++import { bounds, overlaps, round } from './geometry.js';
+ import { sameRef } from '../core/util.js';
+@@ -17,3 +17,3 @@
+     if(partner?.zone!=='battlefield'||partner.id===source.id||!sameRef(partner.pairedWith,source)||
+-      source.controller!==partner.controller||!g.characteristics(source).types.includes('Creature')||
++      source.controller!==partner.controller||(source.pairedController!=null&&source.pairedController!==source.controller)||(partner.pairedController!=null&&partner.pairedController!==partner.controller)||!g.characteristics(source).types.includes('Creature')||
+       !g.characteristics(partner).types.includes('Creature'))continue;
+@@ -57 +57 @@
+-export function attachmentLayout(g,cards,parents=followingParents(g)) {
++export function attachmentLayout(g,cards,parents=followingParents(g),viewport=null) {
+@@ -66,6 +66,21 @@
+   function group(id){
+     if(visited.has(id))return;visited.add(id);const host=byId.get(id),r=bounds(host),ids=children.get(id)||[];
+-    ids.forEach((childId,i)=>{const child=byId.get(childId),h=bounds(child).height;
+-      child.x=round(r.left-24*(i+1));child.y=round(r.top-24*(i+1)+h);delete child.autoArrival;
++    let dx=-24,dy=-24;
++    if(viewport&&overlaps(r,viewport)&&ids.length){
++      const left=Math.max(0,r.left-viewport.left),right=Math.max(0,viewport.right-r.right);
++      const up=Math.max(0,r.top-viewport.top),down=Math.max(0,viewport.bottom-r.bottom);
++      const sx=left>=24*ids.length||left>=right?-1:1,sy=up>=24*ids.length||up>=down?-1:1;
++      dx=sx*Math.min(24,Math.max(1,(sx<0?left:right)/ids.length));
++      dy=sy*Math.min(24,Math.max(1,(sy<0?up:down)/ids.length));
++    }
++    ids.forEach((childId,i)=>{const child=byId.get(childId),b=bounds(child);
++      let x=r.left+dx*(i+1),top=r.top+dy*(i+1);
++      if(viewport&&overlaps(r,viewport)){
++        x=Math.max(viewport.left,Math.min(viewport.right-b.width,x));
++        top=Math.max(viewport.top,Math.min(viewport.bottom-b.height,top));
++      }
++      child.x=round(x);child.y=round(top+b.height);delete child.autoArrival;
+     });
+     for(const childId of [...ids].reverse())group(childId);
