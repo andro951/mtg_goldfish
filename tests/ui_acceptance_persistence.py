@@ -5,6 +5,9 @@ def persistence(p):
  p.keyboard.press('Escape');menu(p,'save');p.locator('#session-file').set_input_files({'name':'session.json','mimeType':'application/json','buffer':json.dumps(saved).encode()});p.wait_for_function('()=>astra.engine.state.pending?.key==="color"')
  check('import through UI restores tiny palette and nested casting action',p.locator('.mana-window').is_visible())
  if args.memory:
+  # The restored mana palette intentionally consumes the first outside click.
+  # Dismiss it explicitly before checking the Menu's unavailable-storage status.
+  p.keyboard.press('Escape');check('memory storage check preserves parent payment',pending(p)['kind']=='payment')
   menu(p);p.wait_for_timeout(500);check('unavailable storage is reported honestly',p.locator('#save-status').evaluate('(e)=>e.classList.contains("error")'));close(p)
   skipped.extend(['HTTP reload preserves game and panel preferences','Actual JSON/text download and corrupted import checks','Previous autosave recovery','Direct file startup'])
   return
