@@ -1,0 +1,154 @@
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -60,3 +60,3 @@
+     if(seq===saveSequence&&rev===saveRevision){saveStatus.text=`Autosaved ${new Date(at).toLocaleTimeString()}`;saveStatus.error=false;updateSaveLabel();}
+-   }catch(error){if(seq===saveSequence){saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();}throw error;}
++   }catch(error){if(seq!==saveSequence)continue;saveStatus.text=error.message;saveStatus.error=true;updateSaveLabel();throw error;}
+   }
+@@ -65,3 +65,3 @@
+ }
+-function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?'Autosave unavailable — export your session.':'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
++function scheduleSave(){saveRevision++;clearTimeout(saveTimer);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export your session.'):'Saving…';saveStatus.error=store.mode==='memory';updateSaveLabel();saveTimer=setTimeout(()=>saveNow().catch(()=>{}),500);}
+ function savePreferences(){saveRevision++;clearTimeout(preferenceTimer);preferenceTimer=setTimeout(()=>{if(!persistPreferences(prefs)){saveStatus.text='Layout storage unavailable — export your session to preserve it.';saveStatus.error=true;updateSaveLabel();}scheduleSave();},150);}
+@@ -533,4 +533,4 @@
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.5'};
+-async function boot(){await store.open();saveStatus.text=store.mode==='memory'?'Autosave unavailable — export to preserve your session.':'Browser storage ready.';saveStatus.error=store.mode==='memory';
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.6'};
++async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
+  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -58,3 +58,3 @@
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.5';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.6';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -3,3 +3,3 @@
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.5')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.6')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -25,2 +25,4 @@
+ 
++from ui_acceptance_146 import ask_loyalty, journal_persistence
++
+ server=None
+@@ -32,3 +34,3 @@
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+@@ -49,3 +51,3 @@
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.5');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.6');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+@@ -55,3 +57,3 @@
+  if server:server.terminate();server.wait(timeout=5)
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.5','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.6','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -33,3 +33,3 @@
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.5')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.6')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+@@ -63,3 +63,3 @@
+ 
+-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.5', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.6', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+ OUT.mkdir(parents=True, exist_ok=True)
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -79 +79,10 @@
+ save('latest-cube',{battlefield:['Cosmic Cube',{name:'Metalworker',counters:{'+1/+1':1}}],libraryActive:['Walking Atlas','Ancient Den','Seat of the Synod','Planar Bridge','Cosmic Cube','Cauldron of Souls','Great Furnace']},{step:'attackers'});
++save('ask-loyalty',{battlefield:['Tireless Provisioner','Azusa, Lost but Seeking','Manabond','Kodama of the East Tree','Tezzeret the Seeker','Walking Atlas'],hand:['Ancient Den','Tree of Tales','Great Furnace']});
++save('loyalty-double',{battlefield:[{name:'Tezzeret the Seeker',counters:{loyalty:12,charge:2}},{name:'Tezzeret, Cruel Captain',counters:{loyalty:8},props:{modifications:[{addTypes:['Creature'],basePower:3,baseToughness:4}]}}]});
++// A long real history, built offline rather than mutating state through the UI.
++{
++ const g=fixture({battlefield:['Mana Vault'],libraryActive:[]});g.state.initialDeck.scenario='UI acceptance: long-journal';
++ const long=new Engine(registry,g.state),card=long.controlled()[0].id;
++ for(let i=0;i<160;i++)long.act({type:'DEBUG_MOVE',id:card,zone:i%2?'battlefield':'graveyard'});
++ fs.writeFileSync(new URL('long-journal.json',out),JSON.stringify(long.exportSession()));
++}
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -67,3 +67,3 @@
+ engine_tests = total('tests')
+-require(engine_tests >= 1048 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 1076 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+@@ -73,4 +73,4 @@
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.4.5', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 530, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.6', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 570, 'Browser regression suite is incomplete.')
+ 
+@@ -79,2 +79,6 @@
+ require(portable.get('testedBuildSHA256') == digest(safe_file('Astra-standalone.html').read_bytes()), 'Portable report belongs to a different build.')
++
++performance = read_json('test-results/performance.json')
++require(performance.get('testedBuildSHA256') == digest(safe_file('index.html').read_bytes()), 'Performance report belongs to a different build.')
++require(len(performance['checks']) >= 6 and all(performance['checks'].values()) and not performance['errors'], 'Long-session performance regression failed.')
+ 
+@@ -100,3 +104,3 @@
+     'engineTestsPassed': engine_tests, 'browserChecksPassed': browser['checksPassed'],
+-    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0,
++    'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']),
+     'candidateCards': 317, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'],
+@@ -115,3 +119,3 @@
+             names.add(path.relative_to(ROOT).as_posix())
+-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json'):
++for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json'):
+     names.add('test-results/' + name)
+--- a/package.json
++++ b/package.json
+@@ -2,3 +2,3 @@
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.5",
++  "version": "1.4.6",
+   "private": true,
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,14 @@
+-# Astra 1.4.5 — The Goldfish Lab
++# Astra 1.4.6 — The Goldfish Lab
++
++## Performance, Ask defaults and loyalty (1.4.6)
++
++Optional choices start at **Ask**, including Tireless Provisioner. Choosing Food or Treasure once does not save a default; an explicit remembered preference still works. Old historical decisions replay under their original behavior, while new live choices use Ask.
++
++Planeswalkers show their **current loyalty number over the printed bottom-right shield**, rather than among top-left counters. The number updates when costs are paid and with undo/redo. Creature power/toughness overlays remain; an animated planeswalker can show both without overlap.
++
++The supplied 1.4.1 trace exposed repeated 3.6–5.2 second autosave stalls in code that was still present in 1.4.5. Autosave now uses transactional, incremental IndexedDB records, preserving current and previous recovery points. Unchanged flushes are skipped, concurrent changes are coalesced, and layout changes do not copy or rewrite historical actions. Undo records store changed array segments instead of duplicating the entire accumulated zone history. Frozen historical snapshots and streamed canonical hashes reduce action-time allocation. Old histories are compacted on import without dropping actions.
++
++**Before upgrading:** export your current session, close older Astra tabs, and open the new HTML. Import the exported session when needed. A blocked database migration is reported rather than silently switching to a separate save store. Very large old files may still take time to parse and validate on their first import. Session exports created by this version should be opened with this version or newer.
++
++See `docs/performance-146.md` and the build-bound `test-results/performance.json` for the trace findings and controlled before/after benchmark. Existing card support, targeting arrows, visible arrival placement, and automation controls are retained.
+ 
+--- a/src/ui/journal-store.js
++++ b/src/ui/journal-store.js
+@@ -24,3 +24,3 @@
+         request.onerror=()=>reject(request.error);
+-        request.onblocked=()=>{blocked=true;reject(new Error('Close another old Astra tab to enable autosave.'));};
++        request.onblocked=()=>{blocked=true;const error=new Error('Close older Astra tabs and reload to restore your existing autosave.');error.code='IDB_BLOCKED';reject(error);};
+       });
+@@ -28,3 +28,4 @@
+       this.mode='indexeddb';
+-    } catch {
++    } catch(error) {
++      if(error?.code==='IDB_BLOCKED'){this.problem=error.message;this.mode='memory';return this;}
+       try{localStorage.setItem('astra-storage-test','1');localStorage.removeItem('astra-storage-test');this.mode='localstorage';}catch{this.mode='memory';}
+--- a/tests/benchmark_browser.py
++++ b/tests/benchmark_browser.py
+@@ -24 +24 @@
+-   text=file.read_text();page.route(url+'/',lambda route,body=text:route.fulfill(status=200,content_type='text/html',body=body))
++   text=file.read_text();page.route(url+'/',lambda route:route.fulfill(status=200,content_type='text/html',body=text))
