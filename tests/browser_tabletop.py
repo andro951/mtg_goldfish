@@ -31,6 +31,8 @@ from ui_acceptance_148 import look_popup,arrival_grids
 
 from ui_acceptance_149 import mana_union, mana_union_payment, mana_union_grants
 
+from ui_acceptance_attackers import attacker_clicks, attacker_guards, attacker_saved_draft
+
 server=None
 if not args.memory:
  server=subprocess.Popen(['node','tools/serve.mjs'],cwd=ROOT,stdout=(OUT/'browser-server.log').open('w'),stderr=subprocess.STDOUT);time.sleep(1)
@@ -38,7 +40,7 @@ try:
  with sync_playwright() as pw:
   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
-  groups=[mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+  groups=[attacker_clicks,attacker_guards,attacker_saved_draft,mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
   for group in groups:
    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)
@@ -55,13 +57,13 @@ try:
   if not args.memory and not args.groups:
    context=b.new_context();p=context.new_page()
    try:
-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.9');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.10');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
    context.close()
   b.close()
 finally:
  if server:server.terminate();server.wait(timeout=5)
-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.9','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.10','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
 (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
 raise SystemExit(bool(failures or errors or requests))

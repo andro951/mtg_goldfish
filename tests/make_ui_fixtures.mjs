@@ -117,3 +117,8 @@ save('mana-union',{battlefield:['Silverbluff Bridge','Darksteel Citadel','Chroma
 save('mana-union-payment',{battlefield:['Darksteel Citadel','Chromatic Lantern'],hand:['Walking Atlas']},{mana:{C:1}});
 save('mana-union-effect',{battlefield:[{name:'Mana Vault',tapped:true},'Darksteel Citadel','Chromatic Lantern','Grim Monolith']});
 save('mana-union-grants',{battlefield:['Chromatic Lantern','The World Tree','Ancient Den','Seat of the Synod','Vault of Whispers','Great Furnace','Dimir Aqueduct']});
+
+save('click-attack',{battlefield:['Iron Man, Titan of Innovation','Metalworker','Walking Atlas','Ancient Den','Sol Ring'],libraryActive:[]},{step:'attackers'});
+save('click-attack-illegal',{battlefield:[{name:'Walking Atlas',tapped:true},{name:'Sakura-Tribe Scout',sick:true},{name:'Metalworker',props:{modifications:[{keywords:['Defender']}]}},{name:'Elvish Reclaimer',owner:1,controller:1},{name:'Urza, Lord High Artificer',sick:true,props:{modifications:[{keywords:['Haste','Vigilance']}]}}],libraryActive:[]},{step:'attackers'});
+save('click-attack-payment',{battlefield:['Iron Man, Titan of Innovation','Metalworker','Walking Atlas','Clock of Omens'],hand:["Faith's Reward",'Mox Opal'],libraryActive:[]},{step:'attackers'});
+save('click-attack-main',{battlefield:['Walking Atlas','Metalworker','Ancient Den'],libraryActive:[]},{step:'main1'});

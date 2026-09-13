@@ -1,4 +1,15 @@
-# Astra 1.4.9 — The Goldfish Lab
+# Astra 1.4.10 — The Goldfish Lab
+
+## Click creatures to select attackers (1.4.10)
+
+During your Attack step, before attackers have been declared, click a battlefield creature to select it as an attacker. A bright orange border marks each pick; click again to deselect it. This takes precedence over a creature’s usual inspector or quick-mana click. Right-click and explicit ability buttons still inspect the card. Pending targeting and payment decisions retain their normal click behavior.
+
+Press **Declare attackers (N)** on the toolbar to declare the highlighted creatures together. Selection alone never taps anything, produces mana, or fires an attack trigger. **Attack options** adjusts opponents for individual attackers, and **Clear** removes all picks. Phase-navigation buttons open the attack options instead of silently discarding selected attackers.
+
+Attacker picks are separate from drag-group selection and survive normal rerenders, resize, autosave reload and session export/import. Illegal or stale picks are removed when a creature changes zones, controller or attack eligibility; leaving combat or declaring clears the draft. The rules engine still performs the actual simultaneous declaration and enforces haste, vigilance, defender and summoning sickness.
+
+All previous mana selectors, floating Look, responsive grids, attachment-following, loyalty overlays and autosave improvements are retained. Export your current session before upgrading.
+
 
 ## Utility-land clicks and combined single-mana choices (1.4.9)
 

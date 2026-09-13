@@ -107,7 +107,7 @@ def expansion_mechanics(p):
 
 
 def expansion_combat(p):
- fixture(p,'expanded-combat');hold(p,True);click(p,'phase',extra='[data-step=attackers]');click(p,'dialog',extra='[data-dialog=combat]');akiri=obj(p,'Akiri, Line-Slinger')['id'];p.locator('[data-attacker="'+akiri+'"]').check();click(p,'attack-confirm')
+ fixture(p,'expanded-combat');hold(p,True);click(p,'phase',extra='[data-step=attackers]');click(p,'dialog',extra='[data-dialog=combat]');akiri=obj(p,'Akiri, Line-Slinger')['id'];p.locator('[data-attacker="'+akiri+'"]').check();click(p,'attack-confirm','.modal')
  click(p,'phase',extra='[data-step=damage]');check('normal mode provides calculated unblocked combat damage instead of resource edits',p.locator('[data-action=combat-auto]').count()==1 and p.locator('[data-dialog=damage]').count()==0)
  click(p,'combat-auto');check('first strike damage uses actual Akiri power',state(p,'state.players[1].life')==38)
  click(p,'combat-auto');check('normal damage step does not double-count a first-strike-only attacker',state(p,'state.players[1].life')==38 and p.locator('[data-action=combat-auto]').is_disabled())
