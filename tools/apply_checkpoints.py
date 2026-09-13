@@ -28,8 +28,6 @@ def apply_patch(text):
             name = line[4:].split('\t', 1)[0]
             if name != '/dev/null':
                 safe_path(name[2:] if name.startswith(('a/', 'b/')) else name)
-    # Some immutable records deliberately omit trailing context around long
-    # template-literal lines. Still require an exact, successful dry-run first.
     for args in (['--check'], []):
         subprocess.run(['git', 'apply', *args, '--unidiff-zero', '--whitespace=nowarn', '-'], input=text.encode(), cwd=ROOT, check=True)
 
@@ -46,15 +44,33 @@ for checkpoint in sorted((ROOT / 'checkpoints').glob('*')):
         apply_patch(checkpoint.read_text(encoding='utf-8'))
     else:
         envelope = json.loads(checkpoint.read_text(encoding='utf-8'))
-        if envelope.get('format') != 'astra-source-checkpoint-v1':
+        if envelope.get('format') == 'astra-text-edits-v1':
+            # Validate every source and result before writing any edited file.
+            entries = {}
+            for name, entry in envelope.get('files', {}).items():
+                target = safe_path(name)
+                original = target.read_bytes()
+                if hashlib.sha256(original).hexdigest() != entry['baseSha256']:
+                    raise RuntimeError(f'Concurrent source change detected: {name}')
+                text = original.decode('utf-8')
+                for edit in entry['edits']:
+                    if not edit['old'] or text.count(edit['old']) != 1:
+                        raise RuntimeError(f'Non-unique edit in {name}')
+                    text = text.replace(edit['old'], edit['new'], 1)
+                if hashlib.sha256(text.encode()).hexdigest() != entry['sha256']:
+                    raise RuntimeError(f'Edited content checksum mismatch: {name}')
+                entries[name] = {'content': text, 'baseSha256': entry['baseSha256']}
+            bundle = {'files': entries}
+        elif envelope.get('format') == 'astra-source-checkpoint-v1':
+            decoder = zlib.decompressobj()
+            raw = decoder.decompress(base64.b64decode(envelope['data'], validate=True), LIMIT + 1)
+            if len(raw) > LIMIT or not decoder.eof or decoder.unused_data:
+                raise RuntimeError('Oversized, truncated or trailing checkpoint data')
+            if hashlib.sha256(raw).hexdigest() != envelope['sha256']:
+                raise RuntimeError(f'Checkpoint checksum mismatch: {relative}')
+            bundle = json.loads(raw)
+        else:
             raise RuntimeError(f'Unknown checkpoint format: {relative}')
-        decoder = zlib.decompressobj()
-        raw = decoder.decompress(base64.b64decode(envelope['data'], validate=True), LIMIT + 1)
-        if len(raw) > LIMIT or not decoder.eof or decoder.unused_data:
-            raise RuntimeError('Oversized, truncated or trailing checkpoint data')
-        if hashlib.sha256(raw).hexdigest() != envelope['sha256']:
-            raise RuntimeError(f'Checkpoint checksum mismatch: {relative}')
-        bundle = json.loads(raw)
         writes = []
         for name, entry in bundle.get('files', {}).items():
             target = safe_path(name)
