@@ -30,7 +30,7 @@ export function installLandfall(registry) {
   register(registry, 'Seedborn Muse', { opponentUntap: (g, source, object) => source.controller === object.controller });
   register(registry, 'Unwinding Clock', { opponentUntap: (g, source, object) => source.controller === object.controller && g.characteristics(object).types.includes('Artifact') });
   register(registry, 'Lotus Cobra', { triggers: [landfall('mana', 'Add one mana of any color', () => chooseColorMana())] });
-  register(registry, 'Tireless Provisioner', { triggers: [landfall('provision', 'Create a Treasure or Food', () => [{ op: 'choose', key: 'tokenKind', label: 'Create Treasure or Food', options: options(['Treasure', 'Food']), policyKey: 'token-kind', defaultValue: 'Treasure' }, { op: 'token', card: '$var.tokenKind' }])] });
+  register(registry, 'Tireless Provisioner', { triggers: [landfall('provision', 'Create a Treasure or Food', () => [{ op: 'choose', key: 'tokenKind', label: 'Create Treasure or Food', options: options(['Treasure', 'Food']), policyKey: 'token-kind' }, { op: 'token', card: '$var.tokenKind' }])] });
   register(registry, 'Roil Cartographer', { triggers: [landfall('energy', 'Get an energy counter', () => [{ op: 'energy', amount: 1 }])], activated: [{ id: 'draw-three', label: 'Pay six energy: draw three cards', tap: true, energy: 6, effect: () => [draw(3)] }] });
   register(registry, 'Fateful Discovery', { triggers: [{ id: 'artifact-draw', label: 'Draw a card', event: 'ENTER', test: typeEntered('Artifact'), effect: () => [draw()] }] });
   register(registry, 'Nissa, Resurgent Animist', { triggers: [landfall('animist', 'Add mana; second resolution reveals an Elf or Elemental', () => [...chooseColorMana(), { op: 'call', handler: 'landfall.nissa' }])] });

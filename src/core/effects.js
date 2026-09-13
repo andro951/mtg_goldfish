@@ -74,7 +74,7 @@ export const effectMethods = {
       case 'record': this.record(cmd.type || 'EFFECT_NOTE', cmd.detail || {}); return;
       case 'optional': {
         const key = `${context.sourceCardId}/${command.key || context.triggerId || 'optional'}`;
-        const preference = this.state.optionalPreferences[key] || command.defaultPolicy || 'ASK';
+        const preference = this.state.optionalPreferences[key] || 'ASK';
         if (preference === 'YES') this.insertEffects(command.then || []);
         else if (preference === 'NO') this.insertEffects(command.else || []);
         else this.state.pending = { kind: 'optional', key, label: command.label || 'Use this optional effect?', min: 1, max: 1, optional: true,
@@ -247,7 +247,7 @@ export const effectMethods = {
       if (!ids.length || max === 0) { context.vars[key] = []; this.record('EMPTY_SELECTION', { key }); return; }
     }
     const policyKey = command.policyKey ? `${context.sourceCardId}/${command.policyKey}` : null;
-    const preference = policyKey ? this.state.optionalPreferences[policyKey] || command.defaultValue : null;
+    const preference = policyKey ? this.state.optionalPreferences[policyKey] || 'ASK' : null;
     if (preference && preference !== 'ASK' && spec.options?.some(o => o.value === preference)) {
       context.vars[key] = preference; this.record('OPTIONAL_POLICY_APPLIED', { key: policyKey, value: preference }); return;
     }

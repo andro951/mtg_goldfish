@@ -101,3 +101,7 @@
 .deck-text-modal .modal-footer{flex-wrap:wrap;gap:6px;padding:8px 12px}
 
 .extra-combat-chip{display:inline-flex;align-items:center;justify-content:center;min-height:21px;padding:2px 6px;margin-left:2px;border:1px solid #7c6040;border-radius:10px;background:#2b241b;color:#e7c67f;font-size:9px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}.extra-combat-chip.active{border-color:var(--gold);background:#40331f;color:#ffe2a6;box-shadow:0 0 0 1px #d1b17822 inset}
+
+/* Current loyalty covers the printed bottom-right shield, not the rules text. */
+.loyalty-badge{position:absolute;right:3%;bottom:4.5%;min-width:20%;height:11%;display:flex;align-items:center;justify-content:center;padding:0 2px;border:1px solid #72949e;border-radius:3px 3px 7px 7px;background:#10212bf5;color:#fff;font-size:12px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}
+.power-badge.with-loyalty{bottom:17%}
