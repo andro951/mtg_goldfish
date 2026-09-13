@@ -1,0 +1,53 @@
+diff --git a/src/tabletop/interactions.js b/src/tabletop/interactions.js
+--- a/src/tabletop/interactions.js
++++ b/src/tabletop/interactions.js
+@@ -9,3 +9,5 @@
+   const camera=zone=>api.prefs.cameras[zone]||{x:0,y:0,zoom:1};
+-  const getSurface=p=>[...document.querySelectorAll('[data-surface]')].find(el=>contains(rect(el),p));
++  // The topmost DOM surface wins when Look overlaps the battlefield. Never
++  // pick a card through a floating window or use the hidden surface behind it.
++  const getSurface=p=>document.elementFromPoint(p.x,p.y)?.closest('[data-surface]')||null;
+   const hit=(el,p)=>canonicalHit(api.ui.layouts[el.dataset.surface]||[],worldPoint(p,rect(el),camera(el.dataset.surface)));
+@@ -15,3 +17,3 @@
+     if(gesture||api.ui.modal){clearHover();return;}
+-    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.opening-prompt,.view-control')){clearHover();return;}
++    const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.opening-prompt,.view-control')||(top?.closest('.floating')&&!top.closest('[data-surface=workspace]'))){clearHover();return;}
+     const surface=getSurface(p);let el;
+@@ -23,3 +25,3 @@
+   function ghosts(p){
+-    const d=gesture,dest=d.surfaces.find(s=>contains(s.box,p))?.el,zone=dest?.dataset.surface;
++    const d=gesture,dest=getSurface(p),zone=dest?.dataset.surface;
+     const scale=dest?camera(zone).zoom:d.scale,anchor=anchorFromGrab({x:0,y:0},d.grab,d.tapped);
+@@ -42,3 +44,3 @@
+     else if(panel&&!target.closest('button,input,select')){e.preventDefault();const f=panel.closest('.floating'),r=rect(f);gesture={kind:'panel',id:e.pointerId,key:panel.dataset.dragPanel,start:p,x:r.left,y:r.top,width:r.width,height:r.height,el:f,old:structuredClone(api.prefs)};}
+-    else if(target.closest('.floating,.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line'))return;
++    else if(target.closest('.opening-prompt,.modal-backdrop,.view-control,.toolbar,.resize-line')||(target.closest('.floating')&&!target.closest('[data-surface=workspace]')))return;
+     else{
+@@ -73,3 +75,3 @@
+       api.prefs.popupSizes||={};api.prefs.popupSizes[d.key]={width,height};
+-      d.el.style.width=width+'px';d.el.style.height=height+'px';return;
++      d.el.style.width=width+'px';d.el.style.height=height+'px';if(d.key==='workspace')api.size();return;
+     }
+@@ -137,3 +139,3 @@
+   document.addEventListener('wheel',e=>{
+-    if(api.ui.modal||gesture)return;const target=e.target;if(target.closest('.floating,.view-control'))return;
++    if(api.ui.modal||gesture)return;const target=e.target;if(target.closest('.view-control')||(target.closest('.floating')&&!target.closest('[data-surface=workspace]')))return;
+     const surface=target.closest('[data-surface]');if(!surface)return;e.preventDefault();
+@@ -155,3 +157,3 @@
+       const width=clamp(r.width+(e.key==='ArrowRight'?amount:e.key==='ArrowLeft'?-amount:0),280,innerWidth-8),height=clamp(r.height+(e.key==='ArrowDown'?amount:e.key==='ArrowUp'?-amount:0),160,innerHeight-40);
+-      api.prefs.popupSizes||={};api.prefs.popupSizes[key]={width,height};el.style.width=width+'px';el.style.height=height+'px';api.savePreferences();return;
++      api.prefs.popupSizes||={};api.prefs.popupSizes[key]={width,height};el.style.width=width+'px';el.style.height=height+'px';if(key==='workspace')api.size();api.savePreferences();return;
+     }
+diff --git a/src/tabletop/styles.css b/src/tabletop/styles.css
+--- a/src/tabletop/styles.css
++++ b/src/tabletop/styles.css
+@@ -122,0 +123,9 @@
++
++/* Look is a floating, read-only card surface, independent of the zone dock. */
++.workspace-window{width:360px;height:380px;min-width:min(280px,calc(100vw - 8px));min-height:160px;max-width:calc(100vw - 8px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column}
++.workspace-window>.float-body{padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0}
++.workspace-window>.float-header{flex-shrink:0}.workspace-window>.float-header strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.workspace-window .surface{flex:1;min-height:0;width:100%;border-radius:0 0 6px 6px;background:#101c23}
++.workspace-caption{flex-shrink:0;padding:5px 8px;border-bottom:1px solid var(--line);font-size:10px;display:flex;justify-content:space-between;gap:6px;color:var(--muted)}
++.workspace-caption>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.workspace-caption>small{white-space:nowrap}
++.workspace-window .view-control{right:20px}.workspace-window .popup-resize{z-index:10}
