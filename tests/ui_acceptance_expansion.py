@@ -90,7 +90,7 @@ def expansion_mechanics(p):
  fixture(p,'expanded-improvise');hold(p,True);cast(p,'Whir of Invention');p.locator('#number-choice').fill('3');click(p,'confirm-number','[data-floating=decision]')
  check('improvise is a visible additional artifact-tap choice',pending(p)['key']=='improvise')
  choose_cards(p,[obj(p,n)['id'] for n in ['Ancient Den','Tree of Tales','Mox Amber']]);pay(p);click(p,'resolve','.stack-window')
- check('improvise preserves blue requirements and opens artifact tutor',state(p,'state.players[0].mana.U')==0 and pending(p)['kind']=='effectChoice')
+ check('improvise preserves blue requirements and opens artifact tutor',state(p,'state.players[0].mana.U')==0 and pending(p)['kind']=='effect' and obj(p,'Scrap Trawler','libraryActive')['id'] in pending(p)['candidates'])
  choose_cards(p,[obj(p,'Scrap Trawler','libraryActive')['id']]);check('Whir finds the chosen artifact and puts it onto battlefield',obj(p,'Scrap Trawler','battlefield') is not None)
  fixture(p,'expanded-dredge');hold(p,True);click(p,'next-turn');q=pending(p)
  check('draw step offers an actual dredge replacement',q['kind']=='dredge');choose_option(p,q['options'][1]['value']);settle(p)
