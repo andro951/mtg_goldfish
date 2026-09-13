@@ -1,0 +1,95 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+index 42c8491..7ebd1b9 100644
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -445,2 +445,3 @@ export const actionMethods = {
+       this.state.stack.push(stackObject);
++      this.emitTargetEvents(stackObject);
+       this.record('STACK_OBJECT_CREATED', { stackId: stackObject.id, kind: stackObject.kind, label, source:draft.source, abilityId:draft.abilityId, targets: stackObject.targets, paid });
+diff --git a/src/core/engine.js b/src/core/engine.js
+index 19cb9e4..c24e2d7 100644
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -59,3 +59,3 @@ export class Engine {
+       types: [...definition.types], subtypes: [...definition.subtypes], supertypes: [...definition.supertypes],
+-      colors: [...definition.colors], keywords: [...definition.keywords], power: Number(definition.power) || 0,
++      colors: [...definition.colors], keywords: [...definition.keywords], persistInstances: definition.keywords.includes('Persist') ? 1 : 0, power: Number(definition.power) || 0,
+       toughness: Number(definition.toughness) || 0, manaValue: Number(definition.manaValue) || 0 };
+@@ -109,2 +109,3 @@ export class Engine {
+     }
++    if (layer === 6 && modification.persistInstances) c.persistInstances = (c.persistInstances || 0) + modification.persistInstances;
+     if (layer === 6 && modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
+diff --git a/src/core/events.js b/src/core/events.js
+index 26a8d51..71c77af 100644
+--- a/src/core/events.js
++++ b/src/core/events.js
+@@ -8,2 +8,14 @@ export const eventMethods = {
+     const event = this.record(type, detail);
++    // Granted persist belongs to the dying object's LKI, not to its provider.
++    // Keep the graveyard identity: a blink/reanimation in response invalidates it.
++    if (type === 'LEAVE' && detail.change?.to === 'graveyard') {
++      const change=detail.change, lki=change.lki, c=lki.characteristics;
++      if (!(lki.counters['-1/-1'] > 0) && c.keywords.includes('Persist')) {
++        for (let i=0;i<(c.persistInstances || 1);i++) this.queueTrigger({
++          source:ref(lki),sourceCardId:lki.copy?.rulesId||lki.cardId,controller:lki.controller,
++          abilityId:'persist',label:`${c.name} — persist`,context:this.context(lki,{event}),
++          program:[{op:'move',ids:[change.afterRef],from:'graveyard',to:'battlefield',controller:lki.owner,counters:{'-1/-1':1}}],
++        });
++      }
++    }
+     const current = Object.values(this.state.instances).filter(o => o.zone !== 'void');
+@@ -36,2 +48,9 @@ export const eventMethods = {
+   },
++  emitTargetEvents(stackObject) {
++    const seen=new Set();
++    for (const target of stackObject.targets || []) {
++      const o=target.ref&&this.object(target.ref);if(!o||seen.has(o.id))continue;
++      seen.add(o.id);this.emit('BECOMES_TARGET',{target:ref(o),controller:stackObject.controller,stackId:stackObject.id});
++    }
++  },
+   queueTrigger(trigger) {
+@@ -111,2 +130,3 @@ export const eventMethods = {
+     this.state.actionDraft = null;
++    this.emitTargetEvents(object);
+     this.record('TRIGGER_ON_STACK', { stackId: object.id, label: object.label, targets: object.targets });
+diff --git a/src/core/phases.js b/src/core/phases.js
+index 5883e5b..2ced759 100644
+--- a/src/core/phases.js
++++ b/src/core/phases.js
+@@ -169,3 +169,3 @@ export const phaseMethods = {
+     for (const attacker of entries) this.emit('ATTACK_DECLARED', { object: ref(this.object(attacker.id)), player: attacker.player, controller: 0 });
+-    this.record('ATTACKERS_DECLARED', { attackers: entries });
++    this.emit('ATTACKERS_DECLARED', { attackers: entries, controller: 0 });
+   },
+diff --git a/src/core/zones.js b/src/core/zones.js
+index 0fae0dc..1f4f9ed 100644
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -278,3 +278,3 @@ export const zoneMethods = {
+   checkStateActions() {
+-    const death = [], keepChoices = [];
++    const death = [], keepChoices = [], cancelCounters = [];
+     for (const object of this.objects('battlefield')) {
+@@ -294,5 +294,9 @@ export const zoneMethods = {
+       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
+-      if (plus && minus) { const n = Math.min(plus, minus); object.counters['+1/+1'] -= n; object.counters['-1/-1'] -= n; this.touch(); }
++      if (plus && minus) cancelCounters.push({object:ref(object),amount:Math.min(plus,minus)});
+     }
+-    if (death.length) { this.moveBatch(death); return true; }
++    // Simultaneous SBAs use the pre-SBA last known counters for dying objects.
++    // Removing +1/+1 and -1/-1 counters first would wrongly enable persist.
++    if (death.length) this.moveBatch(death);
++    for (const cancel of cancelCounters) { const o=this.object(cancel.object);if(o){o.counters['+1/+1']-=cancel.amount;o.counters['-1/-1']-=cancel.amount;this.touch();} }
++    if (death.length) return true;
+     for (const object of Object.values(this.state.instances)) {
+diff --git a/src/rules/index.js b/src/rules/index.js
+index 08f27e8..272d603 100644
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -1 +1,2 @@
++import { installLatest } from './latest.js';
+ import { ACCEPTED_EXPANSION } from './accepted-expansion.js';
+@@ -28,2 +29,3 @@ export function createRegistry(definitions) {
+   installExpanded(registry);
++  installLatest(registry);
+   for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
