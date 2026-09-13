@@ -1,11 +1,11 @@
 {
   "build": "single-file-offline",
   "output": "Astra-standalone.html",
-  "modules": 52,
-  "candidateCards": 310,
-  "definitions": 340,
-  "htmlBytes": 45752629,
-  "sha256": "bb370e7413a592cf77e83ee8a4157559cd0f2d311a2f04f9d040a42c46fb0baf",
+  "modules": 53,
+  "candidateCards": 317,
+  "definitions": 348,
+  "htmlBytes": 46793542,
+  "sha256": "74718e85015523283bbcdb969b32b6127acd2f13e22d4cb7b54d8cc71efcc69f",
   "runtimeDependencies": [],
   "networkRequired": false
 }

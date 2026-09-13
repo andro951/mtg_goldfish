@@ -1,10 +1,12 @@
 {
+  "testedBuildSHA256": "74718e85015523283bbcdb969b32b6127acd2f13e22d4cb7b54d8cc71efcc69f",
+  "uiVersion": "1.4.5",
   "mode": "isolated single-file Chromium with offline networking",
   "checksPassed": 8,
   "checks": [
     "portable folder contains only the delivered HTML",
     "single file starts while browser is offline",
-    "all 343 card/face images and the real Magic back are embedded",
+    "all 351 card/face images and the real Magic back are embedded",
     "every embedded image decodes successfully",
     "portable UI records a real game action offline",
     "portable file restores its saved game after reload",
