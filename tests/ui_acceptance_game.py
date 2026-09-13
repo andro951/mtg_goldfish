@@ -1,7 +1,7 @@
 from ui_acceptance_support import *
 
 def opening(p):
- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.8')
+ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.9')
  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)

@@ -18,7 +18,7 @@ try:
  import time;time.sleep(.8)
  with sync_playwright() as pw:
   browser=pw.chromium.launch(args=['--no-sandbox'])
-  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_8',ROOT/'index.html')]:
+  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_9',ROOT/'index.html')]:
    context=browser.new_context(viewport={'width':1366,'height':768});page=context.new_page();page.set_default_timeout(15000)
    page.on('pageerror',lambda e:errors.append(str(e)))
    text=file.read_text();page.route(url+'/',lambda route:route.fulfill(status=200,content_type='text/html',body=text))
@@ -46,7 +46,7 @@ try:
    print(label,json.dumps({k:v for k,v in result.items() if k!='longTasks'}),flush=True);context.close()
   browser.close()
 finally:server.terminate();server.wait(timeout=5)
-a,b=reports['before_1_4_5'],reports['after_1_4_8']
+a,b=reports['before_1_4_5'],reports['after_1_4_9']
 checks={'both_used_real_indexeddb':a['storageMode']==b['storageMode']=='indexeddb',
  'same_number_of_actions':a['historyActions']==b['historyActions']==160,
  'new_save_at_least_ten_times_smaller':b['sessionBytes']<a['sessionBytes']/10,

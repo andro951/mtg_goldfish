@@ -65,14 +65,14 @@ def total(label: str) -> int:
     require(len(matches) == 1, f'Missing or ambiguous test total: {label}')
     return int(matches[0])
 engine_tests = total('tests')
-require(engine_tests >= 1118 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+require(engine_tests >= 1158 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
 for label in ('fail', 'cancelled', 'skipped', 'todo'):
     require(total(label) == 0, f'Engine test {label} must be zero.')
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser.get('uiVersion') == '1.4.8', 'The tested UI must be the compact tabletop, not the retired interface.')
-require(browser['checksPassed'] >= 690, 'Browser regression suite is incomplete.')
+require(browser.get('uiVersion') == '1.4.9', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser['checksPassed'] >= 725, 'Browser regression suite is incomplete.')
 
 require(browser.get('testedBuildSHA256') == digest(safe_file('index.html').read_bytes()), 'Browser report belongs to a different build.')
 require(portable.get('uiVersion') == read_json('package.json')['version'], 'Portable report is for an older release.')
