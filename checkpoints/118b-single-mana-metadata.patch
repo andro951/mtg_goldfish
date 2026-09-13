@@ -1,0 +1,62 @@
+diff --git a/src/rules/expanded-artifacts.js b/src/rules/expanded-artifacts.js
+index 943c2d5..40766b0 100644
+--- a/src/rules/expanded-artifacts.js
++++ b/src/rules/expanded-artifacts.js
+@@ -8,3 +8,3 @@
+- grant('intrinsic-basic-mana',mana({}, {label:'Add mana from a basic land type',effectInputs:(g,s)=>[colorInput('color',Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+- grant('lantern-mana',mana({}, {label:'Chromatic Lantern — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+- grant('worldtree-mana',mana({}, {label:'The World Tree — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
++ grant('intrinsic-basic-mana',mana({}, {singleMana:{colors:(g,s)=>Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c),key:'color'},label:'Add mana from a basic land type',effectInputs:(g,s)=>[colorInput('color',Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
++ grant('lantern-mana',mana({}, {singleMana:{colors:anyColor,key:'color'},label:'Chromatic Lantern — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
++ grant('worldtree-mana',mana({}, {singleMana:{colors:anyColor,key:'color'},label:'The World Tree — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+@@ -13 +13 @@
+- grant('thranduil-mana',mana({}, {label:'Thranduil — add green or blue',effectInputs:[colorInput('color',['G','U'])],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
++ grant('thranduil-mana',mana({}, {singleMana:{colors:['G','U'],key:'color'},label:'Thranduil — add green or blue',effectInputs:[colorInput('color',['G','U'])],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+@@ -15 +15 @@
+- register(registry,'Chromatic Lantern',{possibleMana:anyColor,activated:[mana({}, {effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})],grants:[{ability:'lantern-mana',match:(g,s,o)=>s.controller===o.controller&&g.characteristics(o).types.includes('Land')}]});
++ register(registry,'Chromatic Lantern',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})],grants:[{ability:'lantern-mana',match:(g,s,o)=>s.controller===o.controller&&g.characteristics(o).types.includes('Land')}]});
+diff --git a/src/rules/expanded-mana.js b/src/rules/expanded-mana.js
+index 93da7b7..46ce6a0 100644
+--- a/src/rules/expanded-mana.js
++++ b/src/rules/expanded-mana.js
+@@ -13 +13 @@
+-  register(registry,name,{possibleMana:anyColor,activated:[mana({}, {label:'Add a color from your commander’s color identity',available:(g,s)=>identity(g,s.controller).length>0,effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
++  register(registry,name,{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:(g,s)=>identity(g,s.controller),key:'color'},label:'Add a color from your commander’s color identity',available:(g,s)=>identity(g,s.controller).length>0,effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
+@@ -16 +16 @@
+-  registry.module(name).activated=[];register(registry,name,{possibleMana:colors,activated:[mana({}, {effectInputs:[colorInput('color',colors)],label:'Add '+colors.join(' or '),effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
++  registry.module(name).activated=[];register(registry,name,{possibleMana:colors,activated:[mana({}, {singleMana:{colors,key:'color'},effectInputs:[colorInput('color',colors)],label:'Add '+colors.join(' or '),effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
+@@ -30,2 +30,2 @@
+- register(registry,'Mox Jasper',{possibleMana:anyColor,activated:[mana({}, {available:g=>g.count({...BF,subtype:'Dragon'})>0,effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color (requires a Dragon)'})]});
+- for(const [name,cost,production,sac]of [['Lotus Bloom','',null,true],['Mox Tantalite','',null,false],['Sol Talisman','{1}',{C:2},false]])register(registry,name,{noManaCost:true,suspend:{time:3,cost},activated:[mana(production||{}, {label:production?'Add CC':sac?'Sacrifice: add three mana of one color':'Add one mana of any color',costs:sac?[selfSacrifice]:[],effectInputs:production?[]:[colorInput()],effect:production?()=>[{op:'mana',production}]:(g,c)=>[{op:'mana',color:c.inputs.color,amount:sac?3:1}]})]});
++ register(registry,'Mox Jasper',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},available:g=>g.count({...BF,subtype:'Dragon'})>0,effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color (requires a Dragon)'})]});
++ for(const [name,cost,production,sac]of [['Lotus Bloom','',null,true],['Mox Tantalite','',null,false],['Sol Talisman','{1}',{C:2},false]])register(registry,name,{noManaCost:true,suspend:{time:3,cost},activated:[mana(production||{}, {...(!sac&&!production?{singleMana:{colors:anyColor,key:'color'}}:{}),label:production?'Add CC':sac?'Sacrifice: add three mana of one color':'Add one mana of any color',costs:sac?[selfSacrifice]:[],effectInputs:production?[]:[colorInput()],effect:production?()=>[{op:'mana',production}]:(g,c)=>[{op:'mana',color:c.inputs.color,amount:sac?3:1}]})]});
+@@ -34 +34 @@
+- register(registry,'Glimmervoid',{possibleMana:anyColor,activated:[mana({}, {effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color'})],triggers:[{id:'sacrifice',label:'Sacrifice Glimmervoid if you control no artifacts',event:'END_STEP',test:(g,s)=>artifacts(g,s.controller)===0,interveningIf:(g,c)=>artifacts(g,c.controller)===0,effect:()=>[{op:'sacrifice',ids:'$source'}]}]});
++ register(registry,'Glimmervoid',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color'})],triggers:[{id:'sacrifice',label:'Sacrifice Glimmervoid if you control no artifacts',event:'END_STEP',test:(g,s)=>artifacts(g,s.controller)===0,interveningIf:(g,c)=>artifacts(g,c.controller)===0,effect:()=>[{op:'sacrifice',ids:'$source'}]}]});
+diff --git a/src/rules/helpers.js b/src/rules/helpers.js
+index 630003b..ecb3ad5 100644
+--- a/src/rules/helpers.js
++++ b/src/rules/helpers.js
+@@ -25 +25 @@
+-export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, effect: () => [{ op: 'mana', production }], ...extra });
++export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
+diff --git a/src/rules/lands.js b/src/rules/lands.js
+index 44bfc76..a42881f 100644
+--- a/src/rules/lands.js
++++ b/src/rules/lands.js
+@@ -12 +12 @@
+-      activated: colors.length ? [choice ? mana({}, { inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
++      activated: colors.length ? [choice ? mana({}, { singleMana:{colors:unique(colors),key:'color'}, inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
+@@ -28 +28 @@
+-    { id: 'restricted-color', label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
++    { id: 'restricted-color', singleMana:{colors:anyColor,key:'color',restriction:'artifactSpellOrAbility'}, label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
+diff --git a/src/rules/mana-engines.js b/src/rules/mana-engines.js
+index a2e904c..b48e72c 100644
+--- a/src/rules/mana-engines.js
++++ b/src/rules/mana-engines.js
+@@ -16 +16 @@
+-  register(registry, 'Mox Opal', { activated: [{ id: 'mana', label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
++  register(registry, 'Mox Opal', { activated: [{ id: 'mana', singleMana:{colors:anyColor,key:'color'}, label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
+@@ -21 +21 @@
+-  register(registry, 'Mox Amber', { activated: [{ id: 'mana', label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
++  register(registry, 'Mox Amber', { activated: [{ id: 'mana', singleMana:{colors:(g,s)=>amberColors(g,s.controller),key:'color'}, label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
