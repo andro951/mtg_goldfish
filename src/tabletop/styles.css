@@ -99,3 +99,5 @@
 
 .deck-text-issues{flex-shrink:0;max-height:100px;overflow:auto;white-space:pre-wrap;color:#ffc89c;font-size:11px;margin:0}
 .deck-text-modal .modal-footer{flex-wrap:wrap;gap:6px;padding:8px 12px}
+
+.extra-combat-chip{display:inline-flex;align-items:center;justify-content:center;min-height:21px;padding:2px 6px;margin-left:2px;border:1px solid #7c6040;border-radius:10px;background:#2b241b;color:#e7c67f;font-size:9px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}.extra-combat-chip.active{border-color:var(--gold);background:#40331f;color:#ffe2a6;box-shadow:0 0 0 1px #d1b17822 inset}
