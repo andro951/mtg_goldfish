@@ -30,9 +30,9 @@ try:
         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
         page.goto(destination.as_uri())
         page.wait_for_function('() => window.astra?.engine')
-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.3.0')
+        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.0')
         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
-        check('all 175 card images and the real Magic back are embedded', count == 176)
+        check('all 343 card/face images and the real Magic back are embedded', count == 344)
         image_report = page.evaluate('''async () => {
             const values = Object.values(window.ASTRA_IMAGES);
             const results = await Promise.all(values.map(src => new Promise(resolve => {
@@ -46,7 +46,7 @@ try:
         page.locator('[data-dialog="labs"]').click()
         page.locator('[data-lab="breakfast"]').click()
         page.wait_for_function('() => astra.engine.state.seed === "lab-breakfast"')
-        page.locator('[data-action="mana"][data-color="W"][data-delta="1"]').click()
+        page.locator('[data-surface="battlefield"] .face').filter(has=page.locator('img[alt="Ancient Den"]')).click()
         check('portable UI records a real game action offline', page.evaluate('astra.engine.cursor') == 1)
         before = page.evaluate('astra.engine.exportSession().stateChecksum')
         page.evaluate('astra.flushSave()')

@@ -12,3 +12,5 @@ test('restricted mana contributes only when legal for this payment',()=>{const t
 test('explicit colorless symbols cannot be paid with colored mana',()=>{assert.equal(alloc('{2}{C}',{U:10}),null);});
 test('suggestions leave pool and restricted entries unchanged',()=>{const p=player({U:6,W:2},[{id:'tag',color:'C',amount:2,restriction:'artifactSpell'}]),before=structuredClone(p);suggestPayment(parseManaCost('{3}'),p,{kind:'spell',types:['Artifact']});assert.deepEqual(p,before);});
 test('equal-sized pools have deterministic allocations',()=>{const a=alloc('{3}',{W:3,U:3,B:3});assert.equal(a.normal.W,3);});
+
+test('spend-as-any never consumes the only colorless mana needed for an explicit C symbol',()=>{const a=alloc('{W}{C}',{U:1,C:1},[],{spendAsAny:true});assert.ok(a);assert.equal(a.normal.C,1);assert.equal(a.normal.U,1);});

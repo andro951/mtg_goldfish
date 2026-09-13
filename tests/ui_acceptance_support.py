@@ -27,9 +27,12 @@ def close(p):
  if p.locator('.modal').count():click(p,'close-dialog','.modal')
 def hold(p,value=True):
  menu(p);p.locator('.menu-preference input').set_checked(value);close(p)
+def manual_controls(p,value=True):
+ menu(p,'settings');p.locator('[data-setting=manualControls]').set_checked(value);close(p)
 def lab(p,name,manual=True):
  menu(p,'labs');p.locator(f'[data-lab="{name}"]').click();p.wait_for_function('(n)=>astra.engine.state.seed===`lab-${n}`',arg=name)
- if manual:hold(p,True)
+ if manual:
+  hold(p,True);manual_controls(p,True)
 def state(p,expression):return p.evaluate('astra.engine.'+expression)
 def pending(p):return state(p,'state.pending')
 def checksum(p):return state(p,'exportSession().stateChecksum')

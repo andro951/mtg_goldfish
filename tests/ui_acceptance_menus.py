@@ -2,11 +2,11 @@ from ui_acceptance_support import *
 
 def menus(p):
  menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==11)
- click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 160 candidates',p.locator('.registry-card').count()==160)
+ click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 310 candidates',p.locator('.registry-card').count()==310)
  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
  p.locator('#card-search').fill('');p.locator('#card-type').select_option('Land');check('registry type filter works',p.locator('.registry-card').count()>20);p.locator('#show-derived').check();check('include derived card toggle works',p.evaluate('astra.ui.showDerived'))
  shot(p,'07-card-registry.png');close(p);menu(p,'deck')
- check('visual deck editor exposes all 160 supported cards',p.locator('.deck-browser-card').count()==160)
+ check('visual deck editor exposes all 310 supported cards',p.locator('.deck-browser-card').count()==310)
  check('deck editor opens with supplied section counts',p.locator('[data-deck-drop=main] b').inner_text()=='119' and p.locator('[data-deck-drop=command] b').inner_text()=='1' and p.locator('[data-deck-drop=outside] b').inner_text()=='41');shot(p,'10-deck-editor.png')
  p.locator('#deck-search').fill('Mox Opal');check('deck search filters the supported database live',p.locator('.deck-browser-card').count()==1 and p.locator('#deck-search').input_value()=='Mox Opal')
  p.locator('.deck-browser-card').first.drag_to(p.locator('[data-deck-drop=outside]'))
@@ -27,7 +27,7 @@ def menus(p):
  click(p,'restore-pool','.modal');check('restore candidate pool recovers valid visual deck',p.evaluate('astra.ui.deckReport.accepted') and p.locator('[data-deck-drop=main] b').inner_text()=='119');close(p)
  for name in ['guide','settings','log','notes','save']:
   menu(p,name);check(f'{name} hidden menu opens and closes',p.locator('.modal').is_visible());close(p)
- menu(p,'settings');check('card-size slider removed; geometry controls replace it',p.locator('#card-size,input[type=range]').count()==0)
+ menu(p,'settings');p.locator('[data-setting=manualControls]').check();check('card-size slider removed; geometry controls replace it',p.locator('#card-size,input[type=range]').count()==0)
  p.locator('#setting-orderTriggers').uncheck();check('trigger order setting changes engine',not state(p,'state.settings.orderTriggers'));p.locator('#setting-orderTriggers').check()
  p.locator('#setting-firstMulliganFree').uncheck();check('mulligan policy control changes engine',not state(p,'state.settings.firstMulliganFree'));p.locator('#setting-firstMulliganFree').check()
  p.locator('#reserve-access').uncheck();check('reserve isolation can still be chosen explicitly',not state(p,'state.reserveAccess'));p.locator('#reserve-access').check()
