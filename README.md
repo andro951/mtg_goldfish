@@ -1,4 +1,4 @@
-# Astra 1.4.1 — The Goldfish Lab
+# Astra 1.4.2 — The Goldfish Lab
 
 A compact, offline, rules-aware Magic testing table for the combined **310-card supported pool**. The battlefield fills the window; other controls appear only when needed.
 
@@ -13,6 +13,13 @@ Alternatively, extract the source ZIP and open `AstraSimulator/index.html`. Keep
 For a consistent local-server origin, Node.js 22 or later can run `npm start`; open `http://127.0.0.1:4173`. No `npm install` is required. The server binds to the local machine only. All network use belongs to optional developer import/test setup, not to gameplay.
 
 **Moving an existing game into this edition:** export its session JSON from the old application, open this edition, then use **Menu → Save / import**. This interface update retains the existing rules-pack/session compatibility. New games default to hold priority off and reserve access on; imported games keep their saved game settings.
+
+
+## Deck text editor and responsive side-zone grids (1.4.2)
+
+The visual drag-and-drop deck builder remains the default, and the original quantity/name workflow is now a **separate Deck text editor**. Open it directly from Menu → Deck text, or switch between Visual editor and Text editor from either deck dialog. Both edit the same saved deck source immediately, so a change in one appears in the other. The text editor supports the familiar `// Main`, `// Commander`, and `// Outside the Game` sections, bulk paste, validation, supplied-list presets, and restoring the original supplied pool.
+
+Graveyard, exile, and outside-the-game grids now reflow responsively to the **actual visible side-panel width and height**. Resizing the dock recalculates the best row/column shape and refits its grid-owned cards, instead of leaving the old narrow layout at a tiny stale zoom. Manually detached cards keep their saved coordinates and their vacated slot remains available for the next arrival. The grid button reattaches every card. After resizing, you can still wheel to choose your own zoom; another panel resize intentionally refits the grid to the new space.
 
 ## Mana-source special abilities (1.4.1)
 
