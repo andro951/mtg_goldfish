@@ -1,0 +1,240 @@
+diff --git a/src/rules/accepted-expansion.js b/src/rules/accepted-expansion.js
+new file mode 100644
+--- /dev/null
++++ b/src/rules/accepted-expansion.js
+@@ -0,0 +1,152 @@
++/** Explicit 1.4 expansion acceptance. Each named card has legal-entry coverage
++ * and focused mechanic assertions in tests/expanded-*.test.js. */
++export const ACCEPTED_EXPANSION = Object.freeze(`Akiri, Line-Slinger
++Amareth, the Lustrous
++Amulet of Vigor
++Apex Devastator
++Arcane Signet
++Arcbound Ravager
++Azorius Signet
++Blinkmoth Urn
++Bootleggers' Stash
++Boros Garrison
++Boros Signet
++Budoka Gardener
++Burgeoning
++Captain Kathryn Janeway
++Case of the Locked Hothouse
++Chimil, the Inner Sun
++Chromatic Lantern
++Chromatic Star
++Claws of Gix
++Command Tower
++Conduit of Worlds
++Conjurer's Bauble
++Contraband Kingpin
++Crop Rotation
++Deadly Dispute
++Defense Grid
++Dread Tiller
++Dryad of the Ilysian Grove
++Ensnaring Bridge
++Eusocial Engineering
++Exploration
++Exploration Broodship
++Explore
++Fabricate
++Flayer Husk
++Flubs, the Fool
++Future Sight
++Gandalf the White
++Genesis Wave
++Ghirapur Aether Grid
++Ghirapur Orrery
++Gifts Ungiven
++Gilded Lotus
++Glimmervoid
++Gonti's Aether Heart
++Gretchen Titchwillow
++Growth Spiral
++Hearthhull, the Worldseed
++Hedron Crab
++Hullbreaker Horror
++Ichor Wellspring
++Implement of Combustion
++Insidious Fungus
++Intuition
++Ior Ruin Expedition
++Iron Man, Titan of Innovation
++Karn, Legacy Reforged
++Krosan Wayfarer
++Life from the Loam
++Lion's Eye Diamond
++Loot, Exuberant Explorer
++Lotus Bloom
++Lotus Petal
++Meloku the Clouded Mirror
++Mesmeric Orb
++Mina and Denn, Wildborn
++Mishra's Bauble
++Misty Rainforest
++Mole Man, Moloid Master
++Mox Jasper
++Mox Tantalite
++Muzzio, Visionary Architect
++Mystic Forge
++Need for Speed
++Nissa, Worldsoul Speaker
++Nutrient Block
++Omnath, Locus of the Roil
++Omni-Cheese Pizza
++Oracle of Mul Daya
++Origin Spellbomb
++Orzhov Basilica
++Patron of the Moon
++Perennial Behemoth
++Pull Through the Weft
++Reprocess
++Reshape
++Reshape the Earth
++Riddlesmith
++Rites of Flourishing
++Roil Elemental
++Saheeli, the Sun's Brilliance
++Sarinth Greatwurm
++Scalding Tarn
++Scrap Mastery
++Selesnya Signet
++Shifting Woodland
++Simulacrum Synthesizer
++Skyshroud Ranger
++Skyswimmer Koi
++Slagstone Refinery
++Smothering Tithe
++Sol Ring
++Sol Talisman
++Song of Creation
++Spelunking
++Splendid Reclamation
++Steelfin Whale
++Stone-Seeder Hierophant
++Storm Cauldron
++Summer Bloom
++Surge Conductor
++Temple of Enlightenment
++Temple of Epiphany
++Temple of Mystery
++Terrarion
++Thalia and The Gitrog Monster
++The Everflowing Well
++The Gitrog, Ravenous Ride
++The Necrobloom
++The World Tree
++Thousand Moons Smithy
++Thran Dynamo
++Thranduil the Strategist
++Thrasios, Triton Hero
++Tireless Tracker
++Toggo, Goblin Weaponsmith
++Trading Post
++Transit Mage
++Transmute Artifact
++Tribute Mage
++Trinket Mage
++Tropical Island
++Tundra
++Unstable Glyphbridge
++Up the Beanstalk
++Uro, Titan of Nature's Wrath
++Urza's Bauble
++Vedalken Archmage
++Vessel of Volatility
++Volcanic Island
++Wayward Swordtooth
++Weapons Manufacturing
++Whir of Invention
++Wight of the Reliquary
++Worldsoul's Rage
++Wrenn and Seven
++Zell Dincht
++Zimone and Dina
++Zimone, Quandrix Prodigy
++Zuran Orb`.split('\n'));
+diff --git a/src/rules/index.js b/src/rules/index.js
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -1,3 +1,4 @@
++import { ACCEPTED_EXPANSION } from './accepted-expansion.js';
+ import { installExpanded } from './expanded.js';
+ import { ACCEPTED_CARDS } from './accepted-cards.js';
+ import { CardRegistry } from '../core/registry.js';
+@@ -24,9 +25,9 @@
+   installLibraryEngines(registry);
+   installArtifactMechanics(registry);
+   installSpecialMechanics(registry);
+-  for (const name of ACCEPTED_CARDS) {
+-    if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for rules-pack 1.0.0 goldfish scope; see the capability and interaction tests.' });
+-  }
+   installExpanded(registry);
++  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
++    if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for expanded goldfish scope; see the capability and interaction tests.' });
++  }
+   return registry;
+ }
+diff --git a/tests/card-acceptance.test.js b/tests/card-acceptance.test.js
+--- a/tests/card-acceptance.test.js
++++ b/tests/card-acceptance.test.js
+@@ -11,16 +11,18 @@
+ const grave = ['Sol Ring','Scroll Rack','Scrap Trawler','Metalwork Colossus','Ancient Den','Tree of Tales',"Faith's Reward",'Manabond','Summon: Bahamut'];
+ const library = ['Mox Amber','Sol Ring','Scroll Rack','Scrap Trawler','Krark-Clan Ironworks','Gilded Lotus','Metalwork Colossus','Urza, Lord High Artificer','The Wandering Minstrel','Ancient Den','Tree of Tales', ...Array(30).fill('Ancient Den')].filter(n=>registry.has(n));
+ function setup(card, zone) {
+-  const g=fixture({battlefield:stable.filter(n=>registry.has(n)&&n!==card.name), graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
++  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
+   const d=registry.get(card.id), state=g.state;
+   // Build explicit fixture state before the engine's initial snapshot is taken.
+   const proto={id:'subject',oid:1,cardId:d.id,zone,owner:0,controller:0,tapped:false,counters:{},damage:0,token:false,commander:false,face:0,enteredTurn:0,controlledSince:-1,attachedTo:null,flags:{},modifications:[],copy:null,lastMove:null,attacksThisTurn:0,location:null};
+   if(zone==='battlefield'){
+     if(d.types.includes('Planeswalker'))proto.counters.loyalty=30;
+-    Object.assign(proto.counters, {charge:15,burden:1,'+1/+1':1});
++    Object.assign(proto.counters, {charge:15,quest:3,burden:1,'+1/+1':1});
+     const m=registry.module(d.id);if(m.saga){proto.counters.lore=1;proto.flags.sagaMana=true;}
+   }
+   state.instances.subject=proto;state.zones[zone].push('subject');state.settings.debug=false;
++  // The main fixture keeps its real commander identity even on the battlefield.
++  for(const o of Object.values(state.instances))if(registry.get(o.cardId).name==='The Wandering Minstrel')o.commander=true;
+   for(const c of COLORS)state.players[0].mana[c]=500;
+   state.players[0].life=10000;state.players[0].energy=50;
+   for(const p of state.players.slice(1)){p.abstractCreatures=10;p.abstractHand=7;}
+@@ -67,7 +69,12 @@
+     assert.ok(card.image&&fs.existsSync(new URL('../'+card.image,import.meta.url)));
+     assert.ok(card.oracleText||card.types.includes('Land'));
+     const g=setup(card,'hand');
+-    g.act({type:card.types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id:'subject',payment:'auto'});settle(g);
++    if(mod.suspend){
++      assert.equal(g.perform({type:'CAST_SPELL',id:'subject',payment:'auto'}).ok,false,'A card with no mana cost cannot be cast normally.');
++      g.act({type:'SPECIAL_ACTION',special:'suspend',id:'subject',payment:'auto'});settle(g);
++      assert.equal(g.object('subject').zone,'exile');
++      assert.equal(g.object('subject').counters.time,3);
++    }else {g.act({type:card.types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id:'subject',payment:'auto'});settle(g);}
+     assert.notEqual(g.state.instances.subject.zone,'hand','The selected card must leave hand through the requested legal action.');
+     verify(g);
+   });
+diff --git a/tests/deck-editor.test.js b/tests/deck-editor.test.js
+--- a/tests/deck-editor.test.js
++++ b/tests/deck-editor.test.js
+@@ -16,7 +16,7 @@
+ });
+ 
+ test('database search is candidate-only and filters text, type, color and sort',()=>{
+-  assert.equal(supportedCards(registry).length,160);
++  assert.equal(supportedCards(registry).length,310);
+   assert.deepEqual(supportedCards(registry,{query:'mox opal'}).map(c=>c.name),['Mox Opal']);
+   assert(supportedCards(registry,{type:'Land'}).every(c=>c.types.includes('Land')));
+   assert(supportedCards(registry,{color:'U'}).every(c=>c.colorIdentity.includes('U')));
+diff --git a/tests/integrity.test.js b/tests/integrity.test.js
+--- a/tests/integrity.test.js
++++ b/tests/integrity.test.js
+@@ -79,7 +79,7 @@
+ });
+ test('candidate construction keeps source copies and fixed lands in the active partition',()=>{
+   const g=Engine.create(registry,pool,'acceptance-partitions',{openingHand:0});
+-  assert.equal(cards.filter(c=>c.candidate).length,160);assert.equal(g.state.zones.libraryActive.length,99);
++  assert.equal(cards.filter(c=>c.candidate).length,310);assert.equal(g.state.zones.libraryActive.length,99);
+   assert.equal(g.state.zones.libraryReserve.length,20);assert.equal(g.state.zones.outside.length,41);
+   assert.equal(g.state.zones.command.length,1);
+   assert.equal(g.objects('libraryActive').filter(o=>g.characteristics(o).types.includes('Land')).length,34);
