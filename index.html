@@ -135,6 +135,7 @@ const { workspaceSnapshot, workspaceTransition, fitWorkspace }=require("src/tabl
 const { attachmentLayout, attachmentBasis, followingParents, followsAttachment }=require("src/tabletop/attachments.js");
 const { visiblePlacement }=require("src/tabletop/placement.js");
 const { cardActions }=require("src/tabletop/card-actions.js");
+const { ONE_MANA_ACTION, ONE_MANA_ID }=require("src/core/one-mana.js");
 const { isManaColorChoice }=require("src/tabletop/mana-choice.js");
 const { installTargetLinks }=require("src/tabletop/target-links.js");
 const { createProgramController }=require("src/tabletop/program-controller.js");
@@ -220,7 +221,7 @@ function syncInspectorState(){
   if(ui.inspected&&ui.inspectOrigin&&!sameOrigin(ui.inspectOrigin))clearInspectorState();
   const activation=ui.inspectorActivation;if(!activation)return;
   if(!sameOrigin(activation.origin)){clearInspectorState();return;}
-  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&e.abilityId===activation.abilityId)){clearInspectorState();return;}
+  if(activation.singleUse&&(g.lastActionEvents||[]).some(e=>['MANA_ABILITY_RESOLVED','STACK_OBJECT_CREATED'].includes(e.type)&&e.source?.id===activation.origin.id&&e.source?.oid===activation.origin.oid&&(e.abilityId===activation.abilityId||activation.abilityId===ONE_MANA_ID))){clearInspectorState();return;}
   const stillDraft=g.state.actionDraft?.kind==='ability'&&g.state.actionDraft?.source?.id===activation.origin.id;
   if(!g.transaction&&!stillDraft){
     const committed=g.cursor>activation.cursor;
@@ -454,7 +455,7 @@ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&sele
  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
  const o=g.object(id);if(!o)return;const p=g.state.pending;
  if(o.zone==='battlefield'&&!o.tapped&&!g.isSick(o)&&(!p||['payment','effectPayment'].includes(p.kind))){
-  const {quickMana}=cardActions(g,o);if(quickMana){run({type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
+  const {quickMana}=cardActions(g,o);if(quickMana){run(quickMana.singleManaGroup?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
  }
  inspect(id,point);
 }
@@ -541,10 +542,10 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='combat-auto')return run({type:'GOLDFISH_COMBAT_DAMAGE'});
  if(action==='cast')return run({type:g.characteristics(id).types.includes('Land')?'PLAY_LAND':'CAST_SPELL',id});
  if(action==='ability'){
-  const source=g.object(id),ability=source&&g.abilities(source).find(a=>a.id===el.dataset.ability);
+  const source=g.object(id),grouped=el.dataset.ability===ONE_MANA_ID,ability=source&&(grouped?cardActions(g,source).displayAbilities:g.abilities(source)).find(a=>a.id===el.dataset.ability);
   const marker=ui.inspected===id&&source&&ability?{origin:inspectorOrigin(id),abilityId:ability.id,singleUse:abilitySingleUse(source,ability),cursor:g.cursor}:null;
   if(marker)ui.inspectorActivation=marker;
-  const result=run({type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
+  const result=run(grouped?{type:ONE_MANA_ACTION,id}:{type:'ACTIVATE_ABILITY',id,abilityId:el.dataset.ability});
   if(marker&&!result.ok)ui.inspectorActivation=null;
   return result;
  }
@@ -693,7 +694,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.8'};
+window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.9'};
 async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
@@ -1146,22 +1147,105 @@ function visiblePlacement(card, existing, viewport, camera, {land=false, obstacl
 Object.assign(exports,{visiblePlacement});
 },
 "src/tabletop/card-actions.js":(module,exports,require)=>{
-/** UI routing only: an inspection affordance never pays a cost or activates
- * anything. Read the live ability list, including copied and granted abilities.
- * The face keeps its fast mana gesture; the separate button reveals the rest. */
+const { oneManaOptions, ONE_MANA_ID }=require("src/core/one-mana.js");
+/** Land faces never hide a utility, multi-mana or extra-cost activation behind
+ * a tap shortcut. Equivalent tap-for-one abilities share one color selector,
+ * while the rules engine keeps and executes the original ability definitions. */
 function cardActions(engine, objectOrId) {
   const object = engine.object(objectOrId);
-  if (!object || object.zone !== 'battlefield') return { abilities: [], quickMana: null, showAbilities: false };
-  const abilities = engine.abilities(object);
-  const tapMana = abilities.filter(ability => ability.mana && ability.tap);
-  return {
-    abilities,
-    quickMana: tapMana.length === 1 ? tapMana[0] : null,
-    showAbilities: abilities.length > 1 && abilities.some(ability => ability.mana),
-  };
+  if (!object || object.zone !== 'battlefield') return { abilities: [], displayAbilities: [], quickMana: null, showAbilities: false };
+  const abilities = engine.abilities(object), single = oneManaOptions(engine, object, abilities);
+  const grouped = single.grouped.length > 1;
+  const group = grouped ? { id: ONE_MANA_ID, label: `Add one mana: ${single.choices.map(r => r.color).join(' / ')}`,
+    mana: true, tap: true, singleManaGroup: true } : null;
+  const unavailable = (engine.module(object).activated || []).filter(a => a.showWhenUnavailable && !abilities.some(b => b.id === a.id))
+    .map(a => ({...a, unavailable: true}));
+  const displayAbilities = [];let inserted = false;
+  for (const ability of abilities) {
+    if (grouped && single.grouped.includes(ability.id)) { if (!inserted) { displayAbilities.push(group); inserted = true; } }
+    else displayAbilities.push(ability);
+  }
+  displayAbilities.push(...unavailable);
+  const isLand = engine.characteristics(object).types.includes('Land');
+  const tapMana = displayAbilities.filter(a => a.mana && a.tap);
+  const quickMana = isLand
+    ? (displayAbilities.length === 1 && (group || single.grouped.includes(displayAbilities[0].id)) ? displayAbilities[0] : null)
+    : (tapMana.length === 1 ? tapMana[0] : null);
+  return { abilities, displayAbilities, quickMana,
+    showAbilities: (displayAbilities.length > 1 && abilities.some(a => a.mana)) || (isLand && abilities.length > 0 && !quickMana) };
 }
 
 Object.assign(exports,{cardActions});
+},
+"src/core/one-mana.js":(module,exports,require)=>{
+const { COLORS, ref, requireRule, asArray }=require("src/core/util.js");
+// This is a UI shortcut, not a replacement or extra rules ability. Definitions
+// opt in only when the cost is {T} and the entire effect adds exactly one mana.
+// Do not call arbitrary effect programs just to guess what a click might do.
+const ONE_MANA_ACTION = 'ACTIVATE_SINGLE_MANA';
+const ONE_MANA_ID = 'ui-single-mana';
+function oneManaOptions(g, source, abilities = g.abilities(source)) {
+  const routes = new Map(), grouped = [];
+  for (const ability of abilities) {
+    const meta = ability.singleMana;
+    if (!meta || !ability.mana || !ability.tap || ability.cost || ability.life || ability.energy ||
+        ability.loyalty != null || ability.sorcery || ability.instantOnly || ability.validate ||
+        (ability.costs && (!Array.isArray(ability.costs) || ability.costs.length))) continue;
+    const colors = typeof meta.colors === 'function' ? meta.colors(g, source) : meta.colors;
+    if (!Array.isArray(colors) || !colors.length || colors.some(c => !COLORS.includes(c))) continue;
+    grouped.push(ability.id);
+    for (const color of colors) {
+      const route = { color, abilityId: ability.id, inputs: meta.key ? { [meta.key]: color } : {}, restriction: meta.restriction || null };
+      const old = routes.get(color);
+      // Prefer unrestricted mana when the same tap can produce that color
+      // either way. Never erase an actual restriction on a restricted-only color.
+      if (!old || (old.restriction && !route.restriction)) routes.set(color, route);
+      else if (old.restriction && route.restriction && old.restriction !== route.restriction) {
+        // Incomparable spending restrictions need an explicit ability choice.
+        return { grouped: [], choices: [] };
+      }
+    }
+  }
+  return { grouped, choices: COLORS.filter(c => routes.has(c)).map(c => routes.get(c)) };
+}
+
+function beginOneMana(g, action) {
+  const parent = g.state.pending;
+  requireRule(!parent || ['payment', 'effectPayment'].includes(parent.kind), 'Finish the highlighted choice first.', 'CHOICE_PENDING');
+  requireRule(!g.state.actionDraft || parent?.kind === 'payment', 'An action is already being prepared.', 'CHOICE_PENDING');
+  requireRule(!g.state.resolving || parent?.kind === 'effectPayment', 'An effect is still resolving.');
+  requireRule(g.state.started && g.state.status === 'playing', 'Keep your opening hand before starting play.');
+  const source = g.object(action.id);
+  requireRule(source?.zone === 'battlefield' && source.controller === 0, 'You do not control this permanent.', 'ABILITY_UNAVAILABLE');
+  requireRule(!source.tapped, 'This permanent is already tapped.', 'TAP_COST');
+  requireRule(!g.isSick(source), 'This creature has summoning sickness.', 'SUMMONING_SICKNESS');
+  const { choices } = oneManaOptions(g, source);
+  requireRule(choices.length, 'No compatible one-mana ability is currently available.', 'ABILITY_UNAVAILABLE');
+  if (choices.length === 1) return activateRoute(g, source, choices[0]);
+  // Leave the parent draft/resolving frame intact. Cancel restores only this
+  // pending decision; mana already produced for the parent payment is retained.
+  g.state.pending = { kind: 'oneManaChoice', key: 'oneManaColor', type: 'option', label: 'Choose one mana',
+    min: 1, max: 1, source: ref(source), parent,
+    options: choices.map(r => ({ value: r.color, label: r.color, restriction: r.restriction })) };
+}
+function acceptOneMana(g, value) {
+  const pending = g.state.pending, color = asArray(value)[0], source = g.object(pending.source);
+  requireRule(asArray(value).length === 1 && pending.options.some(o => o.value === color), 'Choose one of the displayed mana types.', 'INVALID_CHOICE');
+  requireRule(source?.zone === 'battlefield', 'This mana source is no longer on the battlefield.', 'ABILITY_UNAVAILABLE');
+  // Re-evaluate the live grant/threshold and object identity; a stale selector
+  // must not manufacture an ability that has disappeared.
+  const route = oneManaOptions(g, source).choices.find(r => r.color === color);
+  requireRule(route, 'That mana option is no longer available.', 'ABILITY_UNAVAILABLE');
+  g.state.pending = pending.parent;
+  return activateRoute(g, source, route);
+}
+function activateRoute(g, source, route) {
+  const action = { type: 'ACTIVATE_ABILITY', id: source.id, abilityId: route.abilityId, inputs: route.inputs };
+  if (g.state.pending) return g.beginPaymentManaAbility(action);
+  return g.beginAbility(action);
+}
+
+Object.assign(exports,{ONE_MANA_ACTION,ONE_MANA_ID,oneManaOptions,beginOneMana,acceptOneMana});
 },
 "src/tabletop/mana-choice.js":(module,exports,require)=>{
 const { h }=require("src/ui/components.js");
@@ -1188,7 +1272,9 @@ function manaChoiceHTML(p){
   // keyboard users and screen readers. Escape cancels via the normal engine.
   return `<section class="floating mana-window" data-floating="decision" role="dialog" aria-modal="false" aria-label="Choose mana color"><div class="mana-options">${p.options.map((o,i)=>{
     const color=typeof o==='object'?o.value:o;
-    return `<button type="button" class="mana-choice" data-action="option" data-option="${i}" aria-label="Add ${h(MANA_NAMES[color].toLowerCase())} mana" title="${h(MANA_NAMES[color])} · Escape to cancel">${manaGlyph(color)}</button>`;
+    const restriction=typeof o==='object'&&o.restriction?({artifactSpellOrAbility:'Artifact spells or abilities only',artifactSpell:'Artifact spells only',notNonartifactSpell:'Cannot cast nonartifact spells',creatureSpell:'Creature spells only'}[o.restriction]||'Restricted mana'):'';
+    const label=MANA_NAMES[color]+(restriction?' — '+restriction:'');
+    return `<button type="button" class="mana-choice" data-action="option" data-option="${i}" aria-label="Add ${h(MANA_NAMES[color].toLowerCase())} mana${restriction?' — '+h(restriction):''}" title="${h(label)} · Escape to cancel">${manaGlyph(color)}</button>`;
   }).join('')}</div></section>`;
 }
 
@@ -2080,7 +2166,7 @@ Object.assign(exports,{installExpandedEngine});
 },
 "src/core/sequences.js":(module,exports,require)=>{
 const { requireRule, clone }=require("src/core/util.js");
-const allowed=new Set(['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
+const allowed=new Set(['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP']);
 const sequenceMethods={
   runSequence(action){
     requireRule(!this.state.pending&&!this.state.actionDraft&&!this.state.resolving,'Finish the current decision before running a sequence.','SEQUENCE_BUSY');
@@ -2396,6 +2482,7 @@ const { clone, ref, sameRef, asArray, unique, requireRule, integer, COLORS, ZONE
 const { candidates, validateSelection }=require("src/core/selectors.js");
 const { parseManaCost, suggestPayment, spendPayment, validatePayment, manaCostText }=require("src/core/mana.js");
 const { makeInstance }=require("src/core/deck.js");
+const { beginOneMana, acceptOneMana, ONE_MANA_ACTION }=require("src/core/one-mana.js");
 const list = (value, engine, source, context) => typeof value === 'function' ? value(engine, source, context) : value || [];
 const costKey = (cost, index) => cost.key || `cost-${index}`;
 
@@ -2405,6 +2492,9 @@ const actionMethods = {
     if (type === 'RUN_SEQUENCE')return this.runSequence(action);
     if (type === 'CHOOSE') return this.acceptChoice(action.value, action);
     if (type === 'CANCEL') {
+      if (this.state.pending?.kind === 'oneManaChoice' && this.state.pending.parent) {
+        this.state.pending=this.state.pending.parent;this.record('MANA_CHOICE_CANCELLED',{});return;
+      }
       // Cancel just the uncommitted nested mana activation. The outer casting
       // payment remains open, including mana already produced by other sources.
       if (this.state.actionDraft?.kind === 'ability' && this.state.pending?.kind === 'draft') {
@@ -2489,6 +2579,7 @@ const actionMethods = {
     }
     if (type.startsWith('DEBUG_')) return this.debugAction(action);
     if (type === 'REVISE_DRAFT_INPUT') return this.reviseDraftInput(action);
+    if (type === ONE_MANA_ACTION) return beginOneMana(this, action);
     if (this.state.pending || this.state.actionDraft) {
       if (type === 'ACTIVATE_ABILITY' && ['payment', 'effectPayment'].includes(this.state.pending?.kind)) return this.beginPaymentManaAbility(action);
       requireRule(false, 'Finish the highlighted choice before taking another action.', 'CHOICE_PENDING');
@@ -2879,6 +2970,7 @@ const actionMethods = {
   acceptChoice(value, action = {}) {
     const pending = this.state.pending; requireRule(pending, 'No choice is pending.');
     this.record('CHOICE_MADE', { kind: pending.kind, key: pending.key || null, value: clone(value) });
+    if (pending.kind === 'oneManaChoice') return acceptOneMana(this, value);
     if (pending.kind === 'miracleReveal') {
       const option = asArray(value)[0]; requireRule(['reveal', 'decline'].includes(option), 'Reveal the card or decline miracle.');
       const card = this.object(pending.object), continuation = this.state.drawContinuation;
@@ -4252,7 +4344,7 @@ const { Engine, clone, stateHash }=require("src/core/index.js");
 const { requireRule }=require("src/core/util.js");
 const PROGRAM_LIMIT = 256;
 const programId=prefix=>prefix+'-'+Array.from(crypto.getRandomValues(new Uint32Array(4)),x=>x.toString(16).padStart(8,'0')).join('');
-const ACTION_TYPES = ['ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
+const ACTION_TYPES = ['ACTIVATE_SINGLE_MANA','ACTIVATE_ABILITY','CAST_SPELL','PLAY_LAND','SPECIAL_ACTION','CHOOSE','REVISE_DRAFT_INPUT','RESOLVE_TOP'];
 const EVENTS = [
   ['afterResolve','After an effect resolves'],['beforeResolve','Before an effect resolves'],
   ['untapped','When a permanent untaps'],['tapped','When a permanent taps'],
@@ -4320,7 +4412,7 @@ function captureStep(g,action){
   const a=clone(action);delete a.placement;
   if(a.type==='CHOOSE'&&['payment','effectPayment'].includes(g.state.pending?.kind)&&a.value!=='decline')a.value='auto';
   const source=g.object(a.id),frame=g.state.resolving,top=g.state.stack.at(-1),draft=g.state.actionDraft,p=g.state.pending;
-  const label=source?`${a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
+  const label=source?`${a.type==='ACTIVATE_SINGLE_MANA'?'Choose one mana':a.type==='ACTIVATE_ABILITY'?(g.abilities(source).find(x=>x.id===a.abilityId)?.label||a.abilityId):a.type==='PLAY_LAND'?'Play':'Cast'} — ${g.definition(source).name}`:
     a.type==='RESOLVE_TOP'?`Resolve — ${top?.label||'top of stack'}`:p?`${p.label}: ${Array.isArray(a.value)?a.value.map(id=>g.object(id)?g.definition(id).name:String(id)).join(', '):String(a.value)}`:a.type;
   const guard=p?{kind:p.kind,key:p.key||null,cardId:draft?.context?.sourceCardId||frame?.context?.sourceCardId||null,abilityId:draft?.abilityId||frame?.object?.abilityId||null}:
     a.type==='RESOLVE_TOP'?{stackCardId:top?.sourceCardId,stackAbilityId:top?.abilityId||null,stackKind:top?.kind}:null;
@@ -4587,7 +4679,7 @@ const move = (ids, to, extra = {}) => ({ op: 'move', ids, to, ...extra });
 const choose = (key, label, selector, min = 1, max = min) => ({ op: 'choose', key, label, selector, min, max });
 const optional = (key, label, then, otherwise = []) => ({ op: 'optional', key, label, then, else: otherwise });
 const search = (selector, to = 'hand', extra = {}) => ({ op: 'search', selector: { ...LIB, ...selector }, to, ...extra });
-const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, effect: () => [{ op: 'mana', production }], ...extra });
+const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
 const countType = (g, type, controller = 0) => g.count({ type, controller });
 const paid = (ctx, key = 'sacrificed') => ctx.costs?.[key] || [];
 const paidMV = (ctx, key = 'sacrificed') => paid(ctx, key).reduce((n, o) => n + o.characteristics.manaValue, 0);
@@ -4808,13 +4900,13 @@ function installExpandedArtifacts(registry){
  const equipment=(cost)=>({id:'equip',label:`Equip ${cost}`,cost,sorcery:true,inputs:[target({...BF,creature:true})],effect:()=>[{op:'attach',target:'$input.target'}]});
  registry.grantedAbilities=new Map();
  const grant=(id,ability)=>registry.grantedAbilities.set(id,{...ability,id});
- grant('intrinsic-basic-mana',mana({}, {label:'Add mana from a basic land type',effectInputs:(g,s)=>[colorInput('color',Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
- grant('lantern-mana',mana({}, {label:'Chromatic Lantern — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
- grant('worldtree-mana',mana({}, {label:'The World Tree — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+ grant('intrinsic-basic-mana',mana({}, {singleMana:{colors:(g,s)=>Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c),key:'color'},label:'Add mana from a basic land type',effectInputs:(g,s)=>[colorInput('color',Object.entries({Plains:'W',Island:'U',Swamp:'B',Mountain:'R',Forest:'G'}).filter(([t])=>g.characteristics(s).subtypes.includes(t)).map(([,c])=>c))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+ grant('lantern-mana',mana({}, {singleMana:{colors:anyColor,key:'color'},label:'Chromatic Lantern — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+ grant('worldtree-mana',mana({}, {singleMana:{colors:anyColor,key:'color'},label:'The World Tree — add any color',effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
  grant('stash-treasure',{label:'Bootleggers’ Stash — create a Treasure',tap:true,effect:()=>[{op:'token',card:'Treasure'}]});
- grant('thranduil-mana',mana({}, {label:'Thranduil — add green or blue',effectInputs:[colorInput('color',['G','U'])],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
+ grant('thranduil-mana',mana({}, {singleMana:{colors:['G','U'],key:'color'},label:'Thranduil — add green or blue',effectInputs:[colorInput('color',['G','U'])],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]}));
  grant('rock-throw',{label:'Sacrifice attached Rock: deal 2 damage',cost:'{1}',tap:true,inputs:[anyTarget()],costs:(g,s)=>[{kind:'sacrifice',key:'rock',count:1,selector:{...BF,ids:g.controlled(s.controller).filter(o=>g.definition(o).name==='Rock'&&sameRef(o.attachedTo,s)).map(o=>o.id)}}],effect:()=>[damageTo(2)]});
- register(registry,'Chromatic Lantern',{possibleMana:anyColor,activated:[mana({}, {effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})],grants:[{ability:'lantern-mana',match:(g,s,o)=>s.controller===o.controller&&g.characteristics(o).types.includes('Land')}]});
+ register(registry,'Chromatic Lantern',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})],grants:[{ability:'lantern-mana',match:(g,s,o)=>s.controller===o.controller&&g.characteristics(o).types.includes('Land')}]});
  register(registry,'Bootleggers\' Stash',{grants:[{ability:'stash-treasure',match:(g,s,o)=>s.controller===o.controller&&g.characteristics(o).types.includes('Land')}]});
  register(registry,'The World Tree',{entersTapped:true,grants:[{ability:'worldtree-mana',match:(g,s,o)=>s.controller===o.controller&&lands(g,s.controller)>=6&&g.characteristics(o).types.includes('Land')}],activated:[{id:'gods',label:'Sacrifice The World Tree: search for any number of Gods',cost:'{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}',tap:true,costs:[selfSacrifice],effect:()=>[search({subtype:'God'},'battlefield',{max:100000})]}]});
  register(registry,'Thranduil the Strategist',{grants:[{ability:'thranduil-mana',match:(g,s,o)=>!sameRef(s,o)&&s.controller===o.controller&&g.characteristics(o).subtypes.includes('Elf')}],triggers:[landfall('elf','Create a green Elf',()=>[{op:'token',card:'Elf'}])]});
@@ -4988,7 +5080,7 @@ function installExpandedSpecial(registry){
   const candidates=g.select({zones:['battlefield'],controller:p,creature:true,power:{lte:2}},c);
   return [...(candidates.length?[{op:'choose',key:'glyphPlayer'+p,label:`Choose a power 2 or less creature controlled by ${g.state.players[p].name}`,ids:candidates,min:1,max:1}]:[]),call('glyph-choose',{player:p+1})];
  });
- register(registry,'Shifting Woodland',{entersTapped:false,entryTapped:(g,s)=>!g.count({...BF,controller:s.owner,subtype:'Forest'}),activated:[{id:'copy-graveyard',label:'Delirium: become a copy of target graveyard permanent until end of turn',cost:'{2}{G}{G}',available:(g,s)=>graveTypes(g,s.controller)>=4,inputs:[target({...GY,permanent:true})],effect:()=>[{op:'temporaryCopy',ids:'$source',target:'$input.target'}]}]});
+ register(registry,'Shifting Woodland',{entersTapped:false,entryTapped:(g,s)=>!g.count({...BF,controller:s.owner,subtype:'Forest'}),activated:[{id:'copy-graveyard',showWhenUnavailable:'Requires four card types in your graveyard',label:'Delirium: become a copy of target graveyard permanent until end of turn',cost:'{2}{G}{G}',available:(g,s)=>graveTypes(g,s.controller)>=4,inputs:[target({...GY,permanent:true})],effect:()=>[{op:'temporaryCopy',ids:'$source',target:'$input.target'}]}]});
  register(registry,'Apex Devastator',{triggers:Array.from({length:4},(_,n)=>({id:'cascade-'+n,label:'Cascade '+(n+1),zone:'stackCards',event:'SPELL_CAST',test:(g,s,e)=>sameRef(s,e.card),effect:()=>[call('cascade',{lessThan:10})]}))});
  register(registry,'Chimil, the Inner Sun',{spellsUncounterable:true,triggers:[endStep('discover','Discover 5',()=>[call('cascade',{discover:5})])]});
  registry.registerHandler('expanded.cascade',(g,c,cmd)=>{
@@ -5144,10 +5236,10 @@ function installExpandedMana(registry){
  const identity=(g,p=0)=>[...new Set(Object.values(g.state.instances).filter(o=>o.commander&&o.owner===p).flatMap(o=>g.registry.get(o.cardId).colorIdentity||[]))];
  for(const name of ['Arcane Signet','Command Tower']){
   registry.module(name).activated=[];
-  register(registry,name,{possibleMana:anyColor,activated:[mana({}, {label:'Add a color from your commander’s color identity',available:(g,s)=>identity(g,s.controller).length>0,effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
+  register(registry,name,{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:(g,s)=>identity(g,s.controller),key:'color'},label:'Add a color from your commander’s color identity',available:(g,s)=>identity(g,s.controller).length>0,effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))],effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
  }
  for(const [name,colors]of Object.entries({'Tundra':['W','U'],'Tropical Island':['G','U'],'Volcanic Island':['U','R']})){
-  registry.module(name).activated=[];register(registry,name,{possibleMana:colors,activated:[mana({}, {effectInputs:[colorInput('color',colors)],label:'Add '+colors.join(' or '),effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
+  registry.module(name).activated=[];register(registry,name,{possibleMana:colors,activated:[mana({}, {singleMana:{colors,key:'color'},effectInputs:[colorInput('color',colors)],label:'Add '+colors.join(' or '),effect:(g,c)=>[{op:'mana',color:c.inputs.color}]})]});
  }
  for(const [name,production]of Object.entries({'Boros Garrison':{R:1,W:1},'Orzhov Basilica':{W:1,B:1}})){
   registry.module(name).activated=[];register(registry,name,{entersTapped:true,activated:[mana(production)],triggers:[etb('return-land','Return a land you control',()=>[choose('land','Return a land you control', {...BF,land:true}),move('$var.land','hand')])]});
@@ -5161,11 +5253,11 @@ function installExpandedMana(registry){
  register(registry,'Terrarion',{entersTapped:true,possibleMana:anyColor,activated:[{id:'mana',label:'Sacrifice: add two mana in any combination of colors',mana:true,cost:'{2}',tap:true,costs:[selfSacrifice],effectInputs:[colorInput('firstColor'),colorInput('secondColor')],effect:(g,c)=>[{op:'mana',color:c.inputs.firstColor},{op:'mana',color:c.inputs.secondColor}]}],triggers:[deathDraw()]});
  register(registry,"Lion's Eye Diamond",{possibleMana:anyColor,activated:[{id:'mana',label:'Discard your hand and sacrifice: add three mana of one color',mana:true,instantOnly:true,costs:(g,s)=>[selfSacrifice,{kind:'discard',key:'discardHand',selector:HAND,count:g.objects('hand',s.controller).length}],effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color,amount:3}]}]});
  register(registry,'Vessel of Volatility',{possibleMana:['R'],activated:[{id:'mana',label:'Sacrifice: add RRRR',cost:'{1}{R}',mana:true,costs:[selfSacrifice],effect:()=>[{op:'mana',production:{R:4}}]}]});
- register(registry,'Mox Jasper',{possibleMana:anyColor,activated:[mana({}, {available:g=>g.count({...BF,subtype:'Dragon'})>0,effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color (requires a Dragon)'})]});
- for(const [name,cost,production,sac]of [['Lotus Bloom','',null,true],['Mox Tantalite','',null,false],['Sol Talisman','{1}',{C:2},false]])register(registry,name,{noManaCost:true,suspend:{time:3,cost},activated:[mana(production||{}, {label:production?'Add CC':sac?'Sacrifice: add three mana of one color':'Add one mana of any color',costs:sac?[selfSacrifice]:[],effectInputs:production?[]:[colorInput()],effect:production?()=>[{op:'mana',production}]:(g,c)=>[{op:'mana',color:c.inputs.color,amount:sac?3:1}]})]});
+ register(registry,'Mox Jasper',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},available:g=>g.count({...BF,subtype:'Dragon'})>0,effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color (requires a Dragon)'})]});
+ for(const [name,cost,production,sac]of [['Lotus Bloom','',null,true],['Mox Tantalite','',null,false],['Sol Talisman','{1}',{C:2},false]])register(registry,name,{noManaCost:true,suspend:{time:3,cost},activated:[mana(production||{}, {...(!sac&&!production?{singleMana:{colors:anyColor,key:'color'}}:{}),label:production?'Add CC':sac?'Sacrifice: add three mana of one color':'Add one mana of any color',costs:sac?[selfSacrifice]:[],effectInputs:production?[]:[colorInput()],effect:production?()=>[{op:'mana',production}]:(g,c)=>[{op:'mana',color:c.inputs.color,amount:sac?3:1}]})]});
  register(registry,'Zuran Orb',{activated:[{id:'sac-land',label:'Sacrifice a land: gain 2 life',costs:[sacrifice({...BF,land:true})],effect:()=>[{op:'life',amount:2}]}]});
  register(registry,'Claws of Gix',{activated:[{id:'sac-permanent',label:'Sacrifice a permanent: gain 1 life',cost:'{1}',costs:[sacrifice(BF)],effect:()=>[{op:'life',amount:1}]}]});
- register(registry,'Glimmervoid',{possibleMana:anyColor,activated:[mana({}, {effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color'})],triggers:[{id:'sacrifice',label:'Sacrifice Glimmervoid if you control no artifacts',event:'END_STEP',test:(g,s)=>artifacts(g,s.controller)===0,interveningIf:(g,c)=>artifacts(g,c.controller)===0,effect:()=>[{op:'sacrifice',ids:'$source'}]}]});
+ register(registry,'Glimmervoid',{possibleMana:anyColor,activated:[mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],effect:(g,c)=>[{op:'mana',color:c.inputs.color}],label:'Add any color'})],triggers:[{id:'sacrifice',label:'Sacrifice Glimmervoid if you control no artifacts',event:'END_STEP',test:(g,s)=>artifacts(g,s.controller)===0,interveningIf:(g,c)=>artifacts(g,c.controller)===0,effect:()=>[{op:'sacrifice',ids:'$source'}]}]});
  register(registry,"Karn, Legacy Reforged",{cda:(g,o,c)=>{c.power=c.toughness=maximalMV(g,o.controller);},triggers:[upkeep('mana','Add colorless mana for each artifact (retained this turn)',(g,c)=>[{op:'mana',production:{C:artifacts(g,c.controller)},restriction:'notNonartifactSpell',retain:'endOfTurn'}])]});
  register(registry,'Blinkmoth Urn',{triggers:[{id:'first-main',label:'Active player adds colorless for their artifacts',event:'MAIN_BEGAN',test:(g,s,e)=>e.precombat&&!s.tapped,interveningIf:(g,c)=>{const s=g.object(c.source);return !!s&&!s.tapped;},effect:(g,c)=>[{op:'mana',player:c.event.player,production:{C:artifacts(g,c.event.player)}}]}]});
  register(registry,'Gonti\'s Aether Heart',{triggers:[{id:'energy',label:'Get two energy counters',event:'ENTER',test:(g,s,e)=>e.change.object.controller===s.controller&&e.change.object.characteristics.types.includes('Artifact'),effect:()=>[{op:'energy',amount:2}]}],activated:[{id:'extra-turn',label:'Pay eight energy and exile: take an extra turn',energy:8,costs:[selfExile],effect:()=>[{op:'extraTurn'}]}]});
@@ -5357,7 +5449,7 @@ function installLands(registry) {
     const production = {};
     for (const color of colors) production[color] = (production[color] || 0) + 1;
     register(registry, card.id, { entersTapped: /enters tapped/.test(card.oracleText), possibleMana: unique(colors),
-      activated: colors.length ? [choice ? mana({}, { inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
+      activated: colors.length ? [choice ? mana({}, { singleMana:{colors:unique(colors),key:'color'}, inputs: [colorInput('color', unique(colors))], label: `Add ${unique(colors).join(' or ')}`, effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }) : mana(production)] : [] });
   }
   for (const name of ['Simic Growth Chamber', 'Selesnya Sanctuary', 'Golgari Rot Farm', 'Dimir Aqueduct', 'Gruul Turf', 'Azorius Chancery', 'Izzet Boilerworks']) {
     register(registry, name, { triggers: [etb('return-land', 'Return a land you control', () => [choose('returnedLand', 'Return a land you control to its owner’s hand', { ...BF, land: true }), move('$var.returnedLand', 'hand', { cause: 'bounce-land' })])] });
@@ -5373,13 +5465,13 @@ function installLands(registry) {
     { id: 'clue', label: 'Sacrifice Clue: draw a card', cost: '{2}', costs: [selfSacrifice], effect: () => [draw()] },
   ] });
   register(registry, 'Power Depot', { possibleMana: ['C', ...anyColor], entersCounters: { '+1/+1': 1 }, activated: [
-    { id: 'restricted-color', label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
+    { id: 'restricted-color', singleMana:{colors:anyColor,key:'color',restriction:'artifactSpellOrAbility'}, label: 'Add any color (artifact spell/ability only)', mana: true, tap: true, inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color, restriction: 'artifactSpellOrAbility' }] },
   ], triggers: [{ id: 'modular', label: 'Modular 1', event: 'LEAVE', lookBack: true, test: (g, s, e) => e.change.to === 'graveyard' && sameRef(s, e.change.beforeRef), optional: true,
     inputs: [target({ zones: ['battlefield'], allTypes: ['Artifact', 'Creature'] })], effect: (g, ctx) => [{ op: 'counter', ids: '$input.target', type: '+1/+1', amount: ctx.event.change.lki.counters['+1/+1'] || 0 }] }] });
   const fairCondition = (g, controller = 0) => countType(g, 'Artifact', controller) >= 3;
   register(registry, 'Inventors\' Fair', { triggers: [upkeep('fair-life', 'Gain 1 life if you control three artifacts', () => [{ op: 'life', amount: 1 }], {
     test: (g, s, e) => e.player === s.controller && fairCondition(g, s.controller), interveningIf: (g, ctx) => fairCondition(g, ctx.controller),
-  })], activated: [{ id: 'tutor', label: 'Search for an artifact', cost: '{4}', tap: true, costs: [selfSacrifice], available: g => fairCondition(g), effect: () => [search({ artifact: true })] }] });
+  })], activated: [{ id: 'tutor', showWhenUnavailable: 'Requires three artifacts', label: 'Search for an artifact', cost: '{4}', tap: true, costs: [selfSacrifice], available: g => fairCondition(g), effect: () => [search({ artifact: true })] }] });
   register(registry, 'Fomori Vault', { activated: [{ id: 'vault', label: 'Look at top cards; keep one', cost: '{3}', tap: true, costs: [discardCost()],
     effect: (g, ctx) => [{ op: 'look', count: countType(g, 'Artifact', ctx.controller), key: 'vaultLook' },
       { op: 'choose', key: 'vaultKeep', label: 'Put one of these cards into your hand', ids: '$var.vaultLook', min: 1, max: 1 },
@@ -5425,12 +5517,12 @@ function installManaEngines(registry) {
     { id: 'draw-damage', label: 'Mana Vault deals 1 damage to you', event: 'DRAW_STEP', test: (g, s, e) => e.player === s.controller && s.tapped,
       interveningIf: (g, ctx) => !!g.object(ctx.source)?.tapped, effect: (g, ctx) => [{ op: 'damage', player: ctx.controller, amount: 1 }] },
   ] });
-  register(registry, 'Mox Opal', { activated: [{ id: 'mana', label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
+  register(registry, 'Mox Opal', { activated: [{ id: 'mana', singleMana:{colors:anyColor,key:'color'}, label: 'Metalcraft: add any color', tap: true, mana: true, available: (g, s) => countType(g, 'Artifact', s.controller) >= 3,
     inputs: [colorInput()], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
   const amberColors = (g, controller = 0) => unique(g.controlled(controller).filter(o => {
     const c = g.characteristics(o); return c.supertypes.includes('Legendary') && (c.types.includes('Creature') || c.types.includes('Planeswalker'));
   }).flatMap(o => g.characteristics(o).colors));
-  register(registry, 'Mox Amber', { activated: [{ id: 'mana', label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
+  register(registry, 'Mox Amber', { activated: [{ id: 'mana', singleMana:{colors:(g,s)=>amberColors(g,s.controller),key:'color'}, label: 'Add a color among your legends', tap: true, mana: true, available: (g, s) => amberColors(g, s.controller).length > 0,
     inputs: (g, s) => [colorInput('color', amberColors(g, s.controller))], effect: (g, ctx) => [{ op: 'mana', color: ctx.inputs.color }] }] });
   register(registry, 'Empowered Autogenerator', { entersTapped: true, activated: [{ id: 'mana', label: 'Add charge; produce that much mana', tap: true, mana: true, inputs: [colorInput()],
     effect: () => [{ op: 'counter', ids: '$source', type: 'charge', amount: 1 }, { op: 'call', handler: 'mana.autogenerator' }] }] });
@@ -6336,9 +6428,9 @@ function stackPopup({g,ui,registry}){
 function inspectorPopup({g,ui,registry,prefs}){
   const o=g.object(ui.inspected);const d=o?g.definition(o):(ui.inspectDefinition?registry.get(ui.inspectDefinition):null);if(!d)return '';
   const c=o?g.characteristics(o):d,mod=o?g.module(o):registry.module(d.id);
-  const abilities=o?g.abilities(o):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
+  const abilities=o?(o.zone==='battlefield'?cardActions(g,o).displayAbilities:g.abilities(o)):[],isLand=c.types.includes('Land'),cast=o?g.castingPermissions(o,isLand).length>0:false;
   const waiting=!!g.state.pending,payment=['payment','effectPayment'].includes(g.state.pending?.kind);
-  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.suspend&&o?.zone==='hand'?button('Suspend '+(mod.suspend.cost||'{0}'),'suspend',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div>${o?attachmentControls(g,o):''}${o?modePolicies(g,o,prefs):''}<details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}${o?playerPolicies(g,o,prefs,ui):''}`;
+  const body=`<div class="inspect-grid">${button(`<img src="${h(asset(o?.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}">`,'zoom',`data-card-id="${h(d.id)}" title="Enlarge card"`,'inspect-art')}<div class="inspect-actions"><div class="mana-cost">${manaText(c.manaCost||d.manaCost)}</div>${c.types.includes('Creature')?`<b class="stat">${c.power}/${c.toughness}</b>`:''}${ui.stackLabel?`<p class="effect-label">${h(ui.stackLabel)}</p>`:''}${cast?button(isLand?'Play land':'Cast','cast',`data-id="${h(o.id)}" ${waiting?'disabled':''}`,'primary'):''}${mod.suspend&&o?.zone==='hand'?button('Suspend '+(mod.suspend.cost||'{0}'),'suspend',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${mod.plot&&o?.zone==='hand'?button('Plot','plot',`data-id="${h(o.id)}" ${waiting?'disabled':''}`):''}${abilities.map(a=>{const unavailable=a.unavailable||(a.tap&&(o.tapped||g.isSick(o)))||(waiting&&(!payment||!a.mana));return button(h(a.label||a.id),'ability',`data-id="${h(o.id)}" data-ability="${h(a.id)}" ${unavailable?'disabled':''} title="${h(a.unavailable?a.showWhenUnavailable:a.tap&&o.tapped?'Already tapped':a.tap&&g.isSick(o)?'Summoning sickness':a.mana?'Mana ability':a.label||a.id)}"`,'ability');}).join('')}${!cast&&!abilities.length?'<small>No activated action here.</small>':''}</div></div>${o?attachmentControls(g,o):''}${o?modePolicies(g,o,prefs):''}<details class="rules-text"><summary>Rules text</summary><div class="oracle">${h(d.oracleText)}</div></details><details><summary>Rulings <small>${d.rulings?.length||0}</small></summary>${(d.rulings||[]).map(r=>`<p>${h(r.comment)}</p>`).join('')||'<p>No additional rulings.</p>'}</details>${o?optionalPolicies(g,o):''}${o?playerPolicies(g,o,prefs,ui):''}`;
   return floating('inspector',d.name,body,tool('close','close-inspector'),'inspector-window');
 }
 function attachmentControls(g,o){
@@ -6487,7 +6579,7 @@ function deckTextEditor(ctx){
 function dialogs(ctx){
   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
   if(!ui.modal)return '';
-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.8';narrow=true;body=menuBody(ctx);}
+  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.9';narrow=true;body=menuBody(ctx);}
   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
