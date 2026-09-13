@@ -1,0 +1,93 @@
+--- a/tests/ui_acceptance_effects.py	2026-09-13 03:32:34.000000000 +0000
++++ b/tests/ui_acceptance_effects.py	2026-09-13 04:03:22.652282813 +0000
+@@ -21,6 +21,11 @@
+  lab(p,'library');check('legal top-card permission replaces deck back automatically',p.locator('.library-deck .playing-card').count()==1 and p.locator('.deck-back').count()==0)
+  old=state(p,'state.zones.libraryActive.slice(0,3)');hand=state(p,'state.zones.hand.length');activate(p,"Sensei's Divining Top",'look');pay(p);click(p,'resolve','.stack-window');q=pending(p)
+  check('Top creates an ordered workspace for multiple cards',q.get('ordered') and len(q.get('candidates',[]))==3)
++ ordered=state(p,'state.pending.candidates.slice()');check('Top orderer shows the three actual card images',p.locator('.ordering-window .card-order-row .order-card-preview img').count()==3)
++ first=ordered[0];first_name=state(p,f'definition("{first}").name');before_order=p.evaluate('astra.ui.choice.slice()');p.locator(f'[data-action=order-inspect][data-id="{first}"]').click()
++ check('clicking an ordered card opens its inspector without changing the order',p.locator('.inspector-window').count()==1 and first_name in p.locator('.inspector-window .float-header').inner_text() and p.evaluate('astra.ui.choice.slice()')==before_order and p.locator('.ordering-window').count()==1)
++ shot(p,'27-top-card-orderer.png')
++ p.locator('.inspector-window .rules-text summary').click();check('ordered-card inspector exposes full rules text',len(p.locator('.inspector-window .oracle').inner_text())>0);click(p,'close-inspector')
+  check('Look icon exists only while multi-card workspace is present',p.locator('[data-action=zone][data-zone=workspace]').count()==1)
+  p.locator('[data-action=zone][data-zone=workspace]').click();check('Look workspace opens beside rather than instead of battlefield',p.locator('[data-surface=battlefield]').count()==1 and p.locator('[data-surface=workspace]').count()==1)
+  p.locator('[data-action=order][data-index="0"][data-direction="1"]').click();click(p,'confirm-choice','[data-floating=decision]');settle(p)
+@@ -44,6 +49,11 @@
+  check('doubled Provisioner landfall makes two Treasures',state(p,"controlled().filter(o=>o.token&&astra.engine.definition(o).name==='Treasure').length")==2)
+  key=p.evaluate("astra.registry.get('Tireless Provisioner').id+'/token-kind'");check('token preference is remembered per ability',p.evaluate('(k)=>astra.engine.state.optionalPreferences[k]',key)=='Treasure')
+  menu(p,'settings');p.locator(f'[data-policy="{key}"]').select_option('ASK');check('remembered decision can be reset in Settings',p.evaluate('(k)=>astra.engine.state.optionalPreferences[k]',key)=='ASK');close(p)
++ fixture(p,'moraug-stack');hold(p,True);cast(p,'Ancient Den');check('Moraug landfall itself uses the stack before scheduling combat',state(p,'state.stack.length')==1 and 'Additional combat' in state(p,'state.stack.at(-1).label'));click(p,'resolve','.stack-window')
++ check('Moraug landfall resolution schedules the extra combat without untapping yet',state(p,'state.extraCombats.length')==1 and obj(p,'Walking Atlas')['tapped'])
++ click(p,'phase',extra='[data-step=attackers]');check('beginning of Moraug extra combat puts a separate untap trigger on stack',state(p,'state.step')=='beginCombat' and state(p,'state.stack.length')==1 and 'untap all creatures' in state(p,'state.stack.at(-1).label').lower() and obj(p,'Walking Atlas')['tapped'])
++ check('Moraug untap trigger uses Moraug art as a stack effect',p.locator('.stack-card.effect img[alt="Moraug, Fury of Akoum"]').count()==1);shot(p,'26-moraug-untap-trigger.png');click(p,'resolve','.stack-window')
++ check('creatures untap only when Moraug delayed trigger resolves',not obj(p,'Walking Atlas')['tapped'] and state(p,'state.step')=='attackers')
+  lab(p,'artifacts');activate(p,'Krark-Clan Ironworks','sacrifice');choose_cards(p,[obj(p,'Ancient Den')['id']]);settle(p,pay_optional=True)
+  check('Duplicator payment schedules delayed copy',state(p,'state.delayed.length')>0)
+  click(p,'phase',extra='[data-step=end]');settle(p,pay_optional=True)
+--- a/tests/make_ui_fixtures.mjs	2026-09-13 03:32:34.000000000 +0000
++++ b/tests/make_ui_fixtures.mjs	2026-09-13 03:57:52.544797204 +0000
+@@ -65,3 +65,4 @@
+ 
+ const gridCards=registry.list().filter(c=>c.candidate).slice(0,27).map(c=>c.name);
+ save('grid-resize',{graveyard:gridCards,exile:gridCards,outside:gridCards});
++save('moraug-stack',{battlefield:['Moraug, Fury of Akoum',{name:'Walking Atlas',tapped:true}],hand:['Ancient Den']});
+--- a/tests/browser_tabletop.py	2026-09-13 03:32:36.000000000 +0000
++++ b/tests/browser_tabletop.py	2026-09-13 03:55:58.028954937 +0000
+@@ -44,13 +44,13 @@
+   if not args.memory and not args.groups:
+    context=b.new_context();p=context.new_page()
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.3');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.4');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+    context.close()
+   b.close()
+ finally:
+  if server:server.terminate();server.wait(timeout=5)
+-report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.3','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.4','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+ print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
+ raise SystemExit(bool(failures or errors or requests))
+--- a/tests/portable_test.py	2026-09-13 03:32:36.000000000 +0000
++++ b/tests/portable_test.py	2026-09-13 03:55:58.029025023 +0000
+@@ -30,7 +30,7 @@
+         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
+         page.goto(destination.as_uri())
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.3')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.4')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+         check('all 343 card/face images and the real Magic back are embedded', count == 344)
+         image_report = page.evaluate('''async () => {
+--- a/tests/ui_acceptance_game.py	2026-09-13 03:32:34.000000000 +0000
++++ b/tests/ui_acceptance_game.py	2026-09-13 03:55:58.029077102 +0000
+@@ -1,7 +1,7 @@
+ from ui_acceptance_support import *
+ 
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.3')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.4')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+  check('default active 92 + hand 7, reserve 20, commander 1',state(p,'state.zones.libraryActive.length')==92 and state(p,'state.zones.hand.length')==7 and state(p,'state.zones.libraryReserve.length')==20 and state(p,'state.zones.command.length')==1)
+  check('one small toolbar replaces the header and permanent inspector',p.locator('.app-header,.inspector-pane,.stack-panel,.status-bar,.hand-header,.card-name').count()==0)
+--- a/tools/package.py	2026-09-13 03:32:36.000000000 +0000
++++ b/tools/package.py	2026-09-13 04:05:22.516659966 +0000
+@@ -65,14 +65,14 @@
+     require(len(matches) == 1, f'Missing or ambiguous test total: {label}')
+     return int(matches[0])
+ engine_tests = total('tests')
+-require(engine_tests >= 987 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 989 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+     require(total(label) == 0, f'Engine test {label} must be zero.')
+ browser = browser_report('test-results/browser.json')
+ portable = browser_report('test-results/portable.json')
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.4.3', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 471, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.4.4', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 479, 'Browser regression suite is incomplete.')
+ 
+ subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
+ support = read_json('test-results/card-support.json')
