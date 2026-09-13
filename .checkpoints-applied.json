@@ -75,5 +75,6 @@
   "checkpoints/096-expanded-release-gates.json": "8a8d3f73942291c5c4afa0ea07a058b5dae4064e10edcdce9d361e4e7678a64b",
   "checkpoints/097-expansion-browser-fixtures.patch": "87128149a1ae44257d8d4b106a0636cf90d1995f9ee368661d8cdb62b91656a0",
   "checkpoints/098-release-readme.json": "45f8f9c57193499cff6b708e6174e39d75cceb52733ae1fe3d370309e1442398",
-  "checkpoints/099-effect-selector-regression.patch": "72166539c36ebef9bf0f522dccd7f4a6a3c642a669228f798955154996ef889c"
+  "checkpoints/099-effect-selector-regression.patch": "72166539c36ebef9bf0f522dccd7f4a6a3c642a669228f798955154996ef889c",
+  "checkpoints/100-special-ability-access.json": "1b43296738d352bd5d47b78b3b7e44b0d9b7f44e16ccbb683c8460a41fbd4c9c"
 }

@@ -1,3 +1,4 @@
+import { cardActions } from './card-actions.js';
 import { installTargetLinks } from './target-links.js';
 import { createProgramController } from './program-controller.js';
 import { futurePrograms,programId } from './programs.js';
@@ -216,7 +217,7 @@ function clickCard(id,point,shift=false){atPoint(point);if(g.state.pending&&sele
  if(ui.selectMode||shift){ui.selected.has(id)?ui.selected.delete(id):ui.selected.add(id);render();return;}
  const o=g.object(id);if(!o)return;const p=g.state.pending;
  if(o.zone==='battlefield'&&!o.tapped&&!g.isSick(o)&&(!p||['payment','effectPayment'].includes(p.kind))){
-  const abilities=g.abilities(o).filter(a=>a.mana&&a.tap);if(abilities.length===1){run({type:'ACTIVATE_ABILITY',id,abilityId:abilities[0].id});return;}
+  const {quickMana}=cardActions(g,o);if(quickMana){run({type:'ACTIVATE_ABILITY',id,abilityId:quickMana.id});return;}
  }
  inspect(id,point);
 }
@@ -271,13 +272,14 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='rule-save'){readRuleForm();const r=structuredClone(ui.ruleDraft);if(['one','current'].includes(r.scope)){const c=r.stackContext;r.stackIds=r.scope==='one'?[c.id]:[...g.state.stack,...(g.state.resolving?[g.state.resolving.object]:[])].filter(s=>s.sourceCardId===c.cardId&&(s.abilityId||'')===c.abilityId).map(s=>s.id);r.scope='stack';}programs.saveRule(r);ui.ruleDraft=null;renderModal();return;}
  // Table pointer gestures own mouse picking. Keyboard activation and decision
  // galleries still use native button clicks.
- if(action==='card'&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
+ if(['card','card-abilities'].includes(action)&&el.closest('.surface,.hand,.rail')&&event.detail!==0)return;
  if((event.clientX||event.clientY)&&!el.closest('[data-floating=decision]'))atPoint({x:event.clientX,y:event.clientY});
  if(action==='backdrop'){if(event.target===el){ui.modal=null;renderModal();autoResolve();}return;}
  if(action==='menu')return openDialog('menu');if(action==='dialog')return openDialog(el.dataset.dialog);
  if(action==='close-dialog'){ui.modal=null;renderModal();autoResolve();return;}
  if(action==='undo')return run({type:'UNDO'});if(action==='redo')return run({type:'REDO'});
  if(action==='card')return clickCard(id,{x:event.clientX,y:event.clientY},event.shiftKey);
+ if(action==='card-abilities')return inspect(id,{x:event.clientX,y:event.clientY});
  if(action==='inspect')return inspect(id,{x:event.clientX,y:event.clientY});if(action==='close-inspector')return closeInspector();
  if(action==='deck'){toast(`${g.state.zones.libraryActive.length} active · ${g.state.zones.libraryReserve.length} reserve cards`);return;}
  if(action==='mana')return run({type:'ADJUST_MANA',color:el.dataset.color,delta:Number(el.dataset.delta)});

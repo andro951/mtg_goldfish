@@ -1,3 +1,4 @@
+import { cardActions } from './card-actions.js';
 import { isManaColorChoice, manaChoiceHTML, manaGlyph } from './mana-choice.js';
 import { COLORS, STEPS } from '../core/index.js';
 import { h, asset, button, symbol, manaText, STEP_NAMES, ZONE_NAMES } from '../ui/components.js';
@@ -13,8 +14,9 @@ function fullToolbar({g,ui,prefs,programs}){
 }
 export function picture(g,id,extra={}){
   const o=g.object(id);if(!o)return '';const d=g.definition(o),c=g.characteristics(o);
+  const access = !extra.preview && cardActions(g,o).showAbilities;
   const marks=[...Object.entries(o.counters).filter(([,n])=>n).map(([k,n])=>`${n} ${k}`),...(o.token?['Token']:[]),...(o.flags.attacking?['Attack']:[]),...(o.damage?[`${o.damage} damage`]:[])];
-  return `<article class="playing-card ${extra.selected?'selected':''} ${extra.legal?'legal':''} ${extra.classes||''}" data-card="${h(id)}" data-zone="${h(o.zone)}"><button type="button" class="face" data-action="card" data-id="${h(id)}" aria-label="${h(d.name)}${o.tapped?', tapped':''}" title="${h(d.name)}${o.tapped?' — tapped':''}"><img src="${h(asset(o.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}" draggable="false"><span class="missing-art">${h(d.name)}</span></button>${marks.length?`<span class="card-marks">${marks.map(m=>`<span>${h(m)}</span>`).join('')}</span>`:''}${c.types.includes('Creature')?`<span class="power-badge">${c.power}/${c.toughness}</span>`:''}</article>`;
+  return `<article class="playing-card ${extra.selected?'selected':''} ${extra.legal?'legal':''} ${extra.classes||''}" data-card="${h(id)}" data-zone="${h(o.zone)}"><button type="button" class="face" data-action="card" data-id="${h(id)}" aria-label="${h(d.name)}${o.tapped?', tapped':''}" title="${h(d.name)}${o.tapped?' — tapped':''}"><img src="${h(asset(o.face&&d.backImage?d.backImage:d.image))}" alt="${h(d.name)}" draggable="false"><span class="missing-art">${h(d.name)}</span></button>${marks.length?`<span class="card-marks">${marks.map(m=>`<span>${h(m)}</span>`).join('')}</span>`:''}${c.types.includes('Creature')?`<span class="power-badge">${c.power}/${c.toughness}</span>`:''}${access?button('<span aria-hidden="true">⋯</span>','card-abilities',`data-id="${h(id)}" aria-label="Abilities for ${h(d.name)}" aria-haspopup="dialog" title="${h(d.name)} — all abilities (opens without tapping)"`,'card-abilities'):''}</article>`;
 }
 function editableSidebar({g,ui,prefs}){
   const s=g.state,p=s.players[0],top=g.canSeeTop()?g.top():null;

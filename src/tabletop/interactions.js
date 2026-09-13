@@ -24,7 +24,7 @@ export function installInteractions(api){
     const scale=dest?camera(zone).zoom:d.scale,anchor=anchorFromGrab({x:0,y:0},d.grab,d.tapped);
     if(!d.ghosts){d.ghosts=d.items.map(item=>{
       const ghost=document.createElement('div');ghost.className='drag-ghost';ghost.dataset.ghost=item.id;
-      ghost.innerHTML=`<div class="card-position ${item.tapped?'tapped':''}" style="left:0;top:${-CARD_H}px">${picture(api.g,item.id)}</div>`;
+      ghost.innerHTML=`<div class="card-position ${item.tapped?'tapped':''}" style="left:0;top:${-CARD_H}px">${picture(api.g,item.id,{preview:true})}</div>`;
       ghost.style.left='0';ghost.style.top='0';document.body.append(ghost);item.el?.classList.add('being-dragged');return ghost;
     });}
     for(let i=0;i<d.items.length;i++){
@@ -53,6 +53,7 @@ export function installInteractions(api){
         const base=(api.ui.layouts[sourceZone]||[]).find(c=>c.id===picked)||{x:0,y:0};
         const ids=surface&&api.ui.selected.has(picked)?[...api.ui.selected].filter(id=>api.g.object(id)?.zone===object.zone):[picked];
         gesture={kind:'card',id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
+          inspectOnly:target.closest('[data-action="card-abilities"]')?.dataset.id===picked,
           scale:r.width/(tapped?CARD_H:CARD_W),grab:{x:(p.x-r.left)/r.width,y:(p.y-r.top)/r.height},shift:e.shiftKey,
           surfaces:[...document.querySelectorAll('[data-surface]')].map(el=>({el,box:rect(el)})),
           items:ids.map(id=>{const c=api.ui.layouts[sourceZone]?.find(c=>c.id===id)||base;return {id,tapped:surface?!!api.g.object(id)?.tapped:false,dx:c.x-base.x,dy:c.y-base.y,el:surface?surface.querySelector(`[data-position="${id}"]`):el};})};
@@ -93,6 +94,7 @@ export function installInteractions(api){
     }
     if(d.kind==='card'){
       if(!d.active&&Math.hypot(dx,dy)>5){
+        if(d.inspectOnly){d.blocked=true;return;}
         if(api.g.state.pending||!['battlefield','graveyard','exile','outside','hand','command'].includes(d.zone)){d.blocked=true;return;}
         d.active=true;
       }
@@ -116,7 +118,7 @@ export function installInteractions(api){
     }
     if(['resize','panel','popup-resize','pan'].includes(d.kind)){api.savePreferences();if(d.kind==='resize'&&d.key==='dock')api.render();else api.size();return;}
     if(d.kind==='box'){api.render();return;}
-    if(!d.active){if(!d.blocked)api.clickCard(d.primary,p,d.shift);return;}
+    if(!d.active){if(!d.blocked){if(d.inspectOnly)api.inspect(d.primary,p);else api.clickCard(d.primary,p,d.shift);}return;}
     const dest=getSurface(p),zone=dest?.dataset.surface;if(!dest){api.render();return;}
     const world=worldPoint(p,rect(dest),camera(zone)),position=anchorFromGrab(world,d.grab,d.tapped);
     const moved=d.items.map(item=>({id:item.id,tapped:item.tapped,x:position.x+item.dx,y:position.y+item.dy}));

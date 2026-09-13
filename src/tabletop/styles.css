@@ -74,3 +74,11 @@
 .target-link.spell{stroke:var(--gold)}.target-link.emphasized{opacity:.92;stroke-width:2.5}.target-link.offscreen>path{stroke-dasharray:5 4}
 .target-link circle{fill:var(--panel);stroke-width:1.2}.stack-card.target-selected{box-shadow:0 0 0 2px var(--gold)}
 @media(prefers-reduced-motion:reduce){.target-link{transition:none}}
+
+/* Discoverable special abilities without stealing the fast-mana face gesture. */
+.card-abilities{position:absolute;right:3px;top:3px;z-index:4;width:24px;height:22px;min-height:0;padding:0;border:1px solid #b8cdd0;border-radius:5px;background:#10202aee;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px #0007;touch-action:manipulation}
+.card-abilities span{font-size:23px;line-height:1;transform:translateY(-3px)}
+.card-abilities:hover,.card-abilities:focus-visible{background:#385260;border-color:var(--gold)}
+.playing-card:has(.card-abilities) .card-marks{right:30px}
+.drag-ghost .card-abilities{display:none}
+@media(pointer:coarse){.card-abilities{width:30px;height:28px}.playing-card:has(.card-abilities) .card-marks{right:36px}}
