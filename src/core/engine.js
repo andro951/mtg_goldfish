@@ -194,7 +194,7 @@ export class Engine {
     if (patches.length || transaction.events.length) {
       this.history.splice(this.cursor);
       this.history.push({ index: this.cursor + 1, label: transaction.label, actions: transaction.intents, events: transaction.events,
-        patches, choiceDefaults: transaction.choiceDefaults || 'ask', beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
+        patches, choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
         rngBefore: transaction.before.rng.count, rngAfter: this.state.rng.count });
       this.cursor = this.history.length;
     }
@@ -257,17 +257,25 @@ export class Engine {
       requireRule(stateHash(document.transaction.before) === stateHash(cursorState), 'Pending transaction does not match history.', 'INVALID_SESSION');
       requireRule(Array.isArray(document.transaction.intents) && Array.isArray(document.transaction.events), 'Invalid pending transaction.', 'INVALID_SESSION');
       const pendingReplay = new Engine(registry, cursorState);
-      pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask';
-      for (const intent of document.transaction.intents) pendingReplay.act(intent);
+      for (const [i,intent] of document.transaction.intents.entries()) {
+        pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask'||i<(document.transaction.legacyIntentCount||0);
+        pendingReplay.act(intent);
+      }
       requireRule(stateHash(pendingReplay.state) === document.stateChecksum, 'Pending choices do not reproduce the session.', 'INVALID_SESSION');
     }
-    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction); return engine;
+    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction);
+    if(engine.transaction&&engine.transaction.choiceDefaults!=='ask'){
+      engine.transaction.legacyIntentCount=engine.transaction.intents.length;engine.transaction.choiceDefaults='ask';
+    }
+    return engine;
   }
   verifyReplay() {
     const replay = new Engine(this.registry, this.initialState);
     for (const entry of this.history.slice(0, this.cursor)) {
-      replay._legacyReplayDefaults=entry.choiceDefaults!=='ask';
-      for (const action of entry.actions) replay.act(action);
+      for (const [i,action] of entry.actions.entries()) {
+        replay._legacyReplayDefaults=entry.choiceDefaults!=='ask'||i<(entry.legacyIntentCount||0);
+        replay.act(action);
+      }
       requireRule(stateHash(replay.state) === entry.afterHash, `Replay diverged at action ${entry.index}.`, 'REPLAY_MISMATCH');
     }
     return { ok: true, actions: this.cursor, checksum: stateHash(replay.state) };
