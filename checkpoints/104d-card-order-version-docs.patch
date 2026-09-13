@@ -1,0 +1,36 @@
+--- a/README.md	2026-09-13 03:32:36.000000000 +0000
++++ b/README.md	2026-09-13 03:56:18.578193357 +0000
+@@ -1,4 +1,11 @@
+-# Astra 1.4.3 — The Goldfish Lab
++# Astra 1.4.4 — The Goldfish Lab
++
++## Card ordering and Moraug timing (1.4.4)
++
++Ordered **cards** now show their real card images rather than names alone. This includes Sensei's Divining Top and other top/library ordering decisions. Click a card image in the ordering window to open its inspector without changing the chosen order; trigger-ordering lists remain compact because those rows represent effects rather than cards.
++
++Moraug's additional combat is still scheduled directly by the resolving landfall ability, but the instruction to untap creatures at the beginning of that combat is modeled as the delayed triggered ability it actually is. It appears on the stack at beginning of combat, can be responded to, and creatures remain tapped until that trigger resolves. Existing 1.4.3 sessions with a Moraug extra combat already scheduled are upgraded when that combat begins.
++
+ 
+ ## Mana palette dismissal (1.4.3)
+ 
+--- a/package.json	2026-09-13 03:32:36.000000000 +0000
++++ b/package.json	2026-09-13 03:55:58.028559028 +0000
+@@ -1,6 +1,6 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.3",
++  "version": "1.4.4",
+   "private": true,
+   "type": "module",
+   "description": "Offline rules-aware 310-card MTG goldfish laboratory",
+--- a/src/tabletop/dialogs.js	2026-09-13 03:32:36.000000000 +0000
++++ b/src/tabletop/dialogs.js	2026-09-13 03:55:58.028847434 +0000
+@@ -56,7 +56,7 @@
+ export function dialogs(ctx){
+   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.3';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.4';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='sequences'){title='Sequences & loops';sub='Record once. Check every iteration. Undo a whole iteration at once.';body=sequenceBody(ctx);}
+   else if(ui.modal==='automation'){title='Player automations';sub='Your conditional actions and priority stops. Easy to toggle, nothing forced.';body=automationBody(ctx);}
+   else if(ui.modal==='deck'){title='Deck editor';sub='Search the supported database, then drag cards between sections. Changes apply to your next New test.';body=deckEditor(ctx);footer=button('Text editor','dialog','data-dialog="decktext"')+button('Restore supplied pool','restore-pool')+button('Export missing-card report','export-report')+button('Validate deck','validate-deck')+button('Done','close-dialog','','primary');}
