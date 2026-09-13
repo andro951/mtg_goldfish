@@ -128,5 +128,6 @@
   "checkpoints/117b-floating-look-app.patch": "17c38a1561fc2a96d36294b600dc08d6ede5e906e77f92c9658c89ed07109916",
   "checkpoints/117c-look-interactions-style.patch": "b8de964cd33411a1f8f0f147a5b5c62c3be5b81fab50fc355bb4442ac83b1369",
   "checkpoints/117d-look-popup-view.json": "bf2389be803776f91137c0ee7e437a0302ee24dbd6b8ba8fc582ca4c9a7a8080",
-  "checkpoints/117e-look-grid-browser-wiring.patch": "76f249ef60c761b31481aaf0d3f9dbdf86ee99183e2be879bc3f131d564ac5db"
+  "checkpoints/117e-look-grid-browser-wiring.patch": "76f249ef60c761b31481aaf0d3f9dbdf86ee99183e2be879bc3f131d564ac5db",
+  "checkpoints/118-1.4.8-release.patch": "81a0280a3d35d8754178b24975da134d510c21a72693bf1fd2b3a3fd765cad00"
 }

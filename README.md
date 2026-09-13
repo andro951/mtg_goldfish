@@ -1,4 +1,15 @@
-# Astra 1.4.7 — The Goldfish Lab
+# Astra 1.4.8 — The Goldfish Lab
+
+## Floating Look and automatic zone grids (1.4.8)
+
+**Look is now an independent floating window.** Sarinth Steelseeker, scry, surveil, and other effects using the look workspace automatically display their cards over the graveyard/right side of the battlefield, without opening a side dock or reducing the battlefield width. Move the window by its header, resize from its lower-right corner, and use the mouse wheel or +/− controls to zoom its cards independently. Fit and Grid restore a readable fitted view. The Look toolbar toggle remains available even when the workspace is empty; hiding it never cancels the pending effect. A new look opens it again, including a second trigger showing the same top card.
+
+Window size, position, and the current look's camera survive normal rerenders and session export/import or autosave reload. New batches fit to the available area. Existing scry/surveil selection and ordering controls remain; the Look previews mirror proposed order without changing the real library until confirmation. Looking at, inspecting, or dragging a preview does not move the actual card to the battlefield.
+
+**Graveyard, exile, and outside-the-game zones reflow their automatic grids as cards arrive or leave**, not just after resizing or pressing Grid. An empty zone can no longer retain a one-column layout as it grows. Manual arrangements remain possible and are not reset by arrivals; each zone's Grid button puts every card back into the current responsive grid. Older saved one-column layouts receive a responsive refit when opened.
+
+The 317-card catalog, attachment-following controls, Ask defaults, loyalty overlays, and incremental autosave are retained. See `docs/look-grid-148.md` for the control details and regression scope. Export your session before upgrading, then import it into the new application as needed.
+
 
 ## Attached cards and soulbond connections (1.4.7)
 

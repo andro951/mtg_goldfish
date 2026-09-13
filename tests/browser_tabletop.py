@@ -53,13 +53,13 @@ try:
   if not args.memory and not args.groups:
    context=b.new_context();p=context.new_page()
    try:
-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.7');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.8');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
    context.close()
   b.close()
 finally:
  if server:server.terminate();server.wait(timeout=5)
-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.7','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.8','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
 (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
 raise SystemExit(bool(failures or errors or requests))
