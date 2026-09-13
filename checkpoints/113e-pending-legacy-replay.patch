@@ -1,0 +1,26 @@
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -196 +196 @@
+-        patches, choiceDefaults: transaction.choiceDefaults || 'ask', beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
++        patches, choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
+@@ -260,2 +260,4 @@
+-      pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask';
+-      for (const intent of document.transaction.intents) pendingReplay.act(intent);
++      for (const [i,intent] of document.transaction.intents.entries()) {
++        pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask'||i<(document.transaction.legacyIntentCount||0);
++        pendingReplay.act(intent);
++      }
+@@ -264 +266,5 @@
+-    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction); return engine;
++    engine.state = clone(document.currentState); engine.transaction = clone(document.transaction);
++    if(engine.transaction&&engine.transaction.choiceDefaults!=='ask'){
++      engine.transaction.legacyIntentCount=engine.transaction.intents.length;engine.transaction.choiceDefaults='ask';
++    }
++    return engine;
+@@ -269,2 +275,4 @@
+-      replay._legacyReplayDefaults=entry.choiceDefaults!=='ask';
+-      for (const action of entry.actions) replay.act(action);
++      for (const [i,action] of entry.actions.entries()) {
++        replay._legacyReplayDefaults=entry.choiceDefaults!=='ask'||i<(entry.legacyIntentCount||0);
++        replay.act(action);
++      }
