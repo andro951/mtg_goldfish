@@ -1,0 +1,90 @@
+from ui_acceptance_support import *
+
+
+def face(p,name):
+ return card(p,obj(p,name,'battlefield')['id'],'battlefield')
+
+
+def mana_union(p):
+ fixture(p,'mana-union');hold(p,True)
+ before=checksum(p);face(p,'Treasure Vault').click()
+ check('Vault artwork opens utility inspector without tapping or adding mana',checksum(p)==before and p.locator('.inspector-window [data-ability=treasures]').is_enabled() and not obj(p,'Treasure Vault')['tapped'])
+ check('Vault inspector combines printed and granted single mana into one row',p.locator('.inspector-window [data-ability=ui-single-mana]').count()==1 and p.locator('.inspector-window [data-ability=mana]').count()==0)
+ click(p,'ability','.inspector-window','[data-ability=ui-single-mana]')
+ check('utility-land mana row opens all five colors plus genuine colorless',pending(p)['kind']=='oneManaChoice' and [o['value'] for o in pending(p)['options']]==['W','U','B','R','G','C'])
+ p.keyboard.press('Escape');check('cancelling combined utility picker retains the inspector and unchanged game',checksum(p)==before and p.locator('.inspector-window').count()==1)
+ click(p,'close-inspector');face(p,'Silverbluff Bridge').click()
+ check('dual-color land plus Lantern opens one five-color picker without inspection',pending(p)['kind']=='oneManaChoice' and p.locator('.inspector-window').count()==0 and p.locator('.mana-choice').count()==5)
+ check('combined picker does not offer colorless to a colored-only land',all(o['value']!='C' for o in pending(p)['options']))
+ choose_option(p,'G')
+ check('combined choice taps only the land and produces one green mana',obj(p,'Silverbluff Bridge')['tapped'] and state(p,'state.players[0].mana.G')==1 and not obj(p,'Chromatic Lantern')['tapped'] and pending(p) is None)
+ p.keyboard.press('Backspace');check('single undo reverses the entire combined-mana activation',not obj(p,'Silverbluff Bridge')['tapped'] and state(p,'state.players[0].mana.G')==0)
+ face(p,'Darksteel Citadel').click()
+ check('colorless land plus Lantern opens six distinct symbols directly',p.locator('.mana-choice').count()==6 and p.locator('.inspector-window').count()==0)
+ shot(p,'38-six-mana-selector.png');choose_option(p,'C')
+ check('colorless option produces real colorless from the printed ability',state(p,'state.players[0].mana.C')==7 and state(p,"history.at(-1).events.find(e=>e.type==='MANA_ABILITY_RESOLVED').abilityId")=='mana')
+ p.keyboard.press('Backspace');face(p,'Darksteel Citadel').click();face(p,'Silverbluff Bridge').click()
+ check('outside click dismisses combined picker without activating another land',pending(p) is None and not obj(p,'Silverbluff Bridge')['tapped'] and not obj(p,'Darksteel Citadel')['tapped'])
+ face(p,'Dimir Aqueduct').click()
+ check('bounce land plus Lantern opens inspector with distinct two-mana and one-mana actions',p.locator('.inspector-window [data-ability=mana]').is_enabled() and p.locator('.inspector-window [data-ability=lantern-mana]').is_enabled() and pending(p) is None and not obj(p,'Dimir Aqueduct')['tapped'])
+ shot(p,'39-bounce-land-mana-options.png');click(p,'ability','.inspector-window','[data-ability=mana]')
+ check('choosing bounce land production makes both blue and black, not a choice of one',state(p,'state.players[0].mana.U')==1 and state(p,'state.players[0].mana.B')==1 and obj(p,'Dimir Aqueduct')['tapped'])
+ p.keyboard.press('Backspace');face(p,'Dimir Aqueduct').click();click(p,'ability','.inspector-window','[data-ability=lantern-mana]');choose_option(p,'R')
+ check('choosing granted one-mana mode on bounce land makes only the selected color',state(p,'state.players[0].mana.R')==1 and state(p,'state.players[0].mana.U')==0 and state(p,'state.players[0].mana.B')==0)
+ for name in ['The Mycosynth Gardens','Scene of the Crime']:
+  before=checksum(p);face(p,name).click()
+  check(name+' exposes its extra-cost filter separately from the combined single-mana row',p.locator('.inspector-window [data-ability=filter]').is_enabled() and p.locator('.inspector-window [data-ability=ui-single-mana]').is_enabled() and checksum(p)==before)
+  click(p,'close-inspector')
+ activate(p,'Krark-Clan Ironworks','sacrifice');choose_cards(p,[obj(p,'Chromatic Lantern')['id']]);settle(p)
+ face(p,'Silverbluff Bridge').click();check('removing Lantern restores only the original two color choices',[o['value'] for o in pending(p)['options']]==['U','R'])
+ p.keyboard.press('Escape');before=state(p,'state.players[0].mana.C');face(p,'Darksteel Citadel').click()
+ check('removing Lantern restores direct one-colorless tapping',obj(p,'Darksteel Citadel')['tapped'] and state(p,'state.players[0].mana.C')==before+1 and pending(p) is None)
+ face(p,'Power Depot').click()
+ check('restricted-only single-mana choices remain visibly labeled',p.locator('.mana-choice[title*="Artifact spells or abilities only"]').count()==5)
+ choose_option(p,'B');check('Power Depot choice preserves restricted mana rather than adding unrestricted black',state(p,'state.players[0].mana.B')==0 and state(p,"state.players[0].restrictedMana.some(t=>t.color==='B'&&t.restriction==='artifactSpellOrAbility')"))
+
+
+def mana_union_payment(p):
+ fixture(p,'mana-union-payment');hold(p,True);cast(p,'Walking Atlas');click(p,'close-inspector')
+ face(p,'Darksteel Citadel').click();check('combined picker opens inside a real spell payment',pending(p)['kind']=='oneManaChoice')
+ p.keyboard.press('Escape');check('Escape cancels only combined picker and retains original payment',pending(p)['kind']=='payment' and not obj(p,'Darksteel Citadel')['tapped'] and state(p,'state.players[0].mana.C')==1)
+ face(p,'Darksteel Citadel').click();choose_option(p,'W');check('combined picker returns to spell payment after one mana activation',pending(p)['kind']=='payment' and state(p,'state.players[0].mana.W')==1)
+ pay(p);settle(p);check('spell resolves after paying with combined selector mana',obj(p,'Walking Atlas','battlefield') is not None)
+ fixture(p,'mana-union-payment');hold(p,True);cast(p,'Walking Atlas');click(p,'close-inspector');face(p,'Darksteel Citadel').click()
+ if not args.memory:
+  p.evaluate('astra.flushSave()');p.reload();p.wait_for_function('()=>window.astra?.engine')
+  check('autosave reload restores combined picker and unfinished parent payment',pending(p)['kind']=='oneManaChoice' and pending(p)['parent']['kind']=='payment')
+  choose_option(p,'G');pay(p);settle(p);check('reloaded combined selector completes payment without a stale source',obj(p,'Walking Atlas','battlefield') is not None)
+ else:
+  p.keyboard.press('Escape');p.keyboard.press('Escape')
+ fixture(p,'mana-union-effect');hold(p,True)
+ click(p,'phase',extra='[data-step=upkeep]')
+ click(p,'resolve','.stack-window');check('upkeep payment is waiting for real mana',pending(p)['kind']=='effectPayment')
+ face(p,'Grim Monolith').click();face(p,'Darksteel Citadel').click();p.keyboard.press('Escape')
+ check('combined-picker cancel preserves resolving effect and earlier floated mana',pending(p)['kind']=='effectPayment' and state(p,'state.players[0].mana.C')==3)
+ face(p,'Darksteel Citadel').click();choose_option(p,'C');pay(p)
+ check('resolving upkeep effect accepts mana from combined selector',not obj(p,'Mana Vault')['tapped'])
+
+
+def mana_union_grants(p):
+ fixture(p,'mana-union-grants');hold(p,True);face(p,'Ancient Den').click()
+ check('Lantern and World Tree together do not duplicate choices or open inspection',p.locator('.mana-choice').count()==5 and p.locator('.inspector-window').count()==0)
+ choose_option(p,'B');check('two grants still yield one mana for one tap',state(p,'state.players[0].mana.B')==1)
+ before=checksum(p);face(p,'The World Tree').click()
+ check('World Tree itself retains its Gods utility choice and combined mana row',p.locator('.inspector-window [data-ability=gods]').count()==1 and p.locator('.inspector-window [data-ability=ui-single-mana]').count()==1 and checksum(p)==before)
+ click(p,'close-inspector');face(p,'Dimir Aqueduct').click()
+ check('two grants on a bounce land combine with each other, never with two-mana production',p.locator('.inspector-window [data-action=ability]').count()==2 and p.locator('.inspector-window [data-ability=mana]').count()==1 and p.locator('.inspector-window [data-ability=ui-single-mana]').count()==1)
+ click(p,'close-inspector')
+ context=p.context.browser.new_context(viewport={'width':1024,'height':768},has_touch=True,is_mobile=True)
+ q=context.new_page();q.set_default_timeout(4500);q.on('pageerror',lambda e:errors.append(str(e)))
+ try:
+  if args.memory:q.set_content(html,wait_until='load',timeout=30000)
+  else:q.goto(args.url,wait_until='load')
+  q.wait_for_function('()=>window.astra?.engine');fixture(q,'mana-union');r=face(q,'Darksteel Citadel').bounding_box()
+  q.touchscreen.tap(r['x']+r['width']/2,r['y']+r['height']/2)
+  check('touch opens one six-color selector without accidental tapping',q.locator('.mana-choice').count()==6 and not obj(q,'Darksteel Citadel')['tapped'])
+  button=q.locator('.mana-choice[aria-label="Add blue mana"]');r=button.bounding_box();q.touchscreen.tap(r['x']+r['width']/2,r['y']+r['height']/2)
+  check('touch color selection activates exactly once',state(q,'state.players[0].mana.U')==1 and q.locator('.mana-window').count()==0)
+  face(q,'Silverbluff Bridge').focus();q.keyboard.press('Enter');q.locator('.mana-choice[aria-label="Add green mana"]').focus();q.keyboard.press('Enter')
+  check('keyboard card activation and color choice share the combined shortcut',state(q,'state.players[0].mana.G')==1 and obj(q,'Silverbluff Bridge')['tapped'])
+ finally:context.close()
