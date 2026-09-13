@@ -1,26 +1,28 @@
 {
   "status": "passed",
-  "version": "1.3.0",
-  "engineTestsPassed": 489,
-  "browserChecksPassed": 331,
+  "version": "1.4.0",
+  "engineTestsPassed": 953,
+  "browserChecksPassed": 399,
   "portableChecksPassed": 8,
   "failedOrSkippedChecks": 0,
-  "candidateCards": 160,
-  "localDefinitions": 175,
-  "verifiedLocalImages": 175,
+  "candidateCards": 310,
+  "localDefinitions": 340,
+  "verifiedLocalImages": 343,
   "verifiedUIImages": 1,
+  "requestedListsVerified": 2,
+  "allRequestedNamesSupported": true,
   "reproducibleBuilds": [
     {
       "path": "index.html",
-      "bytes": 1057224,
-      "sha256": "99a076164d282567958b14da7fa9e32991e2cab245be4eb3b9601b4c0802bfe4"
+      "bytes": 1562987,
+      "sha256": "df0d3ce4196d35f012099dc05cb20f78b646611731ca4ce36ceee93c717a7ced"
     },
     {
       "path": "Astra-standalone.html",
-      "bytes": 23557733,
-      "sha256": "8d34ddc1b35c789748be95fb719ae3d14cae657794cf097cd7c8765fced3e648"
+      "bytes": 45730279,
+      "sha256": "8a2cf6996854ff4eebb72f0c2ccfff079510ea8976d14f84db7e696552bb053f"
     }
   ],
   "archive": "dist/AstraSimulator.zip",
-  "scope": "supplied-pool goldfish; abstract opponents and user-assisted blocking/combat damage"
+  "scope": "supplied-pool goldfish; abstract opponents, automatic unblocked combat damage, no blocker AI"
 }
