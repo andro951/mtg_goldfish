@@ -1,0 +1,52 @@
+diff --git a/tests/browser_tabletop.py b/tests/browser_tabletop.py
+index 5b1900e..7d0b8ad 100644
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -31,0 +32,2 @@
++from ui_acceptance_149 import mana_union, mana_union_payment, mana_union_grants
++
+@@ -39 +41 @@
+-  groups=[look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+--- a/tests/card-actions.test.js
++++ b/tests/card-actions.test.js
+@@ -6,2 +6,2 @@
+-for (const name of ['Treasure Vault','Buried Ruin','Oboro, Palace in the Clouds','Fomori Vault',"Inventors' Fair",'The Mycosynth Gardens','Scene of the Crime','Power Depot','Grim Monolith','Chromatic Orrery','The World Tree','Urza, Lord High Artificer']) {
+-  test(`ability control: ${name} exposes alternatives without losing fast mana`, () => {
++for (const name of ['Treasure Vault','Buried Ruin','Oboro, Palace in the Clouds','Fomori Vault',"Inventors' Fair",'The Mycosynth Gardens','Scene of the Crime','Grim Monolith','Chromatic Orrery','The World Tree','Urza, Lord High Artificer']) {
++  test(`ability control: ${name} exposes alternatives without an accidental land activation`, () => {
+@@ -12 +12,2 @@
+-    assert.equal(access.quickMana?.id ?? null,access.abilities.filter(a=>a.mana&&a.tap).length===1?access.abilities.find(a=>a.mana&&a.tap).id:null);
++    if(g.characteristics(id(g,name)).types.includes('Land'))assert.equal(access.quickMana,null);
++    else assert.equal(access.quickMana?.id ?? null,access.abilities.filter(a=>a.mana&&a.tap).length===1?access.abilities.find(a=>a.mana&&a.tap).id:null);
+@@ -15 +16 @@
+-for (const name of ['Ancient Den','Razortide Bridge','Tundra','Mox Opal','Sol Ring']) {
++for (const name of ['Ancient Den','Razortide Bridge','Tundra','Mox Opal','Sol Ring','Power Depot']) {
+@@ -46,2 +47,2 @@
+-    const expected=abilities.length>1&&abilities.some(a=>a.mana);
+-    assert.equal(cardActions(g,object).showAbilities,expected,card.name);if(expected)affected++;
++    const access=cardActions(g,object),expected=(access.displayAbilities.length>1&&abilities.some(a=>a.mana))||(card.types.includes('Land')&&abilities.length>0&&!access.quickMana);
++    assert.equal(access.showAbilities,expected,card.name);if(expected)affected++;
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -113,0 +114,6 @@
++
++// Land face routing and compatible one-mana shortcuts.
++save('mana-union',{battlefield:['Silverbluff Bridge','Darksteel Citadel','Chromatic Lantern','Dimir Aqueduct','Treasure Vault','The Mycosynth Gardens','Scene of the Crime','Walking Atlas','Krark-Clan Ironworks','Power Depot']},{mana:{C:6}});
++save('mana-union-payment',{battlefield:['Darksteel Citadel','Chromatic Lantern'],hand:['Walking Atlas']},{mana:{C:1}});
++save('mana-union-effect',{battlefield:[{name:'Mana Vault',tapped:true},'Darksteel Citadel','Chromatic Lantern','Grim Monolith']});
++save('mana-union-grants',{battlefield:['Chromatic Lantern','The World Tree','Ancient Den','Seat of the Synod','Vault of Whispers','Great Furnace','Dimir Aqueduct']});
+--- a/tests/ui_acceptance_ability_access.py
++++ b/tests/ui_acceptance_ability_access.py
+@@ -30,2 +30,2 @@
+- check('clicking Vault artwork still taps immediately for one colorless mana',obj(p,'Treasure Vault')['tapped'] and state(p,'state.players[0].mana.C')==7 and pending(p) is None)
+- access(p,'Treasure Vault').click()
++ check('clicking Vault artwork opens its choices without an accidental mana activation',not obj(p,'Treasure Vault')['tapped'] and state(p,'state.players[0].mana.C')==6 and pending(p) is None and p.locator('.inspector-window').count()==1)
++ click(p,'ability','.inspector-window','[data-ability=mana]');access(p,'Treasure Vault').click()
+@@ -42 +42 @@
+- oboro=obj(p,'Oboro, Palace in the Clouds');card(p,oboro['id'],'battlefield').click();access(p,'Oboro, Palace in the Clouds').click()
++ oboro=obj(p,'Oboro, Palace in the Clouds');card(p,oboro['id'],'battlefield').click();click(p,'ability','.inspector-window','[data-ability=mana]');access(p,'Oboro, Palace in the Clouds').click()
+@@ -95 +95,2 @@
+-  check('touchscreen quick mana activates only once and does not open inspector afterward',obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==7 and q.locator('.inspector-window').count()==0)
++  check('touchscreen Vault face opens utility choices without an unintended activation',not obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==6 and q.locator('.inspector-window').count()==1)
++  click(q,'ability','.inspector-window','[data-ability=mana]');check('touch-inspected explicit mana activates exactly once',obj(q,'Treasure Vault')['tapped'] and state(q,'state.players[0].mana.C')==7)
