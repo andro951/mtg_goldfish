@@ -31,7 +31,7 @@ try:
         page.on('request', lambda r: requests.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
         page.goto(destination.as_uri())
         page.wait_for_function('() => window.astra?.engine')
-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.6')
+        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.7')
         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
         check('all 351 card/face images and the real Magic back are embedded', count == 352)
         image_report = page.evaluate('''async () => {
@@ -61,7 +61,7 @@ try:
 except Exception as error:
     failures.append(str(error))
 
-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.6', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.7', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / 'portable.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(report, indent=2))

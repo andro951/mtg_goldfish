@@ -1,3 +1,6 @@
+import { arrowGeometry } from './link-geometry.js';
+export { arrowGeometry } from './link-geometry.js';
+import { installPermanentLinks } from './permanent-links.js';
 /** Declared targets only. Costs, choices and non-targeting effects never become
  * misleading arrows. References include incarnation, so a blink is not retargeted. */
 const NS='http://www.w3.org/2000/svg';
@@ -12,18 +15,12 @@ export function declaredLinks(g){
   return links;
 }
 const center=r=>({x:r.left+r.width/2,y:r.top+r.height/2});
-function edge(r,towards){const c=center(r),dx=towards.x-c.x,dy=towards.y-c.y,scale=1/Math.max(Math.abs(dx)/(r.width/2+3),Math.abs(dy)/(r.height/2+3),1);return{x:c.x+dx*scale,y:c.y+dy*scale};}
-export function arrowGeometry(from,to){
-  const a=edge(from,center(to)),b=edge(to,center(from)),dx=b.x-a.x,dy=b.y-a.y;
-  const distance=Math.hypot(dx,dy),bow=Math.min(70,distance*.12),nx=distance?-dy/distance:0,ny=distance?dx/distance:0;
-  const n=v=>Math.round(v*10)/10;
-  return {d:`M${n(a.x)},${n(a.y)} C${n(a.x+dx*.32+nx*bow)},${n(a.y+dy*.32+ny*bow)} ${n(a.x+dx*.68+nx*bow)},${n(a.y+dy*.68+ny*bow)} ${n(b.x)},${n(b.y)}`,end:b};
-}
 export function installTargetLinks(api){
+  const permanent=installPermanentLinks(api);
   const svg=document.createElementNS(NS,'svg');svg.id='target-links';svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');document.body.append(svg);
   let frame=0,hovered=null,focused=null,signature='',lastLinks=[];
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function highlight(){const active=hovered||focused||api.ui.stackSelection;for(const group of svg.querySelectorAll('[data-link-stack]'))group.classList.toggle('emphasized',group.dataset.linkStack===active);for(const card of document.querySelectorAll('.stack-card'))card.classList.toggle('target-selected',card.dataset.stackId===api.ui.stackSelection);}
+  function highlight(){permanent.highlight();const active=hovered||focused||api.ui.stackSelection;for(const group of svg.querySelectorAll('[data-link-stack]'))group.classList.toggle('emphasized',group.dataset.linkStack===active);for(const card of document.querySelectorAll('.stack-card'))card.classList.toggle('target-selected',card.dataset.stackId===api.ui.stackSelection);}
   function paint(){
     frame=0;const g=api.g;if(!g)return;
     svg.style.display=api.ui.modal?'none':'';
@@ -57,7 +54,7 @@ export function installTargetLinks(api){
     }
     highlight();
   }
-  function schedule(){svg.style.display=api.ui.modal?'none':'';if(!frame)frame=requestAnimationFrame(paint);}
+  function schedule(){permanent.schedule();svg.style.display=api.ui.modal?'none':'';if(!frame)frame=requestAnimationFrame(paint);}
   document.addEventListener('pointerover',e=>{const stack=e.target.closest?.('.stack-card');if(stack){hovered=stack.dataset.stackId;highlight();}});
   document.addEventListener('pointerout',e=>{if(e.target.closest?.('.stack-card')&&!e.relatedTarget?.closest?.('.stack-card')){hovered=null;highlight();}});
   document.addEventListener('focusin',e=>{focused=e.target.closest?.('.stack-card')?.dataset.stackId||null;highlight();});
@@ -65,5 +62,5 @@ export function installTargetLinks(api){
   document.addEventListener('pointermove',()=>{if(api.ui.gestureActive&&lastLinks.length)schedule();},{passive:true});
   document.addEventListener('pointerup',schedule,{passive:true});
   document.addEventListener('scroll',schedule,{passive:true,capture:true});window.addEventListener('resize',schedule,{passive:true});
-  return {schedule,highlight,clear(){hovered=null;focused=null;api.ui.stackSelection=null;schedule();}};
+  return {schedule,highlight,clear(){permanent.clear();hovered=null;focused=null;api.ui.stackSelection=null;schedule();}};
 }

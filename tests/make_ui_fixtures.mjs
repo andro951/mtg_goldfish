@@ -86,3 +86,21 @@ save('loyalty-double',{battlefield:[{name:'Tezzeret the Seeker',counters:{loyalt
  for(let i=0;i<160;i++)long.act({type:'DEBUG_MOVE',id:card,zone:i%2?'battlefield':'graveyard'});
  fs.writeFileSync(new URL('long-journal.json',out),JSON.stringify(long.exportSession()));
 }
+
+// Attachment scenarios use actual object references, never proximity inference.
+{
+ const at=(x,y)=>({location:{x,y,anchor:'corner-v2'}});
+ for(const [name,attached] of [['attachment-resolve',false],['attachment-fan',true],['attachment-edge',true]]){
+  const g=fixture({libraryActive:[],battlefield:[
+   {name:'Metalworker',props:at(name==='attachment-edge'?10:350,name==='attachment-edge'?164:340)},
+   {name:'Walking Atlas',props:at(670,340)},
+   {name:'Lightning Greaves',props:at(100,250)},
+   ...(attached?[{name:'Flayer Husk',props:at(150,250)},{name:'Smoke Blessing',props:at(190,250)},{name:'The Reality Chip',props:at(250,250)}]:[]),
+  ],hand:['Mox Opal']},{mana:{U:2,C:8}});
+  const host=g.controlled().find(o=>g.definition(o).name==='Metalworker');
+  if(attached)for(const o of g.controlled().slice(2))o.attachedTo={id:host.id,oid:host.oid};
+  g.state.initialDeck.scenario='UI acceptance: '+name;g.state.settings.debug=false;
+  fs.writeFileSync(new URL(name+'.json',out),JSON.stringify(new Engine(registry,g.state).exportSession()));
+ }
+ save('soulbond-display',{battlefield:[{name:'Metalworker',props:{...at(350,340),modifications:[{keywords:['Soulbond']}]}},{name:'Krark-Clan Ironworks',props:at(100,350)}],hand:['Walking Atlas']},{mana:{C:2}});
+}

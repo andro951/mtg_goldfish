@@ -1,3 +1,4 @@
+import { attachmentDrag } from './attachments.js';
 import { CARD_W,CARD_H,bounds,contains,overlaps,canonicalHit,worldPoint,screenBounds,anchorFromGrab,zoomAt,dropOrder,clamp } from './geometry.js';
 import { picture } from './views.js';
 /** Real geometry, rather than elevated DOM paint order, owns all picking. */
@@ -9,14 +10,14 @@ export function installInteractions(api){
   const getSurface=p=>[...document.querySelectorAll('[data-surface]')].find(el=>contains(rect(el),p));
   const hit=(el,p)=>canonicalHit(api.ui.layouts[el.dataset.surface]||[],worldPoint(p,rect(el),camera(el.dataset.surface)));
   function handHit(p){return [...document.querySelectorAll('[data-hand-position]')].reverse().find(el=>contains(rect(el),p))?.dataset.handPosition||null;}
-  function clearHover(){lifted?.classList.remove('hover-lift');lifted=null;}
+  function clearHover(){lifted?.classList.remove('hover-lift');lifted=null;if(api.ui.hoveredCard){api.ui.hoveredCard=null;api.linksHighlight?.();}}
   function hover(p){
     if(gesture||api.ui.modal){clearHover();return;}
     const top=document.elementFromPoint(p.x,p.y);if(top?.closest('.floating,.opening-prompt,.view-control')){clearHover();return;}
     const surface=getSurface(p);let el;
     if(surface){const card=hit(surface,p);if(card)el=surface.querySelector(`[data-position="${card.id}"]`);}
     else if(top?.closest('.hand')){const id=handHit(p);if(id)el=document.querySelector(`[data-hand-position="${id}"]`);}
-    if(el!==lifted){clearHover();el?.classList.add('hover-lift');lifted=el;}
+    if(el!==lifted){clearHover();el?.classList.add('hover-lift');lifted=el;api.ui.hoveredCard=el?.dataset.position||el?.dataset.handPosition||null;api.linksHighlight?.();}
   }
   function endGhosts(){document.querySelectorAll('.drag-ghost,.marquee').forEach(el=>el.remove());document.querySelectorAll('.being-dragged,.drop-target').forEach(el=>el.classList.remove('being-dragged','drop-target'));}
   function ghosts(p){
@@ -51,8 +52,9 @@ export function installInteractions(api){
         const el=surface?surface.querySelector(`[data-position="${picked}"]`):hand?document.querySelector(`[data-hand-position="${picked}"]`):target.closest('[data-card]');
         const r=rect(el),sourceZone=surface?.dataset.surface||object.zone,tapped=surface?object.tapped:false;
         const base=(api.ui.layouts[sourceZone]||[]).find(c=>c.id===picked)||{x:0,y:0};
-        const ids=surface&&api.ui.selected.has(picked)?[...api.ui.selected].filter(id=>api.g.object(id)?.zone===object.zone):[picked];
-        gesture={kind:'card',id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
+        let ids=surface&&api.ui.selected.has(picked)?[...api.ui.selected].filter(id=>api.g.object(id)?.zone===object.zone):[picked];
+        const group=sourceZone==='battlefield'?attachmentDrag(api.g,api.ui.layouts.battlefield||[],ids,picked):{ids,manualIds:ids};ids=group.ids;
+        gesture={kind:'card',manualIds:group.manualIds,id:e.pointerId,start:p,primary:picked,zone:sourceZone,tapped,active:false,
           inspectOnly:target.closest('[data-action="card-abilities"]')?.dataset.id===picked,
           scale:r.width/(tapped?CARD_H:CARD_W),grab:{x:(p.x-r.left)/r.width,y:(p.y-r.top)/r.height},shift:e.shiftKey,
           surfaces:[...document.querySelectorAll('[data-surface]')].map(el=>({el,box:rect(el)})),
@@ -88,7 +90,7 @@ export function installInteractions(api){
       const r=rect(d.el),c=camera(d.zone),a=worldPoint(d.start,r,c),b=worldPoint(p,r,c);
       const box={left:Math.min(a.x,b.x),right:Math.max(a.x,b.x),top:Math.min(a.y,b.y),bottom:Math.max(a.y,b.y)};
       api.ui.selected=new Set(d.original);for(const card of api.ui.layouts[d.zone]||[])if(overlaps(bounds(card),box))api.ui.selected.add(card.id);
-      d.el.querySelectorAll('[data-card]').forEach(el=>el.classList.toggle('selected',api.ui.selected.has(el.dataset.card)));
+      d.el.querySelectorAll('[data-card]').forEach(el=>el.classList.toggle('selected',api.ui.selected.has(el.dataset.card)));api.linksHighlight?.();
       let m=d.el.querySelector('.marquee');if(!m){m=document.createElement('div');m.className='marquee';d.el.append(m);}
       Object.assign(m.style,{left:`${Math.min(p.x,d.start.x)-r.left}px`,top:`${Math.min(p.y,d.start.y)-r.top}px`,width:`${Math.abs(dx)}px`,height:`${Math.abs(dy)}px`});return;
     }
@@ -98,7 +100,7 @@ export function installInteractions(api){
         if(api.g.state.pending||!['battlefield','graveyard','exile','outside','hand','command'].includes(d.zone)){d.blocked=true;return;}
         d.active=true;
       }
-      if(d.active)ghosts(p);
+      if(d.active){ghosts(p);api.linksChanged?.();}
     }
   }
   document.addEventListener('pointermove',e=>{queued={clientX:e.clientX,clientY:e.clientY,pointerId:e.pointerId};if(!frame)frame=requestAnimationFrame(()=>{frame=0;const q=queued;queued=null;if(q)movePointer(q);});},{passive:true});
@@ -124,7 +126,7 @@ export function installInteractions(api){
     const moved=d.items.map(item=>({id:item.id,tapped:item.tapped,x:position.x+item.dx,y:position.y+item.dy}));
     const order=dropOrder(api.ui.layouts[zone]||[],d.items.map(i=>i.id),moved,world);
     api.ui.lastPoint=p;
-    if(d.zone===zone&&['battlefield','graveyard','exile','outside'].includes(zone))api.run({type:'LAYOUT',updates:moved.map(({id,x,y})=>({id,x,y})),order,anchor:'corner-v2'});
+    if(d.zone===zone&&['battlefield','graveyard','exile','outside'].includes(zone))api.run({type:'LAYOUT',manualIds:d.manualIds,updates:moved.map(({id,x,y})=>({id,x,y})),order,anchor:'corner-v2'});
     else if(zone==='battlefield'){
       // A cast/land play records placement as part of its own transaction.
       api.run({type:'DROP_CARD',id:d.primary,zone,placement:{...position,order}});

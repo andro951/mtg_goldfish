@@ -117,5 +117,11 @@
   "checkpoints/113e-pending-legacy-replay.patch": "338bc04669ab0ed37cf77389224e4ac3eda1b272721c678bd2f0ab9dab3f7a2f",
   "checkpoints/114-1.4.6-release.patch": "3155383b0e2584df4cd19399d8f5071766d2a8dec10aa4e2f41d0985a156a768",
   "checkpoints/115-memory-storage-check.patch": "740f852e52e66b7ca473feff98892522c265e60b368620c60940e924e38d59f2",
-  "checkpoints/116a-attachment-core.patch": "a2ae5732ad27bf53d89125641b145417b819734cd6d149f0f4d9629330ec1c84"
+  "checkpoints/116a-attachment-core.patch": "a2ae5732ad27bf53d89125641b145417b819734cd6d149f0f4d9629330ec1c84",
+  "checkpoints/116b-following-tabletop.patch": "1b5fed6bde05afc5a32d900ea8c36016e7c80b0c8d653dfb0e4b48717da1a12a",
+  "checkpoints/116c-persistent-link-overlay.patch": "fca51029707cdca4f9929801840633d6e96eea6cb5dc8d12215e6d04013b6650",
+  "checkpoints/116d-attachment-inspector.patch": "2f23d94a48fe0e822072ee8c7f687801aa67251fdc66766773a6e42d3ea5c061",
+  "checkpoints/116e-edge-safe-attachment-fan.patch": "6a497d74bc5b750fcc1c26cd0d0e4fe0a961b623054c85221f796db79c9ec237",
+  "checkpoints/116f-connection-browser-fixtures.patch": "62201ca19b454bcf7e18bad97c2633349db31bcc954a23262257395f8cb064a2",
+  "checkpoints/117-1.4.7-release.patch": "ab2052324e5e48b2bf5ec22c2bb6fe64a96009f457f500f25502bfaa72503496"
 }

@@ -105,3 +105,18 @@
 /* Current loyalty covers the printed bottom-right shield, not the rules text. */
 .loyalty-badge{position:absolute;right:3%;bottom:4.5%;min-width:20%;height:11%;display:flex;align-items:center;justify-content:center;padding:0 2px;border:1px solid #72949e;border-radius:3px 3px 7px 7px;background:#10212bf5;color:#fff;font-size:12px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}
 .power-badge.with-loyalty{bottom:17%}
+
+/* Persistent attachment controls are presentation settings, not Equip actions. */
+.attachment-controls{display:grid;gap:5px;margin-top:8px;padding:7px;border:1px solid #40616b;border-radius:5px;background:#10232b}
+.attachment-controls small,.bond-status{font-size:10px;line-height:1.4;color:var(--muted)}
+.follow-toggle{text-align:left;font-size:11px}.follow-toggle::before{content:'○ ';}.follow-toggle[aria-pressed="true"]::before{content:'✓ ';}
+
+/* Persistent connections sit above the table, below floating controls. */
+#permanent-links{position:fixed;inset:0;width:100vw;height:100dvh;z-index:999;pointer-events:none;overflow:hidden}
+#permanent-links *{pointer-events:none}.permanent-link{fill:none;stroke:var(--gold);stroke-width:1.7;opacity:.42;transition:opacity .1s}
+.permanent-link.aura{stroke:var(--teal)}.permanent-link.soulbond{stroke:#c2a6ea}.permanent-link.soulbond>path{stroke-dasharray:6 4}
+.permanent-link.emphasized{opacity:.98;stroke-width:2.5}.permanent-link.offscreen>path{stroke-dasharray:3 4}
+.permanent-link circle{fill:var(--panel);stroke-width:1.2}
+@media(prefers-reduced-motion:reduce){.permanent-link{transition:none}}
+
+.attached-list{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:7px}.attached-list small{width:100%;font-size:10px;color:var(--muted)}.attached-list button{font-size:10px;padding:3px 5px}

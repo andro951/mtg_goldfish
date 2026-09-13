@@ -1,4 +1,14 @@
-# Astra 1.4.6 — The Goldfish Lab
+# Astra 1.4.7 — The Goldfish Lab
+
+## Attached cards and soulbond connections (1.4.7)
+
+Equipment and Auras now show persistent arrows to the permanent they are actually attached to. Attachments default to **Follow attached permanent**: they tuck behind the host, offset slightly up and left, and move with it during a drag. Multiple attachments form a staggered fan. Near a viewport edge the fan turns inward rather than hiding cards offscreen; the host and camera are never moved automatically.
+
+Drag an attached card separately to switch following off for that instance. Its rules attachment and arrow remain intact. Right-click the card (or open its abilities inspector), then click **Follow attached permanent** to snap it back under its current host and resume following. The host's inspector also lists attached cards so partly covered cards remain easy to access. The preference survives reattachment, undo/redo, autosave, and session export/import. Cancelled drags do not change it. A card leaving and returning is a new object and starts with following on again.
+
+Soulbond pairs show a distinct dashed connection rather than an attachment arrow; paired creatures stay independently movable. Links brighten when either endpoint is hovered, selected, focused, or inspected. The overlay does not intercept clicks, and it uses event-driven updates rather than an idle animation loop. Actual detachments, zone changes and invalidated pairing references remove their links.
+
+The existing 317-card catalog and all 177 names in the September request remain unchanged. Generic soulbond pairing and display are tested with granted-keyword fixtures because that catalog currently has no native Soulbond cards; this release does not silently claim support for additional individual cards. See `docs/attachments-147.md` for implementation and verification scope. The 1.4.6 autosave improvements, Ask defaults, loyalty overlays, targeting arrows, and visible automatic arrivals are retained.
 
 ## Performance, Ask defaults and loyalty (1.4.6)
 

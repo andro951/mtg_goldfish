@@ -1,3 +1,4 @@
+import { attachmentLayout, attachmentBasis, followingParents, followsAttachment } from './attachments.js';
 import { visiblePlacement } from './placement.js';
 import { cardActions } from './card-actions.js';
 import { isManaColorChoice } from './mana-choice.js';
@@ -38,10 +39,10 @@ const programs=createProgramController({get g(){return g;},toast,changed(configu
  });
 }});
 const ctx=()=>({g,ui,prefs,registry,saveStatus,programs}),byId=id=>document.getElementById(id);
-const targetLinks=installTargetLinks({get g(){return g;},ui});
+const targetLinks=installTargetLinks({get g(){return g;},get prefs(){return prefs;},ui});
 function toast(message,error=false){byId('toast')?.remove();const el=document.createElement('div');el.id='toast';el.className=`toast ${error?'error':''}`;el.setAttribute('role',error?'alert':'status');el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),error?6500:3200);}
 function updateSaveLabel(){const el=byId('save-status');if(el){el.textContent=saveStatus.text;el.classList.toggle('error',saveStatus.error);}}
-function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{})};return result;}
+function cleanMemo(value){const result={};if(!value||typeof value!=='object')return result;for(const [key,p] of Object.entries(value).slice(0,5000))if(/^(battlefield|graveyard|exile|outside|workspace)\/[a-zA-Z0-9_-]+:\d+$/.test(key)&&Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<100000&&Math.abs(p.y)<100000)result[key]={x:p.x,y:p.y,...(Number.isFinite(p.z)?{z:clamp(p.z,0,100000)}:{}),...(typeof p.attachmentBasis==='string'&&p.attachmentBasis.length<200?{attachmentBasis:p.attachmentBasis}:{})};return result;}
 function exported(options){return {...g.exportSession(options),uiLayout:cleanPreferences(prefs),tableView:cleanMemo(ui.memo),tableGrids:cleanGrids(ui.grids),playerPrograms:programs.snapshot()};}
 let saveRevision=0,savedRevision=-1,saveFlight=null;
 async function saveNow(){
@@ -135,6 +136,7 @@ function makeLayouts(){
   const list=cardLayout(objects,zone==='battlefield'?visibleWidth:prefs.dockWidth);
   if(zone==='battlefield'){
     for(const c of list){const o=g.object(c.id),memo=ui.memo[`${zone}/${o.id}:${o.oid}`];
+      if(memo?.attachmentBasis===attachmentBasis(o)){c.x=memo.x;c.y=memo.y;c.z=memo.z??c.z;continue;}
       if(o.location)continue;
       if(memo){c.x=memo.x;c.y=memo.y;if(!Number.isFinite(o.flags?.tableZ)&&Number.isFinite(memo.z))c.z=memo.z;}
       else c.autoArrival=true;
@@ -174,6 +176,19 @@ function placeBattlefieldArrivals(){
    const o=g.object(c.id),land=g.characteristics(o).types.includes('Land');
    Object.assign(c,visiblePlacement(c,existing,viewport,camera,{land,obstacles}));delete c.autoArrival;
    ui.memo[`battlefield/${o.id}:${o.oid}`]={x:c.x,y:c.y,z:c.z};existing.push(c);
+   const el=nodes.get(c.id);if(el){el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
+ }
+ targetLinks.schedule();
+}
+function placeAttachments(){
+ const list=ui.layouts.battlefield||[],parents=followingParents(g);
+ if(!parents.size)return;
+ const surface=document.querySelector('[data-surface="battlefield"]'),cam=prefs.cameras.battlefield||{x:0,y:0,zoom:1};
+ const viewport=surface?{left:-cam.x/cam.zoom,top:-cam.y/cam.zoom,right:(surface.clientWidth-cam.x)/cam.zoom,bottom:(surface.clientHeight-cam.y)/cam.zoom}:null;
+ const placed=attachmentLayout(g,list,parents,viewport),nodes=new Map([...document.querySelectorAll('[data-surface="battlefield"] [data-position]')].map(el=>[el.dataset.position,el]));
+ ui.layouts.battlefield=placed;
+ for(const c of placed){
+   if(parents.has(c.id)){const o=g.object(c.id);ui.memo[`battlefield/${o.id}:${o.oid}`]={x:c.x,y:c.y,z:c.z,attachmentBasis:attachmentBasis(o)};}
    const el=nodes.get(c.id);if(el){el.style.left=c.x+'px';el.style.top=(c.y-CARD_H)+'px';el.style.zIndex=c.z;el.dataset.layer=c.z;}
  }
  targetLinks.schedule();
@@ -238,7 +253,7 @@ function render(){if(!g||rendering)return;rendering=true;try{
  floats.innerHTML=openingPopup(ctx())+stackPopup(ctx())+inspectorPopup(ctx())+decisionPopup(ctx());
  for(const el of floats.querySelectorAll('[data-resizable]')){const v=prefs.popupSizes?.[el.dataset.floating];if(v){el.style.width=Math.min(v.width,innerWidth-8)+'px';el.style.height=Math.min(v.height,innerHeight-40)+'px';}}
  for(const el of floats.querySelectorAll('details'))if(expanded.includes(el.className||el.querySelector('summary')?.textContent))el.open=true;
- renderModal(false);size();placeBattlefieldArrivals();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
+ renderModal(false);size();placeBattlefieldArrivals();placeAttachments();for(const el of document.querySelectorAll('[data-scroll]'))if(scroll.has(el.dataset.scroll))el.scrollTop=scroll.get(el.dataset.scroll);
  for(const el of floats.querySelectorAll('[data-floating]'))popupObserver.observe(el);
  restoreFocus(focus);interactions?.refreshHover();
  }finally{rendering=false;}scheduleModeDefault();}
@@ -370,6 +385,8 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='next-turn')return run({type:'ADVANCE_PHASE',player:0,step:'main1',nextTurn:true});
  if(action==='next-player'){let p=g.state.activePlayer;for(let n=0;n<4;n++){p=(p+1)%4;if(!g.state.players[p].lost)break;}return run({type:'ADVANCE_PHASE',player:p,step:'main1',nextTurn:true});}
  if(action==='opponent')return run({type:'ADVANCE_PHASE',player:Number(el.dataset.player),step:'main1'});
+ if(action==='inspect-link')return inspect(el.dataset.id);
+ if(action==='attachment-follow'){const o=g.object(el.dataset.id);if(!o)return;const pos=ui.layouts.battlefield?.find(c=>c.id===o.id);return run({type:'SET_ATTACHMENT_FOLLOW',id:o.id,enabled:!followsAttachment(o),...(pos?{position:{x:pos.x,y:pos.y}}:{})});}
  if(action==='resolve')return run({type:'RESOLVE_TOP'});if(action==='resolve-all')return run({type:'RESOLVE_ALL'});if(action==='pass')return run({type:'PASS_PRIORITY'});
  if(action==='zone'){prefs.dock=prefs.dock===el.dataset.zone?null:el.dataset.zone;ui.activeZone=prefs.dock||'battlefield';render();if(prefs.dock&&!prefs.cameras[prefs.dock])fit(prefs.dock);savePreferences();return;}
  if(action==='close-zone'){prefs.dock=null;ui.activeZone='battlefield';render();savePreferences();return;}
@@ -433,7 +450,7 @@ async function handleClick(event){const el=event.target.closest('[data-action]')
  if(action==='debug-draw'||action==='debug-mill'){const r=run({type:action==='debug-draw'?'DEBUG_DRAW':'DEBUG_MILL',count:Number(byId('debug-count').value)});if(r.ok){ui.modal=null;render();}return;}
  if(action==='debug-shuffle')return run({type:'DEBUG_SHUFFLE'});
 }
-interactions=installInteractions({get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
+interactions=installInteractions({linksChanged:()=>targetLinks.schedule(),linksHighlight:()=>targetLinks.highlight(),get g(){return g;},get prefs(){return prefs;},ui,size,render,savePreferences,applyCamera,clickCard,inspect,run,toast});
 let outsideManaDismiss=null;
 function manaPickerIsOpen(){return !!g&&isManaColorChoice(g.state.pending)&&!!floats.querySelector('.mana-window');}
 // A mana palette is transient. A primary pointer press anywhere except an actual
@@ -531,7 +548,7 @@ document.addEventListener('keydown',e=>{
 });
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!ui.gestureActive){size();savePreferences();}},80);});
 window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.6'};
+window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.7'};
 async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
  let doc=null,engine=null;try{const latest=await store.get();if(latest){engine=Engine.importSession(registry,latest.session);doc=latest.session;saveStatus.text=`Restored ${new Date(latest.savedAt).toLocaleString()}`;}}catch(error){try{const previous=await store.get('previous');if(!previous)throw error;engine=Engine.importSession(registry,previous.session);doc=previous.session;saveStatus.text='Recovered the previous autosave.';}catch{saveStatus.text=`Could not recover autosave: ${error.message}`;saveStatus.error=true;}}
  if(doc?.uiLayout){prefs=cleanPreferences(doc.uiLayout);ui.deckText=prefs.deckText??data.deckText;}
