@@ -12,7 +12,7 @@
 @@ -57 +57 @@
 -export function attachmentLayout(g,cards,parents=followingParents(g)) {
 +export function attachmentLayout(g,cards,parents=followingParents(g),viewport=null) {
-@@ -66,6 +66,21 @@
+@@ -66,6 +66,19 @@
    function group(id){
      if(visited.has(id))return;visited.add(id);const host=byId.get(id),r=bounds(host),ids=children.get(id)||[];
 -    ids.forEach((childId,i)=>{const child=byId.get(childId),h=bounds(child).height;
