@@ -104,3 +104,10 @@ save('loyalty-double',{battlefield:[{name:'Tezzeret the Seeker',counters:{loyalt
  }
  save('soulbond-display',{battlefield:[{name:'Metalworker',props:{...at(350,340),modifications:[{keywords:['Soulbond']}]}},{name:'Krark-Clan Ironworks',props:at(100,350)}],hand:['Walking Atlas']},{mana:{C:2}});
 }
+
+// Floating look surfaces and grids that grow from an initially empty zone.
+save('look-seeker',{battlefield:['Sarinth Steelseeker','Azusa, Lost but Seeking'],hand:['Ancient Den','Seat of the Synod','Tree of Tales'],libraryActive:['Great Furnace','Walking Atlas','Mox Opal'],graveyard:['Mox Amber','Scroll Rack']});
+save('look-scry',{hand:['Simulacrum Synthesizer'],libraryActive:['Ancient Den','Walking Atlas','Mox Amber']},{mana:{C:2,U:1}});
+save('look-surveil',{battlefield:['Golbez, Crystal Collector'],hand:['Ancient Den'],libraryActive:['Walking Atlas','Great Furnace']});
+save('growing-graveyard',{battlefield:Array(12).fill('Grinding Station'),libraryActive:Array(60).fill('Walking Atlas')});
+save('growing-exile',{battlefield:Array(12).fill('Scrabbling Claws'),graveyard:Array(28).fill('Walking Atlas'),hand:[],libraryActive:[]});

@@ -20,7 +20,7 @@ export function cleanPreferences(value={}){
   for(const zone of ['graveyard','exile','outside','workspace']){
     const v=value.gridViews?.[zone];
     if(v&&Number.isFinite(v.width)&&Number.isFinite(v.height)&&Number.isInteger(v.columns)&&v.columns>0&&v.columns<=5000)
-      p.gridViews[zone]={width:clamp(v.width,20,10000),height:clamp(v.height,20,10000),columns:v.columns,...(typeof v.members==='string'&&v.members.length<=150000?{members:v.members}:{})};
+      p.gridViews[zone]={width:clamp(v.width,20,10000),height:clamp(v.height,20,10000),columns:v.columns,...(typeof v.members==='string'&&v.members.length<=150000?{members:v.members}:{}),...(zone==='workspace'&&typeof v.episode==='string'&&v.episode.length<1000?{episode:v.episode}:{})};
   }
   for(const key of ['inspector','stack','decision','workspace']){
     const pos=value.popups?.[key];if(pos&&Number.isFinite(pos.x)&&Number.isFinite(pos.y))p.popups[key]={x:clamp(pos.x,0,10000),y:clamp(pos.y,0,10000)};
