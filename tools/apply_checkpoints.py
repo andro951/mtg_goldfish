@@ -28,8 +28,10 @@ def apply_patch(text):
             name = line[4:].split('\t', 1)[0]
             if name != '/dev/null':
                 safe_path(name[2:] if name.startswith(('a/', 'b/')) else name)
+    # Some immutable records deliberately omit trailing context around long
+    # template-literal lines. Still require an exact, successful dry-run first.
     for args in (['--check'], []):
-        subprocess.run(['git', 'apply', *args, '--whitespace=nowarn', '-'], input=text.encode(), cwd=ROOT, check=True)
+        subprocess.run(['git', 'apply', *args, '--unidiff-zero', '--whitespace=nowarn', '-'], input=text.encode(), cwd=ROOT, check=True)
 
 for checkpoint in sorted((ROOT / 'checkpoints').glob('*')):
     if checkpoint.suffix not in ('.patch', '.json'):
