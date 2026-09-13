@@ -1,8 +1,8 @@
 /** Explicit implementations added for the user's 13 September 2026 pool.
  * Oracle identities, texts, rulings and images are pinned in data/cards.json.
  */
-import { ref, sameRef, asArray } from '../core/util.js';
-import { BF, GY, target, mana, landfall, search, optional } from './helpers.js';
+import { ref, sameRef } from '../core/util.js';
+import { BF, GY, target, landfall, search, optional } from './helpers.js';
 
 export const LATEST_CARDS=['Academy Ruins','Planar Bridge','Mycosynth Golem','Cauldron of Souls','Chocobo Racetrack','Doors of Durin','Cosmic Cube'];
 const call=(handler,extra={})=>({op:'call',handler:'latest.'+handler,...extra});
@@ -11,7 +11,7 @@ const attackTrigger=(id,label,effect)=>({id,label,event:'ATTACKERS_DECLARED',tes
 
 export function installLatest(registry){
  const register=(name,module)=>registry.register(name,{status:'full',notes:'Explicit rules and interaction regressions in latest-cards.test.js.',...module});
- register('Academy Ruins',{possibleMana:['C'],activated:[mana({C:1}),{id:'recover',label:'Put an artifact from your graveyard on top of your library',cost:'{1}{U}',tap:true,inputs:[target({...GY,artifact:true})],effect:()=>[{op:'library',ids:'$input.target',position:'top'}]}]});
+ register('Academy Ruins',{possibleMana:['C'],activated:[{id:'recover',label:'Put an artifact from your graveyard on top of your library',cost:'{1}{U}',tap:true,inputs:[target({...GY,artifact:true})],effect:()=>[{op:'library',ids:'$input.target',position:'top'}]}]});
  register('Planar Bridge',{activated:[{id:'search',label:'Search for a permanent and put it onto the battlefield',cost:'{8}',tap:true,effect:()=>[search({permanent:true},'battlefield')]}]});
  register('Mycosynth Golem',{
   costReduction:(g,o)=>g.count({...BF,controller:o.owner,artifact:true}),

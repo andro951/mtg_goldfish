@@ -15,6 +15,7 @@ const landNames=['Ancient Den','Seat of the Synod','Great Furnace','Tree of Tale
 
 ct('Academy Ruins','separate colorless mana and targeted top-of-library recovery',()=>{
  const g=fixture({battlefield:['Academy Ruins'],graveyard:['Mox Opal','Sakura-Tribe Scout'],libraryActive:['Walking Atlas']},{mana:{U:1,C:1}});
+ assert.deepEqual(g.abilities(id(g,'Academy Ruins')).map(a=>a.id),['mana','recover']);
  ability(g,'Academy Ruins','recover',{target:[id(g,'Mox Opal')]});assert.equal(g.state.stack.length,1);assert.equal(g.object(id(g,'Academy Ruins')).tapped,true);assert.equal(g.top().cardId,registry.get('Walking Atlas').id);
  resolve(g);assert.equal(g.top().cardId,registry.get('Mox Opal').id);assert.equal(g.state.zones.hand.length,0);roundTrip(g);
  const f=fixture({battlefield:['Academy Ruins']});ability(f,'Academy Ruins','mana');assert.equal(f.state.players[0].mana.C,1);assert.equal(f.state.stack.length,0);roundTrip(f);
