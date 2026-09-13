@@ -1,0 +1,5 @@
+--- a/tests/ui_acceptance_expansion.py
++++ b/tests/ui_acceptance_expansion.py
+@@ -93 +93 @@
+- check('improvise preserves blue requirements and opens artifact tutor',state(p,'state.players[0].mana.U')==0 and pending(p)['kind']=='effectChoice')
++ check('improvise preserves blue requirements and opens artifact tutor',state(p,'state.players[0].mana.U')==0 and pending(p)['kind']=='effect' and obj(p,'Scrap Trawler','libraryActive')['id'] in pending(p)['candidates'])
