@@ -1,7 +1,7 @@
 {
   "archive": "AstraSimulator.zip",
-  "bytes": 51892960,
-  "sha256": "a659a37095d83789299e5264bfed261f351e6ff599d2accea249accf7f356f64",
-  "entriesVerified": 673,
+  "bytes": 51892600,
+  "sha256": "e82a18a544b47e78928bac120ee71b36766dec1a3dc99dd180a35eef5c987e1c",
+  "entriesVerified": 675,
   "allManifestHashesMatch": true
 }

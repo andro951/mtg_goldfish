@@ -1,5 +1,5 @@
 {
-  "testedBuildSHA256": "6dce639ffdc374ec64f62a3e2935968ccbb9089419b675d4ba01c573cfaf624d",
+  "testedBuildSHA256": "410f59f13db371d72009b64102274e06ee2fde010b4feead3c56baf8c200b5fc",
   "mode": "HTTP and direct-file Chromium",
   "uiVersion": "1.4.7",
   "checksPassed": 632,
