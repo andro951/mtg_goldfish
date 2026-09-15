@@ -1,0 +1,138 @@
+1 Starfield of Nyx
+1 Setessan Champion
+1 Damn
+1 Fauna Shaman
+1 Odric, Lunarch Marshal
+1 Blasphemous Act
+1 Heliod, Sun-Crowned
+1 Jodah, the Unifier
+1 Avacyn, Angel of Hope
+1 Daxos, Blessed by the Sun
+1 Eidolon of Blossoms
+1 Vanquish the Horde
+1 Thassa, Deep-Dwelling
+1 Zur, Eternal Schemer
+1 Day of Judgment
+1 Zur the Enchanter
+1 Altar of the Pantheon
+1 Wrath of God
+1 Eldrazi Monument
+1 Crested Sunmare
+1 Archon of Sun's Grace
+1 Kestia, the Cultivator
+1 Dance of the Manse
+1 Search for Azcanta
+1 Sythis, Harvest's Hand
+1 Xenagos, God of Revels
+1 Nyx Lotus
+1 Bello, Bard of the Brambles
+1 Archangel of Thune
+1 Survival of the Fittest
+1 Kruphix, God of Horizons
+1 Erebos, God of the Dead
+1 Sanctum Weaver
+1 Nylea, Keen-Eyed
+1 Opalescence
+1 Calix, Guided by Fate
+1 Supreme Verdict
+1 Divinity of Pride
+1 Nyxbloom Ancient
+1 Damnation
+1 Rodolf Duskbringer
+1 Fertile Ground
+1 Drogskol Reaver
+1 God-Eternal Oketra
+1 Pestilence
+1 Black Market Connections
+1 Faeburrow Elder
+1 Celestine, the Living Saint
+1 Wild Growth
+1 Nykthos Paragon
+1 Thassa, God of the Sea
+1 True Conviction
+1 Shadowspear
+1 Scroll Rack
+1 Amalia Benavides Aguirre
+1 Timeless Lotus
+1 Smothering Tithe
+1 Pyrohemia
+1 Leyline of Anticipation
+1 Angelic Accord
+1 Herald of the Pantheon
+1 Bloom Tender
+1 Valkyrie Harbinger
+1 Caduceus, Staff of Hermes
+1 Sultai Ascendancy
+1 Oketra the True
+1 Quicken
+1 Wolfwillow Haven
+1 Enduring Tenacity
+1 Carpet of Flowers
+1 Chromatic Orrery
+1 Liesa, Forgotten Archangel
+1 Enduring Vitality
+1 Serra Ascendant
+1 Elven Chorus
+1 Enduring Curiosity
+1 Enduring Courage
+1 Aclazotz, Deepest Betrayal
+1 Nykthos, Shrine to Nyx
+1 City of Brass
+1 Tarnished Citadel
+1 Public Thoroughfare
+1 The World Tree
+1 Grand Coliseum
+1 Plaza of Heroes
+1 Path of Ancestry
+1 Starting Town
+1 Command Tower
+1 Holdout Settlement
+1 Archway Commons
+1 Survivors' Encampment
+1 Forbidden Orchard
+1 Transguild Promenade
+1 Rupture Spire
+1 Crystal Quarry
+1 Mirrodin's Core
+1 Exotic Orchard
+1 Serra's Sanctum
+1 Scene of the Crime
+1 Abundant Countryside
+1 Command Bridge
+1 Gateway Plaza
+1 Mana Confluence
+1 Valgavoth's Lair
+1 Hidden Hideout
+1 Cascading Cataracts
+
+// Commander
+1 Esika, God of the Tree
+
+// Outside the Game
+1 Relive the Past
+1 Whip of Erebos
+1 Tuvasa the Sunlit
+1 Karametra, God of Harvests
+1 Arcanist's Owl
+1 Bident of Thassa
+1 Attunement
+1 Resplendent Angel
+1 Hammer of Purphoros
+1 Gravebreaker Lamia
+1 Master of Waves
+1 Karametra's Acolyte
+1 Overbeing of Myth
+1 Cleric Class
+1 Khalni Hydra
+1 Greater Good
+1 Fire Covenant
+1 Well of Lost Dreams
+1 Veinwitch Coven
+1 Fanatic of Rhonas
+1 Ramos, Dragon Engine
+1 Blade Historian
+1 Selvala, Heart of the Wilds
+1 Leyline of the Guildpact
+1 Penance
+1 Cryptolith Rite
+1 Enduring Innocence
