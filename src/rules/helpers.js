@@ -22,7 +22,7 @@ export const move = (ids, to, extra = {}) => ({ op: 'move', ids, to, ...extra })
 export const choose = (key, label, selector, min = 1, max = min) => ({ op: 'choose', key, label, selector, min, max });
 export const optional = (key, label, then, otherwise = []) => ({ op: 'optional', key, label, then, else: otherwise });
 export const search = (selector, to = 'hand', extra = {}) => ({ op: 'search', selector: { ...LIB, ...selector }, to, ...extra });
-export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
+export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect?{manaOutput:production}:{}), ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
 export const countType = (g, type, controller = 0) => g.count({ type, controller });
 export const paid = (ctx, key = 'sacrificed') => ctx.costs?.[key] || [];
 export const paidMV = (ctx, key = 'sacrificed') => paid(ctx, key).reduce((n, o) => n + o.characteristics.manaValue, 0);

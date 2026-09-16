@@ -18,6 +18,7 @@ export function attackerProblem(g,objectOrId) {
   if(o.tapped)return 'This creature is tapped and cannot attack.';
   if(g.isSick(o))return 'This creature has summoning sickness and cannot attack.';
   if(c.keywords.includes('Defender'))return 'This creature has defender and cannot attack.';
+  if(g.module(o).canAttack&&!g.module(o).canAttack(g,o))return 'This creature’s attack requirement is not met.';
   if(!g.state.players.some(p=>p.id>0&&!p.lost))return 'There are no remaining opponents to attack.';
   return null;
 }

@@ -1,3 +1,4 @@
+import {installGods,GODS_POOL} from './gods.js';
 import { installLatest } from './latest.js';
 import { ACCEPTED_EXPANSION } from './accepted-expansion.js';
 import { installExpanded } from './expanded.js';
@@ -28,7 +29,8 @@ export function createRegistry(definitions) {
   installSpecialMechanics(registry);
   installExpanded(registry);
   installLatest(registry);
-  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
+  installGods(registry);
+  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION, ...GODS_POOL]) {
     if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for expanded goldfish scope; see the capability and interaction tests.' });
   }
   return registry;
