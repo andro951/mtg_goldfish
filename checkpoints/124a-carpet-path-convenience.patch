@@ -1,0 +1,119 @@
+diff --git a/src/core/deck.js b/src/core/deck.js
+--- a/src/core/deck.js
++++ b/src/core/deck.js
+@@ -68,1 +68,1 @@
+-    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true },
++    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true, carpetIslandsPerTurn: 0.5 },
+diff --git a/src/core/actions.js b/src/core/actions.js
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -43,3 +43,9 @@
+     if (type === 'SET_SETTING') {
++      if (action.key === 'carpetIslandsPerTurn') {
++        const value = Number(action.value);
++        requireRule(Number.isFinite(value) && value >= 0 && value <= 1000, 'Carpet of Flowers Islands per turn must be a nonnegative number no greater than 1000.');
++        this.state.settings[action.key] = value; this.record('SETTING_CHANGED', { key: action.key, value }); return;
++      }
+       requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls', 'exoticOrchardAllColors'].includes(action.key), 'Unknown setting.');
+       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
+     }
+diff --git a/src/rules/gods-enchantments.js b/src/rules/gods-enchantments.js
+--- a/src/rules/gods-enchantments.js
++++ b/src/rules/gods-enchantments.js
+@@ -5,0 +6,6 @@
++const carpetAssumedIslands=(g,controller)=>{
++ const raw=Number(g.state.settings?.carpetIslandsPerTurn),rate=Number.isFinite(raw)&&raw>=0?raw:0.5;
++ const fallback=controller===0?Number(g.state.turnNumber)||1:0;
++ const turns=Math.max(0,Number(g.state.controllerTurns?.[controller]??fallback)||0);
++ return Math.floor(Math.max(0,turns-1)*rate);
++};
+@@ -49,1 +55,1 @@
+- r.registerHandler('gods.carpet',(g,c)=>{const n=g.islandCount(c.inputs.player);if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
++ r.registerHandler('gods.carpet',(g,c)=>{const n=g.islandCount(c.inputs.player)+carpetAssumedIslands(g,c.controller);if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
+diff --git a/src/rules/gods-mana.js b/src/rules/gods-mana.js
+--- a/src/rules/gods-mana.js
++++ b/src/rules/gods-mana.js
+@@ -57,1 +57,1 @@
+- reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:null,ancestry:true,manaColors:(g,s)=>identity(g,s.controller),label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})]});
++ reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:{colors:(g,s)=>identity(g,s.controller),key:'color'},ancestry:true,manaColors:(g,s)=>identity(g,s.controller),label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})]});
+diff --git a/src/tabletop/dialogs.js b/src/tabletop/dialogs.js
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -78,1 +78,3 @@
+     body=`<div class="setting-row"><input id="setting-exoticOrchardAllColors" type="checkbox" data-setting="exoticOrchardAllColors" ${s.settings.exoticOrchardAllColors!==false?'checked':''}><label for="setting-exoticOrchardAllColors"><strong>Exotic Orchard: all colors</strong><small>Convenience rule, on by default: treat an opponent as controlling a land that can produce W, U, B, R, or G for Exotic Orchard.</small></label></div>`+body;
++    const carpetRate=Number.isFinite(Number(s.settings.carpetIslandsPerTurn))?Number(s.settings.carpetIslandsPerTurn):0.5;
++    body=`<div class="setting-row"><label class="grow" for="setting-carpetIslandsPerTurn"><strong>Carpet of Flowers: Islands per turn</strong><small>Default 0.5. The cumulative assumption is rounded down for Carpet only: your turn 2 = 0, turn 3 = 1, turn 4 = 1, turn 5 = 2.</small></label><input id="setting-carpetIslandsPerTurn" type="number" min="0" max="1000" step="any" data-number-setting="carpetIslandsPerTurn" value="${h(String(carpetRate))}"></div>`+body;
+   }else if(ui.modal==='log'){
+diff --git a/src/tabletop/app.js b/src/tabletop/app.js
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -393,0 +394,1 @@
++ if(el.dataset.numberSetting){run({type:'SET_SETTING',key:el.dataset.numberSetting,value:el.value});return;}
+  if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
+diff --git a/tests/carpet-path-convenience.test.js b/tests/carpet-path-convenience.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/carpet-path-convenience.test.js
+@@ -0,0 +1,55 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {fixture,id,registry,roundTrip} from './helpers.js';
++import {ref} from '../src/core/index.js';
++import {cardActions} from '../src/tabletop/card-actions.js';
++import {dialogs} from '../src/tabletop/dialogs.js';
++import {defaultPreferences} from '../src/tabletop/preferences.js';
++
++const carpetAmount=(turns,rate=0.5,actual=0)=>{
++ const g=fixture({battlefield:['Carpet of Flowers']});
++ g.state.controllerTurns=[turns,0,0,0];
++ g.state.settings.carpetIslandsPerTurn=rate;
++ g.state.players[1].abstractIslands=actual;
++ const source=g.object(id(g,'Carpet of Flowers'));
++ const program=registry.handlers.get('gods.carpet')(g,{controller:0,source:ref(source),inputs:{player:1},vars:{carpetColor:'G'}});
++ return program[0]?.amount??0;
++};
++
++test('Carpet of Flowers defaults to 0.5 cumulative Islands per player turn and floors the assumption',()=>{
++ const g=fixture({battlefield:['Carpet of Flowers']});
++ assert.equal(g.state.settings.carpetIslandsPerTurn,0.5);
++ assert.deepEqual([2,3,4,5].map(turn=>carpetAmount(turn)),[0,1,1,2]);
++ assert.deepEqual([2,3,4,5].map(turn=>carpetAmount(turn,0.5,2)),[2,3,3,4]);
++});
++
++test('Carpet of Flowers accepts fractional rates, persists them, and uses the cumulative total',()=>{
++ const g=fixture({battlefield:['Carpet of Flowers']});
++ g.act({type:'SET_SETTING',key:'carpetIslandsPerTurn',value:'0.75'});
++ assert.equal(g.state.settings.carpetIslandsPerTurn,0.75);
++ roundTrip(g);
++ assert.deepEqual([2,3,4,5].map(turn=>carpetAmount(turn,0.75)),[0,1,2,3]);
++ assert.equal(g.perform({type:'SET_SETTING',key:'carpetIslandsPerTurn',value:-0.1}).ok,false);
++});
++
++test('pre-setting sessions use the Carpet 0.5 default without mutating historical state',()=>{
++ const g=fixture({battlefield:['Carpet of Flowers']});
++ delete g.state.settings.carpetIslandsPerTurn;
++ g.state.controllerTurns=[5,0,0,0];
++ g.state.players[1].abstractIslands=1;
++ const source=g.object(id(g,'Carpet of Flowers'));
++ const program=registry.handlers.get('gods.carpet')(g,{controller:0,source:ref(source),inputs:{player:1},vars:{carpetColor:'U'}});
++ assert.equal(program[0].amount,3);
++ const html=dialogs({g,ui:{modal:'settings'},prefs:defaultPreferences(),registry,saveStatus:{text:'',error:false}});
++ assert.match(html,/data-number-setting="carpetIslandsPerTurn"[^>]*value="0\.5"/);
++});
++
++test('Path of Ancestry is a direct mana click and opens its commander-color picker',()=>{
++ const g=fixture({battlefield:['Path of Ancestry'],command:['The Wandering Minstrel']});
++ const path=id(g,'Path of Ancestry'),access=cardActions(g,path);
++ assert.equal(access.displayAbilities.length,1);
++ assert.equal(access.showAbilities,false);
++ assert.ok(access.quickMana);
++ assert.equal(access.quickMana.id,'mana');
++ g.act({type:'ACTIVATE_ABILITY',id:path,abilityId:access.quickMana.id});
++ assert.equal(g.state.pending.key,'color');
++ assert.deepEqual(g.state.pending.options.map(option=>option.value),['W','U','B','R','G']);
++ assert.equal(g.object(path).tapped,false);
++ g.act({type:'CHOOSE',value:'U'});
++ assert.equal(g.object(path).tapped,true);
++ assert.equal(g.state.players[0].mana.U,1);
++ roundTrip(g);
++});
