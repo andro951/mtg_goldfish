@@ -1,0 +1,45 @@
+--- a/src/core/gods-effects.js
++++ b/src/core/gods-effects.js
+@@ -104,8 +104,8 @@
+    if(this.state.pending?.kind==='godsEntry'){
+     const pending=this.state.pending,entry=this.state.godsEntry;
+     let chosen;if(entry.kind==='color'){chosen=asArray(value)[0];requireRule(colors.includes(chosen),'Choose a color.');}
++    else if(entry.kind==='shock'){chosen=asArray(value)[0];requireRule(pending.options.some(o=>o.value===chosen),'Choose an entry option.');if(chosen==='pay'){requireRule(this.state.players[entry.player].life>=2,'Not enough life.');this.changeLife(entry.player,-2,'shock-land-cost');}}
+     else {chosen=asArray(value)[0];requireRule(asArray(value).length===1&&pending.candidates.includes(chosen),'Choose a listed permanent.');chosen=ref(this.object(chosen));}
+-    else if(entry.kind==='shock'){chosen=asArray(value)[0];requireRule(pending.options.some(o=>o.value===chosen),'Choose an entry option.');if(chosen==='pay'){requireRule(this.state.players[entry.player].life>=2,'Not enough life.');this.changeLife(entry.player,-2,'shock-land-cost');}}
+     this.state.pending=null;delete this.state.godsEntry;
+     const context=entry.context;context.godsEntryChoices||={};context.godsEntryChoices[entry.id]={...(context.godsEntryChoices[entry.id]||{}),[entry.kind]:chosen};
+     this.record('ENTRY_CHOICE',{object:entry.id,kind:entry.kind,value:chosen});const changes=this.moveBatch(entry.moves,context);
+@@ -125,6 +125,9 @@
+    return old.startAfterKeep.call(this);
+   },
+   checkStateActions(){
++   // Becoming a noncreature removes an attacker from combat permanently, even
++   // if devotion or another animation effect makes it a creature again later.
++   if(!this._legacyGodsRules)for(const o of this.objects('battlefield'))if(o.flags.attacking&&!this.characteristics(o).types.includes('Creature')){delete o.flags.attacking;this.record('REMOVED_FROM_COMBAT',{object:ref(o),reason:'no-longer-a-creature'});this.touch();}
+    for(const o of this.objects('battlefield'))if(o.flags.bestowed){const target=this.object(o.attachedTo);if(!target||target.zone!=='battlefield'||!this.characteristics(target).types.includes('Creature')){o.attachedTo=null;delete o.flags.bestowed;this.touch();}}
+    return old.checkStateActions.call(this);
+   },
+--- a/src/rules/gods-lands.js
++++ b/src/rules/gods-lands.js
+@@ -15,7 +15,7 @@
+  const pool=()=>mana({}, {pool:true,singleMana:{colors:output,key:'color'},effectInputs:(g,s)=>[colorInput('color',output(g,s))],label:'Add one mana of a type a land you control could produce',effect:(g,c)=>[{op:'mana',color:c.inputs.color}]});
+  reg(r,'Reflecting Pool',{entersTapped:false,possibleMana:[],replaceActivated:[pool()]});
+  reg(r,'Cactus Preserve',{entersTapped:true,possibleMana:[],replaceActivated:[pool(),{id:'animate',cost:'{3}',label:'Become an X/X Plant with reach until end of turn',effect:(g,c)=>{
+-  const x=Math.max(0,...Object.values(g.state.instances).filter(o=>o.commander).map(o=>g.characteristics(o).manaValue));
++  const x=Math.max(0,...Object.values(g.state.instances).filter(o=>o.commander&&o.owner===c.controller).map(o=>g.characteristics(o).manaValue));
+   return [{op:'modify',ids:ref(g.object(c.source)),modification:{addTypes:['Creature'],addSubtypes:['Plant'],colors:['G'],basePower:x,baseToughness:x,keywords:['Reach']}}];
+  }}]});
+ }
+--- a/src/rules/gods.js
++++ b/src/rules/gods.js
+@@ -148,8 +148,8 @@
+  "Selvala, Heart of the Wilds",
+  "Leyline of the Guildpact",
+  "Penance",
++ "Cascading Cataracts",
+  "Cryptolith Rite",
+- "Cascading Cataracts",
+  "Enduring Innocence"
+ ];
+ export function installGods(registry){
