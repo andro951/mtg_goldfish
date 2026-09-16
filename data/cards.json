@@ -3115,6 +3115,61 @@
     "candidate": true
   },
   {
+    "id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+    "key": "breeding-pool",
+    "name": "Breeding Pool",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land — Forest Island",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [
+      "Forest",
+      "Island"
+    ],
+    "supertypes": [],
+    "oracleText": "({T}: Add {G} or {U}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "colors": [],
+    "colorIdentity": [
+      "G",
+      "U"
+    ],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/20283c4a-f1f0-42f0-bc08-6da87474426b.jpg",
+    "backImage": null,
+    "printId": "63e4dc07-c742-41bd-8301-861637908fd1",
+    "set": "trk",
+    "collectorNumber": "279",
+    "source": "https://scryfall.com/card/trk/279/breeding-pool?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+        "source": "wotc",
+        "published_at": "2018-10-05",
+        "comment": "Unlike most dual lands, this land has two basic land types. It's not basic, so cards such as District Guide can't find it, but it does have the appropriate land types for effects such as that of Drowned Catacomb (from the Ixalan set)."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+        "source": "wotc",
+        "published_at": "2018-10-05",
+        "comment": "If an effect puts this land onto the battlefield tapped, you may pay 2 life, but it still enters tapped."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:20.932628+00:00",
+    "candidate": true
+  },
+  {
     "id": "d6ee95a9-e518-49fd-bc11-02453c3220cd",
     "key": "bringer-of-the-white-dawn",
     "name": "Bringer of the White Dawn",
@@ -3335,6 +3390,92 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:31:19.670857+00:00",
+    "candidate": true
+  },
+  {
+    "id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+    "key": "cactus-preserve",
+    "name": "Cactus Preserve",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land — Desert",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [
+      "Desert"
+    ],
+    "supertypes": [],
+    "oracleText": "This land enters tapped.\n{T}: Add one mana of any type that a land you control could produce.\n{3}: Until end of turn, this land becomes an X/X green Plant creature with reach, where X is the greatest mana value among your commanders. It's still a land.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/8da29533-f389-4bc2-ab9b-b469f893a362.jpg",
+    "backImage": null,
+    "printId": "ad9d426f-5870-42bb-a589-9218f7e35d62",
+    "set": "otc",
+    "collectorNumber": "40",
+    "source": "https://scryfall.com/card/otc/40/cactus-preserve?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "The types of mana are white, blue, black, red, green, and colorless."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "Any change to a land’s type or abilities gained by a land can affect the types of mana a land can produce."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "Cactus Preserve’s second ability checks the effects of all mana-producing abilities of lands you control, but it doesn’t check their costs or legality. For example, Spire of Industry says “{T}, Pay 1 life: Add one mana of any color. Activate only if you control an artifact.” If you control Spire of Industry and Cactus Preserve, you can tap Cactus Preserve for any color of mana. It doesn’t matter whether you control an artifact, whether you can pay 1 life, or whether Spire of Industry is untapped."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "Cactus Preserve doesn’t care about any restrictions or riders your lands put on the mana they produce, such as that of Bucolic Ranch or the ability granted by Discreet Retreat. It just produces one mana of the appropriate type, with no restrictions or riders."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "If Cactus Preserve becomes a creature but you haven’t controlled it continuously since your most recent turn began, you won’t be able to activate its mana ability or attack with it that turn."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "It doesn’t matter where your commander is (or commanders are, if you have more than one because of the partner ability or similar). The value of X will be calculated using your commander’s current characteristics. (Mana value typically doesn’t change, but your commander may become a copy of something else.)"
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "8da29533-f389-4bc2-ab9b-b469f893a362",
+        "source": "wotc",
+        "published_at": "2024-04-12",
+        "comment": "Desert is a land subtype with no special meaning. It doesn’t grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:21.606858+00:00",
     "candidate": true
   },
   {
@@ -12977,6 +13118,57 @@
     "candidate": true
   },
   {
+    "id": "f3c7af78-a77d-4134-82a2-a5ce84285a84",
+    "key": "flooded-strand",
+    "name": "Flooded Strand",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "{T}, Pay 1 life, Sacrifice this land: Search your library for a Plains or Island card, put it onto the battlefield, then shuffle.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/f3c7af78-a77d-4134-82a2-a5ce84285a84.jpg",
+    "backImage": null,
+    "printId": "8f85e12c-196b-4459-b81f-0c9c854e9f57",
+    "set": "mh3",
+    "collectorNumber": "220",
+    "source": "https://scryfall.com/card/mh3/220/flooded-strand?utm_source=api",
+    "rulings": [],
+    "related": [
+      {
+        "object": "related_card",
+        "id": "9ce9c2e1-3e8a-4b9a-8da6-7b7fc5a897f6",
+        "component": "combo_piece",
+        "name": "Preponderant Pearl",
+        "type_line": "Kindred Artifact — Merfolk",
+        "uri": "https://api.scryfall.com/cards/9ce9c2e1-3e8a-4b9a-8da6-7b7fc5a897f6"
+      },
+      {
+        "object": "related_card",
+        "id": "431eca69-ba8c-47c8-a325-22a844f83e80",
+        "component": "combo_piece",
+        "name": "Flooded Strand",
+        "type_line": "Land",
+        "uri": "https://api.scryfall.com/cards/431eca69-ba8c-47c8-a325-22a844f83e80"
+      }
+    ],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:22.270707+00:00",
+    "candidate": true
+  },
+  {
     "id": "29356966-652d-4456-84c8-7aeab5fc8d05",
     "key": "flubs-the-fool",
     "name": "Flubs, the Fool",
@@ -16049,6 +16241,40 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:31:43.065049+00:00",
+    "candidate": true
+  },
+  {
+    "id": "b3e28bcf-0ed0-4406-b615-68ddc55b349a",
+    "key": "great-hall-of-the-citadel",
+    "name": "Great Hall of the Citadel",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add two mana in any combination of colors. Spend this mana only to cast legendary spells.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/b3e28bcf-0ed0-4406-b615-68ddc55b349a.jpg",
+    "backImage": null,
+    "printId": "219c7b57-b62b-42d1-85d9-4b57624a3f54",
+    "set": "ltr",
+    "collectorNumber": "254",
+    "source": "https://scryfall.com/card/ltr/254/great-hall-of-the-citadel?utm_source=api",
+    "rulings": [],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:22.959763+00:00",
     "candidate": true
   },
   {
@@ -25322,6 +25548,83 @@
     "candidate": true
   },
   {
+    "id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+    "key": "reflecting-pool",
+    "name": "Reflecting Pool",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "{T}: Add one mana of any type that a land you control could produce.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/67f43ac6-2a58-4b53-b5d7-0330e2a252e2.jpg",
+    "backImage": null,
+    "printId": "18a1b3f5-473d-45ca-be0d-e67e77ba30ce",
+    "set": "clb",
+    "collectorNumber": "358",
+    "source": "https://scryfall.com/card/clb/358/reflecting-pool?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2008-05-01",
+        "comment": "The types of mana are white, blue, black, red, green, and colorless."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2008-05-01",
+        "comment": "Reflecting Pool checks the effects of all mana-producing abilities of lands you control, but it doesn't check their costs. For example, Vivid Crag says \"{T}, Remove a charge counter from Vivid Crag: Add one mana of any color.\" If you control Vivid Crag and Reflecting Pool, you can tap Reflecting Pool for any color of mana. It doesn't matter whether Vivid Crag has a charge counter on it, and it doesn't matter whether it's untapped."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2008-05-01",
+        "comment": "Reflecting Pool doesn't care about any restrictions or riders your lands put on the mana they produce, such as Pillar of the Paruns and Hall of the Bandit Lord do. It just cares about types of mana."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2008-05-01",
+        "comment": "Multiple Reflecting Pools won't help each other produce mana. If you control a Reflecting Pool, and all other lands you control either lack mana abilities or are other Reflecting Pools, you may still activate Reflecting Pool's ability — it just won't produce any mana."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2004-10-04",
+        "comment": "Any replacement effects are considered by Reflecting Pool when determining the types of mana a land can produce."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+        "source": "wotc",
+        "published_at": "2004-10-04",
+        "comment": "Any change to a land's type or splicing of text into a land can affect the types of mana a land can produce."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:23.735103+00:00",
+    "candidate": true
+  },
+  {
     "id": "dcc51bcb-a61e-471f-8a01-7fcbc069fcba",
     "key": "relive-the-past",
     "name": "Relive the Past",
@@ -27061,6 +27364,61 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:32:24.773580+00:00",
+    "candidate": true
+  },
+  {
+    "id": "703243f0-8cb3-420f-958f-5fd4bde30293",
+    "key": "savannah",
+    "name": "Savannah",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land — Forest Plains",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [
+      "Forest",
+      "Plains"
+    ],
+    "supertypes": [],
+    "oracleText": "({T}: Add {G} or {W}.)",
+    "colors": [],
+    "colorIdentity": [
+      "G",
+      "W"
+    ],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/703243f0-8cb3-420f-958f-5fd4bde30293.jpg",
+    "backImage": null,
+    "printId": "b0d161fc-4a2a-4f1d-82b4-a746552552df",
+    "set": "vma",
+    "collectorNumber": "311",
+    "source": "https://scryfall.com/card/vma/311/savannah?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "703243f0-8cb3-420f-958f-5fd4bde30293",
+        "source": "wotc",
+        "published_at": "2008-10-01",
+        "comment": "This has the mana abilities associated with both of its basic land types."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "703243f0-8cb3-420f-958f-5fd4bde30293",
+        "source": "wotc",
+        "published_at": "2008-10-01",
+        "comment": "This has basic land types, but it isn't a basic land. Things that affect basic lands don't affect it. Things that affect basic land types do."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:45.806589+00:00",
     "candidate": true
   },
   {
@@ -29527,6 +29885,50 @@
     "candidate": true
   },
   {
+    "id": "3123ec89-8e95-4761-ba17-747ec667509f",
+    "key": "spara-s-headquarters",
+    "name": "Spara's Headquarters",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land — Forest Plains Island",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [
+      "Forest",
+      "Plains",
+      "Island"
+    ],
+    "supertypes": [],
+    "oracleText": "({T}: Add {G}, {W}, or {U}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+    "colors": [],
+    "colorIdentity": [
+      "G",
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Cycling"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/3123ec89-8e95-4761-ba17-747ec667509f.jpg",
+    "backImage": null,
+    "printId": "7363f1fb-9af3-4212-921f-d59533faf0e5",
+    "set": "snc",
+    "collectorNumber": "257",
+    "source": "https://scryfall.com/card/snc/257/sparas-headquarters?utm_source=api",
+    "rulings": [],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:46.509881+00:00",
+    "candidate": true
+  },
+  {
     "id": "2962fe4c-bf48-454b-8a6b-0f8253352ae8",
     "key": "spelunking",
     "name": "Spelunking",
@@ -30808,6 +31210,68 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-12T05:32:41.325426+00:00",
+    "candidate": true
+  },
+  {
+    "id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+    "key": "temple-garden",
+    "name": "Temple Garden",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land — Forest Plains",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [
+      "Forest",
+      "Plains"
+    ],
+    "supertypes": [],
+    "oracleText": "({T}: Add {G} or {W}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "colors": [],
+    "colorIdentity": [
+      "G",
+      "W"
+    ],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/f413a83d-a40d-434c-b20a-4c707c0527fa.jpg",
+    "backImage": null,
+    "printId": "b9b0589d-f327-46a7-8bac-06b7654c547a",
+    "set": "trk",
+    "collectorNumber": "301",
+    "source": "https://scryfall.com/card/trk/301/temple-garden?utm_source=api",
+    "rulings": [
+      {
+        "object": "ruling",
+        "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+        "source": "wotc",
+        "published_at": "2025-11-17",
+        "comment": "If an effect puts this land onto the battlefield tapped, you may pay 2 life, but it still enters tapped."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+        "source": "wotc",
+        "published_at": "2025-11-17",
+        "comment": "This land has two basic land types. It's not basic, so cards such as Tend the Sprigs can't find it, but it does have the appropriate land types for effects such as that of Great Arashin City (from the Tarkir: Dragonstorm release)."
+      },
+      {
+        "object": "ruling",
+        "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+        "source": "wotc",
+        "published_at": "2018-10-05",
+        "comment": "Unlike most dual lands, this land has two basic land types. It's not basic, so cards such as District Guide can't find it, but it does have the appropriate land types for effects such as that of Drowned Catacomb (from the Ixalan set)."
+      }
+    ],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:47.188340+00:00",
     "candidate": true
   },
   {
@@ -40006,6 +40470,40 @@
     "related": [],
     "metadataStatus": "canonical",
     "oracleSnapshotAt": "2026-09-16T00:00:02.559250+00:00",
+    "candidate": true
+  },
+  {
+    "id": "29737a60-3ebd-40d9-b935-c4f54b90d45d",
+    "key": "windswept-heath",
+    "name": "Windswept Heath",
+    "manaCost": "",
+    "manaValue": 0.0,
+    "typeLine": "Land",
+    "types": [
+      "Land"
+    ],
+    "subtypes": [],
+    "supertypes": [],
+    "oracleText": "{T}, Pay 1 life, Sacrifice this land: Search your library for a Forest or Plains card, put it onto the battlefield, then shuffle.",
+    "colors": [],
+    "colorIdentity": [],
+    "keywords": [],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "defense": null,
+    "layout": "normal",
+    "faces": [],
+    "image": "assets/cards/29737a60-3ebd-40d9-b935-c4f54b90d45d.jpg",
+    "backImage": null,
+    "printId": "bd1d13f7-fd38-4f0b-a8e0-1eac78668117",
+    "set": "mh3",
+    "collectorNumber": "235",
+    "source": "https://scryfall.com/card/mh3/235/windswept-heath?utm_source=api",
+    "rulings": [],
+    "related": [],
+    "metadataStatus": "canonical",
+    "oracleSnapshotAt": "2026-09-16T01:52:47.886205+00:00",
     "candidate": true
   },
   {

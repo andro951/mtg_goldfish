@@ -144,5 +144,6 @@
   "checkpoints/120b-engine-integration.patch": "57fa8db9443fd53e0c320e36cbc7562377fb983356d58cd9e5870d380926dd9e",
   "checkpoints/120c-action-integration.patch": "29853645f10a570bdaa1193e56fb540590a5e69c91f36a99777150ab39211406",
   "checkpoints/120d-registry.patch": "9eb53bd7a8d0e50d06b8af19761cfee81f750ed288fecb2d8fea7f503922b0ad",
-  "checkpoints/121a-gods-acceptance-fixtures.patch": "98e9cbe03d0353e953b37d8b423c8d038ff46a74644676f32e6afa149182dc7d"
+  "checkpoints/121a-gods-acceptance-fixtures.patch": "98e9cbe03d0353e953b37d8b423c8d038ff46a74644676f32e6afa149182dc7d",
+  "checkpoints/121b-tracked-and-opponent-mana.patch": "79762dda3ba72806cf0838908ee3e840bdccf9b230cc9f70e66545550f1ab343"
 }
