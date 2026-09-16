@@ -1,0 +1,86 @@
+--- a/src/core/expanded-core.js
++++ b/src/core/expanded-core.js
+@@ -39 +39 @@
+-  abilities(value){
++  abilities(value,{ignoreAvailability=false}={}){
+@@ -50 +50 @@
+-   return abilities.filter(a=>a&&(a.zone||'battlefield')===o.zone&&(!a.available||a.available(this,o)));
++   return abilities.filter(a=>a&&(a.zone||'battlefield')===o.zone&&(!a.exists||a.exists(this,o))&&(ignoreAvailability||!a.available||a.available(this,o)));
+--- a/src/core/gods-core.js
++++ b/src/core/gods-core.js
+@@ -25 +25,2 @@
+-   for(const ability of this.abilities(source).filter(a=>a.mana)){
++   for(const ability of this.abilities(source,{ignoreAvailability:true}).filter(a=>a.mana)){
++    if(ability.pool){outputs.push(...this.controlled(source.controller).flatMap(o=>this.couldProduceColors(o,seen)));continue;}
+@@ -33 +34 @@
+-   return unique(outputs.filter(c=>colors.includes(c)));
++   return unique(outputs.filter(c=>[...colors,'C'].includes(c)));
+@@ -37 +38 @@
+-    ...(p.abstractLandColors||[]),...this.objects('battlefield').filter(o=>o.controller===p.id&&this.characteristics(o).types.includes('Land')).flatMap(o=>this.couldProduceColors(o,visited))
++    ...(p.abstractLandColors||[]),...this.objects('battlefield').filter(o=>o.controller===p.id&&this.characteristics(o).types.includes('Land')).flatMap(o=>this.couldProduceColors(o,visited).filter(c=>colors.includes(c)))
+--- a/src/core/gods-effects.js
++++ b/src/core/gods-effects.js
+@@ -30,0 +31,9 @@
++    if(mod.shockLand){
++     const choice=auraChoices[o.id]?.shock;
++     if(choice===undefined){
++      const cost=2,owner=m.controller??o.owner;
++      this.state.godsEntry={moves,context:clone(context),id:o.id,kind:'shock',player:owner};
++      this.state.pending={kind:'godsEntry',type:'option',label:`${c.name} — pay 2 life as it enters?`,min:1,max:1,options:[{value:'tapped',label:'Do not pay (enter tapped)'},...(this.state.players[owner].life>=cost?[{value:'pay',label:'Pay 2 life'}]:[])]};return null;
++     }
++     if(choice==='tapped')m.tapped=true;
++    }
+@@ -98,0 +108 @@
++    else if(entry.kind==='shock'){chosen=asArray(value)[0];requireRule(pending.options.some(o=>o.value===chosen),'Choose an entry option.');if(chosen==='pay'){requireRule(this.state.players[entry.player].life>=2,'Not enough life.');this.changeLife(entry.player,-2,'shock-land-cost');}}
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -22 +22 @@
+-        if (module.entryTapped) proposal.tapped=!!module.entryTapped(this,object,context);
++        if (module.entryTapped) proposal.tapped=!!move.tapped||!!module.entryTapped(this,object,context);
+--- a/src/rules/gods.js
++++ b/src/rules/gods.js
+@@ -0,0 +1 @@
++import {installGodsLands} from './gods-lands.js';
+@@ -101 +101,0 @@
+- "Crystal Quarry",
+@@ -112 +112,12 @@
+- "Cascading Cataracts",
++ "Tundra",
++ "Temple Garden",
++ "Tropical Island",
++ "Cactus Preserve",
++ "Flooded Strand",
++ "Misty Rainforest",
++ "Breeding Pool",
++ "Great Hall of the Citadel",
++ "Reflecting Pool",
++ "Savannah",
++ "Spara's Headquarters",
++ "Windswept Heath",
+@@ -134,0 +146 @@
++ "Crystal Quarry",
+@@ -138,0 +152 @@
++ "Cascading Cataracts",
+@@ -143 +156 @@
+- installGodsShared(registry);installGodsMana(registry);installGodsEnchantments(registry);installGodsLife(registry);installGodsSpells(registry);
++ installGodsShared(registry);installGodsMana(registry);installGodsEnchantments(registry);installGodsLife(registry);installGodsSpells(registry);installGodsLands(registry);
+--- a/src/rules/lands.js
++++ b/src/rules/lands.js
+@@ -53 +53 @@
+-    mana({ C: 1 }, { available: (g, s) => !!s.flags.sagaMana }),
++    mana({ C: 1 }, { exists: (g, s) => !!s.flags.sagaMana, available: (g, s) => !!s.flags.sagaMana }),
+--- a/tests/deck-editor.test.js
++++ b/tests/deck-editor.test.js
+@@ -19 +19 @@
+-  assert.equal(supportedCards(registry).length,445);
++  assert.equal(supportedCards(registry).length,454);
+--- a/tests/integrity.test.js
++++ b/tests/integrity.test.js
+@@ -82 +82 @@
+-  assert.equal(cards.filter(c=>c.candidate).length,445);assert.equal(g.state.zones.libraryActive.length,99);
++  assert.equal(cards.filter(c=>c.candidate).length,454);assert.equal(g.state.zones.libraryActive.length,99);
+--- a/tests/gods-life.test.js
++++ b/tests/gods-life.test.js
+@@ -96 +96 @@
+- const g=game({battlefield:['Well of Lost Dreams']},{mana:{C:2}});gainLife(g);resolve(g);assert.equal(g.state.pending.max,2);assert.equal(g.perform({type:'CHOOSE',value:3}).ok,false);choose(g,2);choose(g,'pay');assert.equal(g.state.zones.hand.length,2);assert.equal(g.state.players[0].mana.C,0);roundTrip(g);
++ const g=game({battlefield:['Well of Lost Dreams']},{mana:{C:2}});gainLife(g);resolve(g);choose(g,'YES');assert.equal(g.state.pending.max,2);assert.equal(g.perform({type:'CHOOSE',value:3}).ok,false);choose(g,2);choose(g,'pay');assert.equal(g.state.zones.hand.length,2);assert.equal(g.state.players[0].mana.C,0);roundTrip(g);
