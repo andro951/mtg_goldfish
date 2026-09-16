@@ -1,0 +1,24 @@
+--- a/src/core/gods-core.js
++++ b/src/core/gods-core.js
+@@ -24 +23,0 @@
+-   if(module.exoticOrchard)return this.opposingLandColors(source,seen);
+@@ -26,0 +26 @@
++    if(ability.orchard){outputs.push(...this.opposingLandColors(source,seen));continue;}
+--- a/src/rules/gods-mana.js
++++ b/src/rules/gods-mana.js
+@@ -6 +6 @@
+-const quantity=(label,amount,color='color',extra={})=>mana({}, {label,effectInputs:color==='color'?[colorInput()]:[],effect:(g,c)=>[{op:'mana',color:color==='color'?c.inputs.color:color,amount:amount(g,c)}],...extra});
++const quantity=(label,amount,color='color',extra={})=>mana({}, {label,manaColors:(g,s)=>(color==='color'?anyColor:[color]).filter(v=>amount(g,g.context(s,{inputs:{color:v}}))>0),effectInputs:color==='color'?[colorInput()]:[],effect:(g,c)=>[{op:'mana',color:color==='color'?c.inputs.color:color,amount:amount(g,c)}],...extra});
+@@ -66 +66 @@
+- reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:null,label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})],triggers:[{id:'ancestry-scry',label:'Scry 1 after spending this mana on a matching creature',event:'SPELL_CAST',test:(g,s,e)=>e.manaSources?.some(src=>src.id===s.id)&&e.characteristics.types.includes('Creature')&&Object.values(g.state.instances).some(o=>o.commander&&o.owner===s.controller&&g.characteristics(o).subtypes.some(t=>e.characteristics.subtypes.includes(t))),effect:()=>[{op:'scry',count:1}]}]});
++ reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:null,ancestry:true,manaColors:(g,s)=>identity(g,s.controller),label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})]});
+@@ -68,2 +68,2 @@
+- const orchardColors=(g,s)=>unique(g.objects('battlefield').filter(o=>o.controller!==s.controller&&g.characteristics(o).types.includes('Land')&&g.definition(o).name!=='Exotic Orchard').flatMap(o=>g.module(o).possibleMana||[])).filter(c=>anyColor.includes(c));
+- reg(r,'Exotic Orchard',{possibleMana:anyColor,replaceActivated:[single({singleMana:{colors:orchardColors,key:'color'},label:'Add a color an opponent’s modeled lands could produce',available:(g,s)=>orchardColors(g,s).length>0,effectInputs:(g,s)=>[colorInput('color',orchardColors(g,s))]})]});
++ const orchardColors=(g,s)=>g.opposingLandColors(s,new Set([s.id]));
++ reg(r,'Exotic Orchard',{possibleMana:anyColor,replaceActivated:[single({orchard:true,singleMana:{colors:orchardColors,key:'color'},label:'Add a color an opponent’s lands could produce',effectInputs:(g,s)=>[colorInput('color',orchardColors(g,s))]})]});
+--- a/src/rules/gods-enchantments.js
++++ b/src/rules/gods-enchantments.js
+@@ -53 +53 @@
+- r.registerHandler('gods.carpet',(g,c)=>{const n=g.count({zones:['battlefield'],controller:c.inputs.player,land:true,subtype:'Island'});if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
++ r.registerHandler('gods.carpet',(g,c)=>{const n=g.islandCount(c.inputs.player);if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
