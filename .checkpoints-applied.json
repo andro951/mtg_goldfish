@@ -139,5 +139,6 @@
   "checkpoints/118g-land-audit-release-docs.patch": "66d2303cf1175c40e69405323de317994a1f3b0e04b93df5e918f8f1e0ac3159",
   "checkpoints/118h-multimana-payment-regression.patch": "f38275b9f2d6477dc12423033d4a628ce3d886fab78630a328a1d6f6f9707ec7",
   "checkpoints/119a-battlefield-attacker-picks.json": "5d04b8f786b900204e6abcb14871cd3fc23a0de0e25bec15224df514295469b5",
-  "checkpoints/119b-attacker-release-verification.json": "2e9de2bbac3a43215f8ce061acf56b1fbc86fd274a1e90fab950eed346666ed9"
+  "checkpoints/119b-attacker-release-verification.json": "2e9de2bbac3a43215f8ce061acf56b1fbc86fd274a1e90fab950eed346666ed9",
+  "checkpoints/120a-esika-canonical-import.patch": "11abc9a2face36e422f494742735eac5daf3303f1457aaf3fd7f38bece4a81cf"
 }
