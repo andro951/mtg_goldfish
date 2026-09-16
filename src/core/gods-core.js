@@ -24,7 +24,7 @@ export function installGodsEngine(Engine){
    const outputs=[];
    for(const ability of this.abilities(source,{ignoreAvailability:true}).filter(a=>a.mana)){
     if(ability.pool){outputs.push(...this.controlled(source.controller).flatMap(o=>this.couldProduceColors(o,seen)));continue;}
-    if(ability.orchard){outputs.push(...this.opposingLandColors(source,seen));continue;}
+    if(ability.orchard){outputs.push(...(this.state.settings.exoticOrchardAllColors!==false?colors:this.opposingLandColors(source,seen)));continue;}
     const exact=ability.singleMana?.colors,declared=exact??ability.manaColors;
     if(declared){outputs.push(...(typeof declared==='function'?declared(this,source):declared));continue;}
     if(ability.manaOutput){outputs.push(...Object.entries(ability.manaOutput).filter(([,n])=>n>0).map(([c])=>c));continue;}

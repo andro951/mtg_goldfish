@@ -35,8 +35,8 @@ ct('Cactus Preserve','animation checks commander mana value at resolution, remai
  const f=game({battlefield:['Cactus Preserve',{...cmd,props:{...cmd.props,face:1}}]},{mana:{C:3}});ability(f,'Cactus Preserve','animate');resolve(f);assert.equal(ch(f,'Cactus Preserve').power,5);roundTrip(f);
 });
 ct('Exotic Orchard','reads opponent lands including mana grants, not merely static printed metadata',()=>{
- const g=game({battlefield:['Exotic Orchard',{name:'Darksteel Citadel',owner:1,controller:1},{name:'Chromatic Lantern',owner:1,controller:1}]});assert.equal(g.couldProduceColors(id(g,'Exotic Orchard')).length,5);ability(g,'Exotic Orchard','mana',{color:'R'});assert.equal(g.state.players[0].mana.R,1);roundTrip(g);
- const f=game({battlefield:['Exotic Orchard',{name:'Exotic Orchard',owner:1,controller:1}]});assert.deepEqual(f.couldProduceColors(id(f,'Exotic Orchard')),[]);roundTrip(f);
+ const g=game({battlefield:['Exotic Orchard',{name:'Darksteel Citadel',owner:1,controller:1},{name:'Chromatic Lantern',owner:1,controller:1}]});g.act({type:'SET_SETTING',key:'exoticOrchardAllColors',value:false});assert.equal(g.couldProduceColors(id(g,'Exotic Orchard')).length,5);ability(g,'Exotic Orchard','mana',{color:'R'});assert.equal(g.state.players[0].mana.R,1);roundTrip(g);
+ const f=game({battlefield:['Exotic Orchard',{name:'Exotic Orchard',owner:1,controller:1}]});f.act({type:'SET_SETTING',key:'exoticOrchardAllColors',value:false});assert.deepEqual(f.couldProduceColors(id(f,'Exotic Orchard')),[]);roundTrip(f);
 });
 for(const name of ['Archway Commons','Transguild Promenade','Rupture Spire','Gateway Plaza'])ct(name,'enters tapped and is sacrificed unless the entry payment is paid',()=>{
  const g=game({hand:[name]});play(g,name);drain(g);assert.ok(id(g,name,'graveyard'));roundTrip(g);

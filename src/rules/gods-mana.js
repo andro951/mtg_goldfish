@@ -1,7 +1,7 @@
 import {ref,sameRef,asArray,clone,unique,requireRule} from '../core/util.js';
 import {BF,GY,HAND,anyColor,colorInput,options,mana,draw,move,choose,search,etb,upkeep,endStep,target,selfSacrifice,selfExile,discardCost,sacrifice,tapOthers,playerTarget} from './helpers.js';
 import {registerG as reg,call,token,god,ownCreature,keywords,creatures,enchants,power} from './gods-shared.js';
-const identity=(g,p=0)=>unique(Object.values(g.state.instances).filter(o=>o.commander&&o.owner===p).flatMap(o=>g.registry.get(o.cardId).colorIdentity));
+const identity=(g,p=0)=>{const found=new Set(Object.values(g.state.instances).filter(o=>o.commander&&o.owner===p).flatMap(o=>g.registry.get(o.cardId).colorIdentity));return anyColor.filter(c=>found.has(c));};
 const single=(extra={})=>mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],label:'Add one mana of any color',effect:(g,c)=>[{op:'mana',color:c.inputs.color}],...extra});
 const quantity=(label,amount,color='color',extra={})=>mana({}, {label,manaColors:(g,s)=>(color==='color'?anyColor:[color]).filter(v=>amount(g,g.context(s,{inputs:{color:v}}))>0),effectInputs:color==='color'?[colorInput()]:[],effect:(g,c)=>[{op:'mana',color:color==='color'?c.inputs.color:color,amount:amount(g,c)}],...extra});
 const commandMana=single({singleMana:{colors:(g,s)=>identity(g,s.controller),key:'color'},effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))]});

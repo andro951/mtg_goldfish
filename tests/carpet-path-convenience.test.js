@@ -23,6 +23,15 @@ test('Carpet of Flowers defaults to 0.5 cumulative Islands per player turn and f
  assert.deepEqual([2,3,4,5].map(turn=>carpetAmount(turn,0.5,2)),[2,3,3,4]);
 });
 
+test('Carpet of Flowers adds the estimate only to the selected opponent’s actually modeled Islands',()=>{
+ const g=fixture({battlefield:['Carpet of Flowers',{name:'Tundra',owner:1,controller:1},{name:'Tropical Island',owner:2,controller:2},{name:"Spara's Headquarters",owner:2,controller:2}]});
+ g.state.controllerTurns=[5,0,0,0];
+ const source=g.object(id(g,'Carpet of Flowers')),handler=registry.handlers.get('gods.carpet');
+ const amount=player=>(handler(g,{controller:0,source:ref(source),inputs:{player},vars:{carpetColor:'G'}})[0]?.amount??0);
+ assert.equal(amount(1),3); // one real Island + floor((5 - 1) * 0.5)
+ assert.equal(amount(2),4); // two real Islands + the same estimate
+});
+
 test('Carpet of Flowers accepts fractional rates, persists them, and uses the cumulative total',()=>{
  const g=fixture({battlefield:['Carpet of Flowers']});
  g.act({type:'SET_SETTING',key:'carpetIslandsPerTurn',value:'0.75'});
@@ -45,7 +54,7 @@ test('pre-setting sessions use the Carpet 0.5 default without mutating historica
 });
 
 test('Path of Ancestry is a direct mana click and opens its commander-color picker',()=>{
- const g=fixture({battlefield:['Path of Ancestry'],command:['The Wandering Minstrel']});
+ const g=fixture({battlefield:['Path of Ancestry'],command:[{name:'The Wandering Minstrel',props:{commander:true}}]});
  const path=id(g,'Path of Ancestry'),access=cardActions(g,path);
  assert.equal(access.displayAbilities.length,1);
  assert.equal(access.showAbilities,false);
@@ -57,6 +66,10 @@ test('Path of Ancestry is a direct mana click and opens its commander-color pick
  assert.equal(g.object(path).tapped,false);
  g.act({type:'CHOOSE',value:'U'});
  assert.equal(g.object(path).tapped,true);
- assert.equal(g.state.players[0].mana.U,1);
+ assert.equal(g.state.players[0].mana.U,0);
+ assert.equal(g.state.players[0].restrictedMana.length,1);
+ assert.equal(g.state.players[0].restrictedMana[0].color,'U');
+ assert.equal(g.state.players[0].restrictedMana[0].amount,1);
+ assert.ok(g.state.players[0].restrictedMana[0].ancestry);
  roundTrip(g);
 });
