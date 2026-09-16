@@ -48,7 +48,10 @@ def attachment_controls(p):
  fixture(p,'attachment-resolve');hold(p,True)
  host=obj(p,'Metalworker')['id'];second=obj(p,'Walking Atlas')['id'];gear=obj(p,'Lightning Greaves')['id']
  activate(p,'Lightning Greaves','equip');choose_cards(p,[host])
- check('unresolved Equip shows a target arrow, not a confirmed attachment',p.locator('#target-links .target-link').count()==1 and p.locator('#permanent-links .permanent-link').count()==0)
+ # Target overlays batch geometry until the next animation frame. Wait for
+ # that public DOM result, without resolving Equip or relaxing either invariant.
+ p.wait_for_function('(host)=>{const a=document.querySelectorAll("#target-links .target-link");return a.length===1&&a[0].dataset.linkTarget===host&&document.querySelectorAll("#permanent-links .permanent-link").length===0;}',arg=host)
+ check('unresolved Equip shows a target arrow, not a confirmed attachment',p.locator('#target-links .target-link').count()==1 and p.locator('#target-links .target-link').get_attribute('data-link-target')==host and p.locator('#permanent-links .permanent-link').count()==0 and obj(p,'Lightning Greaves').get('attachedTo') is None and state(p,'state.stack.length')==1)
  settle(p);closed_inspector(p);p.wait_for_selector('#permanent-links .equipment')
  check_tucked(p,gear,host,'resolved Equipment tucks up-left beneath the actual equipped creature')
  check('attachment arrow points to the real host',arrow(p,gear).get_attribute('data-link-target')==host)
