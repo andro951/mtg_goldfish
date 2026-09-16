@@ -44,6 +44,11 @@ export const actionMethods = {
       this.state.optionalPreferences[key] = value; this.record('OPTIONAL_POLICY', { key, value }); return;
     }
     if (type === 'SET_SETTING') {
+      if (action.key === 'carpetIslandsPerTurn') {
+        const value = Number(action.value);
+        requireRule(Number.isFinite(value) && value >= 0 && value <= 1000, 'Carpet of Flowers Islands per turn must be a nonnegative number no greater than 1000.');
+        this.state.settings[action.key] = value; this.record('SETTING_CHANGED', { key: action.key, value }); return;
+      }
       requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls', 'exoticOrchardAllColors'].includes(action.key), 'Unknown setting.');
       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
     }

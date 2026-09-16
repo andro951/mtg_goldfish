@@ -566,6 +566,7 @@ document.addEventListener('change',e=>{const el=e.target;try{
  if(el.dataset.sequenceSaved){programs.saveSequence(el.dataset.sequenceSaved,el.checked);return;}
  if(el.dataset.sequenceName){programs.renameSequence(el.dataset.sequenceName,el.value);return;}
  if(el.id==='sequence-future'){ui.sequenceFuture=el.checked;return;}
+ if(el.dataset.numberSetting){run({type:'SET_SETTING',key:el.dataset.numberSetting,value:el.value});return;}
  if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
  if(el.dataset.autoAccept!==undefined){prefs.autoAccept=el.checked;savePreferences();}
  if(el.dataset.policy)run({type:'SET_OPTIONAL',key:el.dataset.policy,value:el.value});

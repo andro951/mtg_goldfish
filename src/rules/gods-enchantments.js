@@ -3,6 +3,12 @@ import {BF,GY,HAND,LIB,anyColor,options,colorInput,draw,move,choose,search,etb,u
 import {registerG as reg,call,token,god,ownPermanent,ownCreature,keywords,creatures,enchants,power,entry,gain,eachEnd,combatHit,equipment,attached,animate,endure} from './gods-shared.js';
 const nonAura=c=>c.types.includes('Enchantment')&&!c.subtypes.includes('Aura');
 const enchanted=(g,o)=>g.objects('battlefield').some(a=>sameRef(a.attachedTo,o)&&g.characteristics(a).subtypes.includes('Aura'));
+const carpetAssumedIslands=(g,controller)=>{
+ const raw=Number(g.state.settings?.carpetIslandsPerTurn),rate=Number.isFinite(raw)&&raw>=0?raw:0.5;
+ const fallback=controller===0?Number(g.state.turnNumber)||1:0;
+ const turns=Math.max(0,Number(g.state.controllerTurns?.[controller]??fallback)||0);
+ return Math.floor(Math.max(0,turns-1)*rate);
+};
 const self=(g,s,o)=>sameRef(s,o);
 export function installGodsEnchantments(r){
  reg(r,'Starfield of Nyx',{triggers:[upkeep('reanimate','You may return an enchantment card',()=>[move('$input.target','battlefield')],{optional:true,inputs:[target({...GY,type:'Enchantment'})]})],continuous:[animate((g,s,o,c)=>ownPermanent(g,s,o)&&!sameRef(s,o)&&nonAura(c)&&enchants(g,s.controller).length>=5)]});
@@ -50,5 +56,5 @@ export function installGodsEnchantments(r){
  reg(r,'Black Market Connections',{triggers:[{id:'market',label:'Choose one or more Black Market modes',event:'MAIN_BEGAN',test:(g,s,e)=>e.player===s.controller&&e.precombat,effect:()=>[{op:'choose',key:'market',label:'Choose one or more modes',options:[{value:'treasure',label:'Treasure; lose 1 life'},{value:'draw',label:'Draw; lose 2 life'},{value:'shapeshifter',label:'3/2 Shapeshifter; lose 3 life'}],min:1,max:3},call('market')]}]});
  r.registerHandler('gods.market',(g,c)=>{const modes=asArray(c.vars.market);return [...(modes.includes('treasure')?[{op:'token',card:'Treasure'},{op:'life',amount:-1}]:[]),...(modes.includes('draw')?[draw(),{op:'life',amount:-2}]:[]),...(modes.includes('shapeshifter')?[token('Shapeshifter',{power:3,toughness:2}),{op:'life',amount:-3}]:[])];});
  reg(r,'Carpet of Flowers',{triggers:[{id:'carpet',label:'You may add mana equal to target opponent’s Islands',event:'MAIN_BEGAN',test:(g,s,e)=>e.player===s.controller&&!g.usedOnce(ref(s),'carpet'),inputs:[playerTarget('player',true)],interveningIf:(g,c)=>!g.usedOnce(c.source,'carpet'),effect:()=>[optional('carpet','Add mana with Carpet of Flowers?',[{op:'choose',key:'carpetColor',label:'Choose a color',options:options(anyColor)},call('carpet')])]}]});
- r.registerHandler('gods.carpet',(g,c)=>{const n=g.islandCount(c.inputs.player);if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
+ r.registerHandler('gods.carpet',(g,c)=>{const n=g.islandCount(c.inputs.player)+carpetAssumedIslands(g,c.controller);if(n<=0)return [];g.useOnce(c.source,'carpet');return [{op:'mana',color:c.vars.carpetColor,amount:n}];});
 }

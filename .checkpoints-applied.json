@@ -154,5 +154,6 @@
   "checkpoints/122d-await-target-overlay-frame.patch": "ae2dbe6d1f70526bc2f3d5e07b66cf4983c11ca26750f05253b5f63643c23385",
   "checkpoints/123b-exotic-orchard-core.patch": "a9df3bd7ca933676abe606067a6bf19c16044a1859ea574a5b40347da4d87e66",
   "checkpoints/123c-exotic-orchard-setting-ui.patch": "c25d9700d37ab951e5854727b137888d879a9da91d196391865aea0417807589",
-  "checkpoints/123d-exotic-orchard-settings-order.patch": "f02d2ae01b527314077dd5645fee02372bbc707c0ec87842eb2f1b49e0e67914"
+  "checkpoints/123d-exotic-orchard-settings-order.patch": "f02d2ae01b527314077dd5645fee02372bbc707c0ec87842eb2f1b49e0e67914",
+  "checkpoints/124a-carpet-path-convenience.patch": "2d94383f613fae63cc6807ee0041e1fac885af623414aaa970eb5bd7e3808155"
 }

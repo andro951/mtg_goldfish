@@ -71,7 +71,7 @@ export function createGameState(registry, inputRecords, seed = 'astra', options 
     })),
     delayed: [], effects: [], emblems: [], provenance: [], eventSerial: 0, turnCounts: {}, triggerCounts: {},
     extraCombats: [], extraCombatActive: false, scheduledStep: null, advanceTarget: null,
-    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true },
+    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true, carpetIslandsPerTurn: 0.5 },
     mulligans: 0, notes: [], diagnostics: [], manualAssistance: [], status: 'playing',
   };
   const draw = Math.min(integer(options.openingHand ?? 7, 0, activeSize), zones.libraryActive.length);
