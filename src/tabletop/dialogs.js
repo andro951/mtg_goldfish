@@ -57,7 +57,7 @@ function deckTextEditor(ctx){
 export function dialogs(ctx){
   const {g,ui,prefs,registry}=ctx,s=g.state;let title='',sub='',body='',footer='',narrow=false;
   if(!ui.modal)return '';
-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.5.0';narrow=true;body=menuBody(ctx);}
+  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.5.1';narrow=true;body=menuBody(ctx);}
   else if(ui.modal==='combat'){
     title='Declare attackers';sub='Click creatures on the battlefield to select or deselect. Right-click to inspect.';
     const ready=attackSelectionReady(g),draft=ui.attackDraft,creatures=g.controlled().filter(o=>g.characteristics(o).types.includes('Creature'));

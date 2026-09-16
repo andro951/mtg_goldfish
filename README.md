@@ -1,4 +1,14 @@
-# Astra 1.5.0 — The Goldfish Lab
+# Astra 1.5.1 — The Goldfish Lab
+
+## Opponent mana conveniences (1.5.1)
+
+**Carpet of Flowers** now has a configurable opponent-Island estimate in Settings. The default rate is **0.5 Islands per one of your turns**; its cumulative estimate is `floor((your turn - 1) × rate)`, giving **0 / 1 / 1 / 2** on turns 2–5 at the default rate. That estimate is added to the selected opponent’s Islands that are actually represented on the battlefield (and any explicitly reported abstract Islands), rather than replacing modeled game state. Existing sessions without the setting use 0.5 without rewriting their historical state.
+
+**Path of Ancestry** is once again a direct mana-source click. Clicking the land opens the normal **W / U / B / R / G** commander-color palette with no special Path-only UI; choosing a color taps the land and retains the ancestry provenance used to trigger the card’s scry ability when that mana is spent on a matching creature spell.
+
+**Exotic Orchard** keeps the 1.5.1 convenience toggle that treats opponents as having access to all five colors by default. Turning it off returns to the simulator’s actually modeled/reported opponent-land colors. The setting is included in normal session persistence.
+
+The 1.5.0 Esika/Gods pool, automatic Ask defaults, mana selectors, attachment controls, floating Look workspace, loyalty overlays, responsive grids, and incremental autosave are retained.
 
 ## Revised Esika / Gods pool (1.5.0)
 

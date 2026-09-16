@@ -71,7 +71,7 @@ for label in ('fail', 'cancelled', 'skipped', 'todo'):
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser.get('uiVersion') == '1.5.0', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser.get('uiVersion') == '1.5.1', 'The tested UI must be the compact tabletop, not the retired interface.')
 require(browser['checksPassed'] >= 798, 'Browser regression suite is incomplete.')
 
 require(browser.get('testedBuildSHA256') == digest(safe_file('index.html').read_bytes()), 'Browser report belongs to a different build.')

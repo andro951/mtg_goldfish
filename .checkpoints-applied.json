@@ -157,5 +157,6 @@
   "checkpoints/123d-exotic-orchard-settings-order.patch": "f02d2ae01b527314077dd5645fee02372bbc707c0ec87842eb2f1b49e0e67914",
   "checkpoints/124a-carpet-path-convenience.patch": "2d94383f613fae63cc6807ee0041e1fac885af623414aaa970eb5bd7e3808155",
   "checkpoints/124b-opponent-mana-core.patch": "9b54ab8a43a6329d10785f3accd51b5728fac1c0216e4d660cbc02c4bac0c71c",
-  "checkpoints/124c-opponent-mana-browser.patch": "ebf9cc48bbf1dbb6bfdfaaa27af9a324bb74b307b92de30e7c15fd357d2561be"
+  "checkpoints/124c-opponent-mana-browser.patch": "ebf9cc48bbf1dbb6bfdfaaa27af9a324bb74b307b92de30e7c15fd357d2561be",
+  "checkpoints/124d-release-151.patch": "21cf0b06442d765f4961d2f21187b26fcf5dfb3832e1cd5a0efb213c97231740"
 }
