@@ -1,9 +1,13 @@
 {
-  "testedBuildSHA256": "d4bdbf2a4fb130baf7a6d121f18926da65dad498f3d525ee89bcc15dd213bcf2",
+  "testedBuildSHA256": "df80731064ad44d45832b0e46200cffef229fdefe3b72d42b1665d2d97d7c03f",
   "mode": "HTTP and direct-file Chromium",
-  "uiVersion": "1.5.0",
-  "checksPassed": 803,
+  "uiVersion": "1.5.1",
+  "checksPassed": 807,
   "checks": [
+    "Path battlefield click opens the five commander colors directly without inspector",
+    "Path stays untapped until a color is chosen",
+    "Path color choice taps once and preserves ancestry-tracked mana",
+    "Carpet convenience rate is exposed in settings with the 0.5 default",
     "Esika presents both command-zone faces as real cast options",
     "Bridge cast uses its enchantment face and WUBRG payment",
     "Bridge resolves as an enchantment rather than a green creature",
