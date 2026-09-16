@@ -1,0 +1,30 @@
+diff --git a/src/rules/helpers.js b/src/rules/helpers.js
+index ecb3ad5..dba603c 100644
+--- a/src/rules/helpers.js
++++ b/src/rules/helpers.js
+@@ -24,3 +24,3 @@ export const optional = (key, label, then, otherwise = []) => ({ op: 'optional',
+ export const search = (selector, to = 'hand', extra = {}) => ({ op: 'search', selector: { ...LIB, ...selector }, to, ...extra });
+-export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
++export const mana = (production, extra = {}) => ({ id: 'mana', label: `Add ${Object.entries(production).map(([c, n]) => c.repeat(n)).join('')}`, tap: true, mana: true, ...(!extra.effect?{manaOutput:production}:{}), ...(!extra.effect && Object.values(production).reduce((a,b)=>a+b,0)===1 ? {singleMana:{colors:Object.keys(production).filter(c=>production[c]===1)}} : {}), effect: () => [{ op: 'mana', production }], ...extra });
+ export const countType = (g, type, controller = 0) => g.count({ type, controller });
+diff --git a/src/rules/index.js b/src/rules/index.js
+index 272d603..3403507 100644
+--- a/src/rules/index.js
++++ b/src/rules/index.js
+@@ -1 +1,2 @@
++import {installGods,GODS_POOL} from './gods.js';
+ import { installLatest } from './latest.js';
+@@ -30,3 +31,4 @@ export function createRegistry(definitions) {
+   installLatest(registry);
+-  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION]) {
++  installGods(registry);
++  for (const name of [...ACCEPTED_CARDS, ...ACCEPTED_EXPANSION, ...GODS_POOL]) {
+     if (registry.has(name) && registry.module(name).status === 'implemented') registry.register(name, { status: 'full', notes: 'Accepted for expanded goldfish scope; see the capability and interaction tests.' });
+diff --git a/src/tabletop/attack-selection.js b/src/tabletop/attack-selection.js
+index 34aa4e4..a25447b 100644
+--- a/src/tabletop/attack-selection.js
++++ b/src/tabletop/attack-selection.js
+@@ -20,2 +20,3 @@ export function attackerProblem(g,objectOrId) {
+   if(c.keywords.includes('Defender'))return 'This creature has defender and cannot attack.';
++  if(g.module(o).canAttack&&!g.module(o).canAttack(g,o))return 'This creature’s attack requirement is not met.';
+   if(!g.state.players.some(p=>p.id>0&&!p.lost))return 'There are no remaining opponents to attack.';
