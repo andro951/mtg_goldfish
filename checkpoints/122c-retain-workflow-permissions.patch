@@ -1,0 +1,7 @@
+--- a/.github/workflows/verify.yml
++++ b/.github/workflows/verify.yml
+@@ -69,3 +69,3 @@
+           git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap test-results/performance.json
+-          for report in test-results/release.json test-results/package-verification.json test-results/card-support.json test-results/requested-card-audit.json test-results/esika-card-audit.json test-results/land-click-audit.json; do
++          for report in test-results/release.json test-results/package-verification.json test-results/card-support.json test-results/requested-card-audit.json; do
+             if [ -f "$report" ]; then git add "$report"; fi
