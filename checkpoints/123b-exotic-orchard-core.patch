@@ -1,0 +1,15 @@
+--- a/src/core/deck.js
++++ b/src/core/deck.js
+@@ -69 +69 @@
+-    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true },
++    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true },
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -43 +43 @@
+-      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
++      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls', 'exoticOrchardAllColors'].includes(action.key), 'Unknown setting.');
+--- a/src/rules/gods-mana.js
++++ b/src/rules/gods-mana.js
+@@ -71 +71 @@
+- const orchardColors=(g,s)=>g.opposingLandColors(s,new Set([s.id]));
++ const orchardColors=(g,s)=>g.state.settings.exoticOrchardAllColors!==false?[...anyColor]:g.opposingLandColors(s,new Set([s.id]));
