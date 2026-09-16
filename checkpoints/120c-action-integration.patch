@@ -1,0 +1,99 @@
+diff --git a/src/core/actions.js b/src/core/actions.js
+index 8c71a8b..0f06b80 100644
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -61,8 +61,13 @@ export const actionMethods = {
+     }
++    if(type==='SET_OPPONENT_LANDS'){
++      const player=integer(action.player,1,3),colors=asArray(action.colors);
++      requireRule(unique(colors).length===colors.length&&colors.every(c=>['W','U','B','R','G'].includes(c)),'Choose valid opponent land colors.');
++      this.state.players[player].abstractLandColors=[...colors];this.record('ABSTRACT_LANDS_REPORTED',{player,colors});return;
++    }
+     if (type === 'ADJUST_PLAYER') {
+       const player = integer(action.player ?? 0, 0, 3), field = action.field || 'life';
+-      requireRule(['life', 'poison', 'energy', 'abstractCreatures', 'abstractHand'].includes(field), 'Invalid player field.');
++      requireRule(['life', 'poison', 'energy', 'abstractCreatures', 'abstractHand', 'abstractIslands'].includes(field), 'Invalid player field.');
+       const delta = integer(action.delta, -1000000, 1000000), p = this.state.players[player];
+-      requireRule(field === 'life' || p[field] + delta >= 0, 'This total cannot be negative.');
+-      p[field] += delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
++      requireRule(field === 'life' || (p[field]||0) + delta >= 0, 'This total cannot be negative.');
++      p[field]=(p[field]||0)+delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
+     }
+@@ -232,2 +237,3 @@ export const actionMethods = {
+   inputSpecs(draft) {
++    if(draft.context.inputs.permission!=null&&draft.permissions)draft.permission=draft.permissions.find(p=>p.id===draft.context.inputs.permission);
+     const source = this.object(draft.source), definition = this.draftDefinition(draft), context = draft.context;
+@@ -252,3 +258,3 @@ export const actionMethods = {
+     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
+-      if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
++      if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return', 'putLibrary'].includes(cost.kind)) continue;
+       specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
+@@ -381,3 +387,3 @@ export const actionMethods = {
+       }
+-      if (['sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) for (const id of selected) {
++      if (['sacrifice', 'discard', 'exile', 'return', 'putLibrary'].includes(cost.kind)) for (const id of selected) {
+         const object = this.object(id); requireRule(object, 'A cost object is missing.');
+@@ -385,2 +391,3 @@ export const actionMethods = {
+         if (cost.kind === 'sacrifice') requireRule(object.zone === 'battlefield' && object.controller === 0, 'Only a permanent you control can be sacrificed.');
++        if (cost.kind === 'putLibrary') requireRule(object.zone==='hand'&&object.owner===0,'Put a card from your hand on top of your library.');
+         if (cost.kind === 'discard') requireRule(object.zone === 'hand' && object.owner === 0, 'Only a card in your hand can be discarded.');
+@@ -426,2 +433,3 @@ export const actionMethods = {
+       if (cost.kind === 'exile') this.moveBatch(ids.map(id => ({ id, to: 'exile', cause: 'exile-cost' })));
++      if (cost.kind === 'putLibrary') this.putInLibrary(ids,'top');
+       if (cost.kind === 'return') this.moveBatch(ids.map(id => ({ id, to: 'hand', cause: 'return-cost' })));
+@@ -436,3 +444,3 @@ export const actionMethods = {
+     const definition = this.draftDefinition(draft), sourceBefore = this.object(draft.source);
+-    const label = this.definition(sourceBefore).name + (draft.kind === 'ability' ? ` — ${definition.label || definition.id}` : '');
++    const label = this.definition(draft.permission?.face?{...sourceBefore,face:draft.permission.face}:sourceBefore).name + (draft.kind === 'ability' ? ` — ${definition.label || definition.id}` : '');
+     const paid = this.payDraftCosts(draft, payment);
+@@ -447,3 +455,3 @@ export const actionMethods = {
+     if (draft.kind === 'spell') {
+-      this.moveBatch([{ id: draft.source, to: 'stackCards', cause: 'cast' }]);
++      this.moveBatch([{ id: draft.source, to: 'stackCards', cause: 'cast', ...(draft.permission?.face?{face:draft.permission.face}:{}), ...(draft.permission?.bestow?{flags:{bestowed:true}}:{}) }]);
+       const source = this.object(draft.source.id); source.flags.cast = true; source.flags.castX = draft.context.castX;
+diff --git a/src/core/effects.js b/src/core/effects.js
+index c524ccb..347a451 100644
+--- a/src/core/effects.js
++++ b/src/core/effects.js
+@@ -287,3 +287,4 @@ export const effectMethods = {
+         this.state.castWindow = { cards: ids.map(id => ref(this.object(id))), method: pending.method, cost: pending.cost, label: pending.label };
+-        this.beginCardAction({ type: 'CAST_SPELL', id: ids[0], permission: 'resolution-window', payment: action.payment || 'auto', inputs: action.inputs || {} });
++        const faceChoice=!this._legacyGodsRules&&this.registry.module(this.object(ids[0]).cardId).modalBack;
++        this.beginCardAction({ type: 'CAST_SPELL', id: ids[0], ...(faceChoice?{}:{permission:'resolution-window'}), payment: action.payment || 'auto', inputs: action.inputs || {} });
+         return;
+diff --git a/src/core/expanded-core.js b/src/core/expanded-core.js
+index a1f21a3..ceca5fc 100644
+--- a/src/core/expanded-core.js
++++ b/src/core/expanded-core.js
+@@ -152,3 +152,3 @@ export function installExpandedEngine(Engine){
+    if(draft.kind==='spell'&&this.module(source).improvise)cost.generic=Math.max(0,cost.generic-asArray(input.improvise).length);
+-   return {cost,improviseLimit,context:{kind:draft.kind==='spell'?'spell':'ability',types:c.types,spendAsAny:this.hasStatic('spendAsAny',0)}};
++   return {cost,improviseLimit,context:{kind:draft.kind==='spell'?'spell':'ability',types:c.types,...(!this._legacyGodsRules?{legendary:c.supertypes.includes('Legendary')}:{}),spendAsAny:this.hasStatic('spendAsAny',0)}};
+   },
+diff --git a/src/core/mana.js b/src/core/mana.js
+index aa896c5..528e921 100644
+--- a/src/core/mana.js
++++ b/src/core/mana.js
+@@ -5,2 +5,3 @@ export function parseManaCost(text = '', options = {}) {
+   const cost = { generic: 0, colored: emptyMana(), life: 0, symbols: [] };
++  const hybridIndices={};
+   for (const [, symbol] of String(text).matchAll(/\{([^}]+)\}/g)) {
+@@ -12,3 +13,4 @@ export function parseManaCost(text = '', options = {}) {
+       const parts = symbol.split('/');
+-      const selected = options.hybrid?.[symbol] ?? (parts.includes('P') && options.phyrexianLife ? 'P' : parts[0]);
++      const choice=options.hybrid?.[symbol],index=hybridIndices[symbol]||0;hybridIndices[symbol]=index+1;
++      const selected = (Array.isArray(choice)?choice[index]:choice) ?? (parts.includes('P') && options.phyrexianLife ? 'P' : parts[0]);
+       requireRule(parts.includes(selected), `Invalid payment choice for {${symbol}}.`);
+@@ -32,2 +34,3 @@ export function restrictionAllows(tag, context = {}) {
+   if (tag.restriction === 'artifactSpellOrAbility') return ['spell', 'ability'].includes(context.kind) && context.types?.includes('Artifact');
++  if (tag.restriction === 'legendarySpell') return context.kind === 'spell' && !!context.legendary;
+   if (tag.restriction === 'creatureSpell') return context.kind === 'spell' && context.types?.includes('Creature');
+diff --git a/src/core/selectors.js b/src/core/selectors.js
+index 476049f..1eb6fb2 100644
+--- a/src/core/selectors.js
++++ b/src/core/selectors.js
+@@ -50,2 +50,4 @@ export function matches(engine, idOrObject, selector = {}, context = {}) {
+     if (c.keywords.includes('Protection from everything')) return false;
++    const source=engine.object(context.source)||context.sourceSnapshot;
++    if(source){const colors=(source.characteristics||engine.characteristics(source))?.colors||[];for(const [color,name] of Object.entries({W:'white',U:'blue',B:'black',R:'red',G:'green'}))if(colors.includes(color)&&c.keywords.includes('Protection from '+name))return false;}
+   }
