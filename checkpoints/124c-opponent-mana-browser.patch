@@ -1,0 +1,68 @@
+diff --git a/tests/make_ui_fixtures.mjs b/tests/make_ui_fixtures.mjs
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -125,6 +125,7 @@
+ 
+ // Esika / Gods real-control acceptance.
+ const godsMana={W:30,U:30,B:30,R:30,G:30,C:30};
++save('path-click',{command:[{name:'The Wandering Minstrel',props:{commander:true}}],battlefield:['Path of Ancestry','Carpet of Flowers']});
+ save('gods-esika',{command:[{name:'Esika, God of the Tree',props:{commander:true}}],hand:['Kestia, the Cultivator','Damn',"Arcanist's Owl"],battlefield:['Metalworker'],libraryActive:['Ancient Den','Heliod, Sun-Crowned','Walking Atlas']},{mana:godsMana});
+ save('gods-entry',{hand:['Temple Garden',"Valgavoth's Lair",'Wild Growth'],battlefield:['Azusa, Lost but Seeking','Ancient Den']},{mana:godsMana});
+ save('gods-azcanta',{battlefield:['Search for Azcanta'],graveyard:Array(6).fill('Metalworker'),libraryActive:['Damn','Ancient Den','True Conviction','Walking Atlas']});
+diff --git a/tests/ui_acceptance_gods.py b/tests/ui_acceptance_gods.py
+--- a/tests/ui_acceptance_gods.py
++++ b/tests/ui_acceptance_gods.py
+@@ -2,6 +2,16 @@
+ 
+ def number(p,n):
+  p.locator('#number-choice').fill(str(n));click(p,'confirm-number','[data-floating=decision]')
++
++def carpet_path_convenience(p):
++ fixture(p,'path-click');path=obj(p,'Path of Ancestry');before_history=state(p,'history.length');card(p,path['id'],'battlefield').click()
++ check('Path battlefield click opens the five commander colors directly without inspector',p.locator('.inspector-window').count()==0 and p.locator('.mana-choice').count()==5 and [o['value'] for o in pending(p)['options']]==['W','U','B','R','G'])
++ check('Path stays untapped until a color is chosen',not obj(p,'Path of Ancestry')['tapped'] and state(p,'history.length')==before_history)
++ choose_option(p,'U');tracked=state(p,'state.players[0].restrictedMana')
++ check('Path color choice taps once and preserves ancestry-tracked mana',obj(p,'Path of Ancestry')['tapped'] and len(tracked)==1 and tracked[0]['color']=='U' and tracked[0].get('ancestry') is not None)
++ menu(p,'settings');rate=p.locator('[data-number-setting=carpetIslandsPerTurn]')
++ check('Carpet convenience rate is exposed in settings with the 0.5 default',rate.input_value()=='0.5')
++ close(p)
+ 
+ def gods_faces(p):
+  fixture(p,'gods-esika');hold(p,True)
+diff --git a/tests/browser_tabletop.py b/tests/browser_tabletop.py
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -33,7 +33,7 @@
+ 
+ from ui_acceptance_attackers import attacker_clicks, attacker_guards, attacker_saved_draft
+ 
+-from ui_acceptance_gods import gods_faces,gods_choices,gods_rebuild,gods_persistence
++from ui_acceptance_gods import carpet_path_convenience,gods_faces,gods_choices,gods_rebuild,gods_persistence
+ 
+ server=None
+ if not args.memory:
+@@ -42,7 +42,7 @@
+  with sync_playwright() as pw:
+   path=os.environ.get('CHROMIUM_PATH') or (shutil.which('chromium') if args.memory else None)
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[gods_faces,gods_choices,gods_rebuild,gods_persistence,attacker_clicks,attacker_guards,attacker_saved_draft,mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[carpet_path_convenience,gods_faces,gods_choices,gods_rebuild,gods_persistence,attacker_clicks,attacker_guards,attacker_saved_draft,mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+   for group in groups:
+    context=b.new_context(viewport={'width':1720,'height':900},accept_downloads=True);p=context.new_page();p.set_default_timeout(4500)
+@@ -59,13 +59,13 @@
+   if not args.memory and not args.groups:
+    context=b.new_context();p=context.new_page()
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.5.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.5.1');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+    context.close()
+   b.close()
+ finally:
+  if server:server.terminate();server.wait(timeout=5)
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.5.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.5.1','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+ print(json.dumps({k:report[k] for k in ['mode','checksPassed','failures','browserErrors','externalRequests','skipped']},indent=2))
+ raise SystemExit(bool(failures or errors or requests))
