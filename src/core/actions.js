@@ -59,12 +59,17 @@ export const actionMethods = {
       requireRule(this.state.players[player].mana[color] + amount >= 0, 'Mana cannot be negative.');
       this.state.players[player].mana[color] += amount; this.record('MANUAL_MANA', { player, color, delta: amount }); return;
     }
+    if(type==='SET_OPPONENT_LANDS'){
+      const player=integer(action.player,1,3),colors=asArray(action.colors);
+      requireRule(unique(colors).length===colors.length&&colors.every(c=>['W','U','B','R','G'].includes(c)),'Choose valid opponent land colors.');
+      this.state.players[player].abstractLandColors=[...colors];this.record('ABSTRACT_LANDS_REPORTED',{player,colors});return;
+    }
     if (type === 'ADJUST_PLAYER') {
       const player = integer(action.player ?? 0, 0, 3), field = action.field || 'life';
-      requireRule(['life', 'poison', 'energy', 'abstractCreatures', 'abstractHand'].includes(field), 'Invalid player field.');
+      requireRule(['life', 'poison', 'energy', 'abstractCreatures', 'abstractHand', 'abstractIslands'].includes(field), 'Invalid player field.');
       const delta = integer(action.delta, -1000000, 1000000), p = this.state.players[player];
-      requireRule(field === 'life' || p[field] + delta >= 0, 'This total cannot be negative.');
-      p[field] += delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
+      requireRule(field === 'life' || (p[field]||0) + delta >= 0, 'This total cannot be negative.');
+      p[field]=(p[field]||0)+delta; this.record('MANUAL_PLAYER_TOTAL', { player, field, delta }); return;
     }
     if (type === 'SET_ATTACHMENT_FOLLOW') {
       const object=this.object(action.id);
@@ -230,6 +235,7 @@ export const actionMethods = {
     return costs;
   },
   inputSpecs(draft) {
+    if(draft.context.inputs.permission!=null&&draft.permissions)draft.permission=draft.permissions.find(p=>p.id===draft.context.inputs.permission);
     const source = this.object(draft.source), definition = this.draftDefinition(draft), context = draft.context;
     const specs = [];
     if (['spell', 'land'].includes(draft.kind)) {
@@ -250,7 +256,7 @@ export const actionMethods = {
     // Announcement inputs (modes, targets, X, etc.) are chosen before costs.
     specs.push(...list(definition.inputs, this, source, context));
     if (draft.kind !== 'trigger' && draft.kind !== 'land') for (const [index, cost] of this.draftCosts(draft).entries()) {
-      if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) continue;
+      if (cost.self || !['tap', 'sacrifice', 'discard', 'exile', 'return', 'putLibrary'].includes(cost.kind)) continue;
       specs.push({ key: costKey(cost, index), type: 'select', label: cost.label || `Choose cards to ${cost.kind} as a cost`, selector: cost.selector || {}, min: cost.min ?? cost.count ?? 1, max: cost.max ?? cost.count ?? cost.min ?? 1, cost: true, ...(cost.minTotalPower != null ? { minTotalPower: cost.minTotalPower, crew: !!cost.crew } : {}) });
     }
     // Effect choices that are not modes/targets belong after additional-cost
@@ -379,10 +385,11 @@ export const actionMethods = {
         const object = this.object(id); requireRule(object?.zone === 'battlefield' && !object.tapped && object.controller === 0, 'Tap costs require untapped permanents you control.', 'TAP_COST');
         if (cost.self) requireRule(!this.isSick(object), 'This creature has summoning sickness and cannot pay its tap-symbol cost.', 'SUMMONING_SICKNESS');
       }
-      if (['sacrifice', 'discard', 'exile', 'return'].includes(cost.kind)) for (const id of selected) {
+      if (['sacrifice', 'discard', 'exile', 'return', 'putLibrary'].includes(cost.kind)) for (const id of selected) {
         const object = this.object(id); requireRule(object, 'A cost object is missing.');
         requireRule(!consumed.has(id), 'The same card cannot pay two zone-changing costs.'); consumed.add(id);
         if (cost.kind === 'sacrifice') requireRule(object.zone === 'battlefield' && object.controller === 0, 'Only a permanent you control can be sacrificed.');
+        if (cost.kind === 'putLibrary') requireRule(object.zone==='hand'&&object.owner===0,'Put a card from your hand on top of your library.');
         if (cost.kind === 'discard') requireRule(object.zone === 'hand' && object.owner === 0, 'Only a card in your hand can be discarded.');
       }
       if (cost.kind === 'counter') requireRule((source.counters[cost.type] || 0) + cost.delta >= 0, `Not enough ${cost.type} counters.`, 'COUNTER_COST');
@@ -424,6 +431,7 @@ export const actionMethods = {
       if (cost.kind === 'sacrifice') this.moveBatch(ids.map(id => ({ id, to: 'graveyard', cause: 'sacrifice' })));
       if (cost.kind === 'discard') this.moveBatch(ids.map(id => ({ id, to: 'graveyard', cause: 'discard' })));
       if (cost.kind === 'exile') this.moveBatch(ids.map(id => ({ id, to: 'exile', cause: 'exile-cost' })));
+      if (cost.kind === 'putLibrary') this.putInLibrary(ids,'top');
       if (cost.kind === 'return') this.moveBatch(ids.map(id => ({ id, to: 'hand', cause: 'return-cost' })));
       if (cost.kind === 'counter') this.addCounters(source.id, cost.type, cost.delta, 'cost');
       if (cost.kind === 'life') this.changeLife(0, -cost.amount, 'pay-life');
@@ -434,7 +442,7 @@ export const actionMethods = {
   },
   finishDraft(draft, payment = null) {
     const definition = this.draftDefinition(draft), sourceBefore = this.object(draft.source);
-    const label = this.definition(sourceBefore).name + (draft.kind === 'ability' ? ` — ${definition.label || definition.id}` : '');
+    const label = this.definition(draft.permission?.face?{...sourceBefore,face:draft.permission.face}:sourceBefore).name + (draft.kind === 'ability' ? ` — ${definition.label || definition.id}` : '');
     const paid = this.payDraftCosts(draft, payment);
     if (definition.loyalty != null) { sourceBefore.flags.loyaltyUsed = sourceBefore.flags.loyaltyTurn === this.state.turnSerial ? (sourceBefore.flags.loyaltyUsed || 0) + 1 : 1; sourceBefore.flags.loyaltyTurn = this.state.turnSerial; }
     this.state.pending = null; this.state.actionDraft = null;
@@ -445,7 +453,7 @@ export const actionMethods = {
       this.record('PLOTTED', { source: ref(source) }); return;
     }
     if (draft.kind === 'spell') {
-      this.moveBatch([{ id: draft.source, to: 'stackCards', cause: 'cast' }]);
+      this.moveBatch([{ id: draft.source, to: 'stackCards', cause: 'cast', ...(draft.permission?.face?{face:draft.permission.face}:{}), ...(draft.permission?.bestow?{flags:{bestowed:true}}:{}) }]);
       const source = this.object(draft.source.id); source.flags.cast = true; source.flags.castX = draft.context.castX;
       if(draft.permission?.escape)source.flags.escaped=true;
       if(draft.permission?.warp)source.flags.warped=true;

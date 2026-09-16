@@ -150,7 +150,7 @@ export function installExpandedEngine(Engine){
    }
    const improviseLimit=cost.generic;
    if(draft.kind==='spell'&&this.module(source).improvise)cost.generic=Math.max(0,cost.generic-asArray(input.improvise).length);
-   return {cost,improviseLimit,context:{kind:draft.kind==='spell'?'spell':'ability',types:c.types,spendAsAny:this.hasStatic('spendAsAny',0)}};
+   return {cost,improviseLimit,context:{kind:draft.kind==='spell'?'spell':'ability',types:c.types,...(!this._legacyGodsRules?{legendary:c.supertypes.includes('Legendary')}:{}),spendAsAny:this.hasStatic('spendAsAny',0)}};
   },
   payDraftCosts(draft,payment){
    const tagged=clone(this.state.players[0].restrictedMana);const paid=old.payDraftCosts.call(this,draft,payment);

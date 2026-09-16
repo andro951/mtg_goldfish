@@ -285,7 +285,8 @@ export const effectMethods = {
       if (ids.length) {
         this.state.castParent = frame; this.state.resolving = null;
         this.state.castWindow = { cards: ids.map(id => ref(this.object(id))), method: pending.method, cost: pending.cost, label: pending.label };
-        this.beginCardAction({ type: 'CAST_SPELL', id: ids[0], permission: 'resolution-window', payment: action.payment || 'auto', inputs: action.inputs || {} });
+        const faceChoice=!this._legacyGodsRules&&this.registry.module(this.object(ids[0]).cardId).modalBack;
+        this.beginCardAction({ type: 'CAST_SPELL', id: ids[0], ...(faceChoice?{}:{permission:'resolution-window'}), payment: action.payment || 'auto', inputs: action.inputs || {} });
         return;
       }
     }

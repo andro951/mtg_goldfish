@@ -3,6 +3,7 @@ import { COLORS, emptyMana, integer, requireRule, clone, sum } from './util.js';
 /** Colored/colorless/hybrid/Phyrexian costs; generic reduction never changes MV. */
 export function parseManaCost(text = '', options = {}) {
   const cost = { generic: 0, colored: emptyMana(), life: 0, symbols: [] };
+  const hybridIndices={};
   for (const [, symbol] of String(text).matchAll(/\{([^}]+)\}/g)) {
     cost.symbols.push(symbol);
     if (/^\d+$/.test(symbol)) cost.generic += Number(symbol);
@@ -10,7 +11,8 @@ export function parseManaCost(text = '', options = {}) {
     else if (COLORS.includes(symbol)) cost.colored[symbol]++;
     else if (symbol.includes('/')) {
       const parts = symbol.split('/');
-      const selected = options.hybrid?.[symbol] ?? (parts.includes('P') && options.phyrexianLife ? 'P' : parts[0]);
+      const choice=options.hybrid?.[symbol],index=hybridIndices[symbol]||0;hybridIndices[symbol]=index+1;
+      const selected = (Array.isArray(choice)?choice[index]:choice) ?? (parts.includes('P') && options.phyrexianLife ? 'P' : parts[0]);
       requireRule(parts.includes(selected), `Invalid payment choice for {${symbol}}.`);
       if (selected === 'P') cost.life += 2;
       else if (/^\d+$/.test(selected)) cost.generic += Number(selected);
@@ -30,6 +32,7 @@ export function restrictionAllows(tag, context = {}) {
   if (tag.restriction === 'artifactSpell') return context.kind === 'spell' && context.types?.includes('Artifact');
   if (tag.restriction === 'notNonartifactSpell') return context.kind !== 'spell' || context.types?.includes('Artifact');
   if (tag.restriction === 'artifactSpellOrAbility') return ['spell', 'ability'].includes(context.kind) && context.types?.includes('Artifact');
+  if (tag.restriction === 'legendarySpell') return context.kind === 'spell' && !!context.legendary;
   if (tag.restriction === 'creatureSpell') return context.kind === 'spell' && context.types?.includes('Creature');
   return false;
 }

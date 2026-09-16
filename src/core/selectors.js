@@ -48,6 +48,8 @@ export function matches(engine, idOrObject, selector = {}, context = {}) {
     if (c.keywords.includes('Shroud')) return false;
     if (c.keywords.includes('Hexproof') && object.controller !== (context.controller ?? 0)) return false;
     if (c.keywords.includes('Protection from everything')) return false;
+    const source=engine.object(context.source)||context.sourceSnapshot;
+    if(source){const colors=(source.characteristics||engine.characteristics(source))?.colors||[];for(const [color,name] of Object.entries({W:'white',U:'blue',B:'black',R:'red',G:'green'}))if(colors.includes(color)&&c.keywords.includes('Protection from '+name))return false;}
   }
   if (selector.anyOf && !selector.anyOf.some(s => matches(engine, object, s, context))) return false;
   if (selector.allOf && !selector.allOf.every(s => matches(engine, object, s, context))) return false;
