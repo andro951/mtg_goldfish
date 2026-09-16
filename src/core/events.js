@@ -141,7 +141,9 @@ export const eventMethods = {
     const legalTargets = (object.targets || []).filter(t => t.player != null ? !this.state.players[t.player].lost && !this.playerProtected(t.player, object.controller) : t.stackId ?
       this.state.stack.some(s=>s.id===t.stackId&&(!t.spellOnly||s.kind==='spell')&&(!t.opponent||s.controller!==object.controller)) :
       this.object(t.ref) && this.matches(this.object(t.ref), t.selector, { ...context, controller: object.controller }));
-    if ((object.targets || []).length && !legalTargets.length) {
+    const bestowFallback=object.kind==='spell'&&object.permission?.bestow&&!legalTargets.length;
+    if(bestowFallback){const card=this.object(object.source);if(card){delete card.flags.bestowed;this.touch();}object.permission.bestow=false;object.permission.alternateId=null;}
+    if ((object.targets || []).length && !legalTargets.length&&!bestowFallback) {
       this.record('FIZZLED', { stackId: object.id, label: object.label, reason: 'All targets are illegal.' });
       if (object.kind === 'spell') this.moveBatch([{ id: object.source.id, to: 'graveyard', cause: 'countered-by-rules' }]);
       return;
@@ -153,7 +155,7 @@ export const eventMethods = {
     let definition;
     if (object.kind === 'trigger') definition = this.triggerDefinition(object);
     else if (object.kind === 'ability') definition = this.abilityDefinition(object.sourceCardId,object.abilityId,object.context?.sourceSnapshot);
-    else definition = this.registry.module(object.sourceCardId).spell || {};
+    else definition = this.spellDefinition?this.spellDefinition(object.sourceCardId,object.permission,context):this.registry.module(object.sourceCardId).spell || {};
     if (!definition) throw new Error(`No effect registered for ${object.label}`);
     if (definition.interveningIf && !definition.interveningIf(this, context)) {
       this.record('INTERVENING_IF_FALSE', { stackId: object.id, label: object.label }); return;

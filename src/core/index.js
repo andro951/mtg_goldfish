@@ -1,3 +1,4 @@
+import { installGodsEngine } from './gods-core.js';
 import { pairingMethods } from './pairing.js';
 import { installExpandedEngine } from './expanded-core.js';
 import { sequenceMethods } from './sequences.js';
@@ -9,6 +10,7 @@ import { eventMethods } from './events.js';
 import { phaseMethods } from './phases.js';
 Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, eventMethods, phaseMethods, sequenceMethods, pairingMethods);
 installExpandedEngine(Engine);
+installGodsEngine(Engine);
 export { Engine };
 export { CardRegistry } from './registry.js';
 export { parseDeck, createGameState, validateState, makeInstance } from './deck.js';

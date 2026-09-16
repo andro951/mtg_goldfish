@@ -72,6 +72,7 @@ export const zoneMethods = {
         }
       }
       if (to === 'battlefield') {
+        if(!this._legacyGodsRules)object.flags.continuousTimestamp=this.state.eventSerial+1;
         if(wasCast)Object.assign(object.flags,castFlags);
         object.enteredTurn = this.state.turnSerial; object.controlledSince = this.state.turnSerial;
         object.tapped = proposal.tapped; object.flags.cast = wasCast; object.flags.castX = castX;
@@ -273,7 +274,7 @@ export const zoneMethods = {
   attach(sourceRef, targetRef) {
     const source = this.object(sourceRef), target = targetRef ? this.object(targetRef) : null;
     if (!source || source.zone !== 'battlefield') return;
-    if (target && (target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature'))) return;
+    if (target && (target.zone !== 'battlefield' || !(this.attachmentLegal?this.attachmentLegal(source,target):this.characteristics(target).types.includes('Creature')))) return;
     source.attachedTo = ref(target); this.touch(); this.emit('ATTACHED', { object: ref(source), target: ref(target) });
   },
   checkStateActions() {
@@ -290,9 +291,9 @@ export const zoneMethods = {
       }
       if (object.attachedTo) {
         const target = this.object(object.attachedTo);
-        if (!target || target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature')) { object.attachedTo = null; this.touch(); }
+        if (!target || target.zone !== 'battlefield' || !(this.attachmentLegal?this.attachmentLegal(object,target):this.characteristics(target).types.includes('Creature'))) { object.attachedTo = null; this.touch(); }
       }
-      if (c.subtypes.includes('Aura') && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
+      if (c.subtypes.includes('Aura') && !object.flags.bestowed && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
       if (plus && minus) cancelCounters.push({object:ref(object),amount:Math.min(plus,minus)});
     }

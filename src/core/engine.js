@@ -80,14 +80,18 @@ export class Engine {
           for (const target of all) if (effect.targets ? effect.targets.some(r => sameRef(r, target)) : matches(this, target, effect.selector || {}, { controller: effect.controller }))
             modifications.push({ target, modification: effect.modification });
         }
-        for (const layer of [4, 6, 7.1, 7.2, 7.3, 7.4]) {
+        const continuous=this.continuousRules?.(all,sources,view)||[];
+        for (const layer of [4, 5, 6, 7.1, 7.2, 7.3, 7.4]) {
           if (layer === 4) for (const target of all) {
             if (this.module(target).reconfigure && target.attachedTo) view[target.id].types = view[target.id].types.filter(t => t !== 'Creature');
           }
           if (layer === 7.1) for (const target of all) this.module(target).cda?.(this, target, view[target.id]);
-          for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
-            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
-          for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
+          if(this.applyContinuousLayer&&!this._legacyGodsRules)this.applyContinuousLayer({all,sources,view,statics,modifications,continuous,layer});
+          else {
+            for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
+              for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
+            for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
+          }
           if (layer === 7.3) for (const target of all) this.module(target).characteristics?.(this, target, view[target.id]);
           if (layer === 7.4) for (const target of all) {
             const c = view[target.id], counters = (target.counters['+1/+1'] || 0) - (target.counters['-1/-1'] || 0);
@@ -107,6 +111,10 @@ export class Engine {
       if (modification.removeTypes) c.types = c.types.filter(t => !modification.removeTypes.includes(t));
       if (modification.addSubtypes) c.subtypes = unique([...c.subtypes, ...modification.addSubtypes]);
     }
+    if (layer === 5 && modification.colors) c.colors=[...modification.colors];
+    if (layer === 6 && modification.removeKeywords) c.keywords=c.keywords.filter(k=>!modification.removeKeywords.includes(k));
+    if (layer === 6 && modification.grantedDraw) c.grantedDraw=(c.grantedDraw||0)+modification.grantedDraw;
+    if (layer === 6 && modification.preventAllDamage) c.preventAllDamage=true;
     if (layer === 6 && modification.persistInstances) c.persistInstances = (c.persistInstances || 0) + modification.persistInstances;
     if (layer === 6 && modification.keywords) c.keywords = unique([...c.keywords, ...modification.keywords]);
     if (layer === 7.2) {
@@ -165,7 +173,7 @@ export class Engine {
     if (action?.type === 'UNDO') return this.undo();
     if (action?.type === 'REDO') return this.redo();
     const attemptBefore = this.snapshotState(), newTransaction = !this.transaction;
-    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type, choiceDefaults: 'ask' };
+    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type, choiceDefaults: 'ask', rulesRevision: 2 };
     const previousIntents = this.transaction.intents.length, previousEvents = this.transaction.events.length;
     try {
       requireRule(action && typeof action.type === 'string', 'Invalid action.');
@@ -194,7 +202,7 @@ export class Engine {
     if (patches.length || transaction.events.length) {
       this.history.splice(this.cursor);
       this.history.push({ index: this.cursor + 1, label: transaction.label, actions: transaction.intents, events: transaction.events,
-        patches, choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
+        patches, rulesRevision: transaction.rulesRevision || 2, ...(transaction.legacyRulesIntents?{legacyRulesIntents:transaction.legacyRulesIntents}:{}), choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
         rngBefore: transaction.before.rng.count, rngAfter: this.state.rng.count });
       this.cursor = this.history.length;
     }
@@ -259,6 +267,7 @@ export class Engine {
       const pendingReplay = new Engine(registry, cursorState);
       for (const [i,intent] of document.transaction.intents.entries()) {
         pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask'||i<(document.transaction.legacyIntentCount||0);
+        pendingReplay._legacyGodsRules=document.transaction.rulesRevision!==2||i<(document.transaction.legacyRulesIntents||0);
         pendingReplay.act(intent);
       }
       requireRule(stateHash(pendingReplay.state) === document.stateChecksum, 'Pending choices do not reproduce the session.', 'INVALID_SESSION');
@@ -267,6 +276,7 @@ export class Engine {
     if(engine.transaction&&engine.transaction.choiceDefaults!=='ask'){
       engine.transaction.legacyIntentCount=engine.transaction.intents.length;engine.transaction.choiceDefaults='ask';
     }
+    if(engine.transaction&&engine.transaction.rulesRevision!==2){engine.transaction.legacyRulesIntents=engine.transaction.intents.length;engine.transaction.rulesRevision=2;}
     return engine;
   }
   verifyReplay() {
@@ -274,6 +284,7 @@ export class Engine {
     for (const entry of this.history.slice(0, this.cursor)) {
       for (const [i,action] of entry.actions.entries()) {
         replay._legacyReplayDefaults=entry.choiceDefaults!=='ask'||i<(entry.legacyIntentCount||0);
+        replay._legacyGodsRules=entry.rulesRevision!==2||i<(entry.legacyRulesIntents||0);
         replay.act(action);
       }
       requireRule(stateHash(replay.state) === entry.afterHash, `Replay diverged at action ${entry.index}.`, 'REPLAY_MISMATCH');
