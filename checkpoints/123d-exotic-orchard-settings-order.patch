@@ -1,0 +1,6 @@
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -77 +76,0 @@
+-    body=`<div class="setting-row"><input id="setting-exoticOrchardAllColors" type="checkbox" data-setting="exoticOrchardAllColors" ${s.settings.exoticOrchardAllColors!==false?'checked':''}><label for="setting-exoticOrchardAllColors"><strong>Exotic Orchard: all colors</strong><small>Convenience rule, on by default: treat an opponent as controlling a land that can produce W, U, B, R, or G for Exotic Orchard.</small></label></div>`+body;
+@@ -78,0 +78 @@
++    body=`<div class="setting-row"><input id="setting-exoticOrchardAllColors" type="checkbox" data-setting="exoticOrchardAllColors" ${s.settings.exoticOrchardAllColors!==false?'checked':''}><label for="setting-exoticOrchardAllColors"><strong>Exotic Orchard: all colors</strong><small>Convenience rule, on by default: treat an opponent as controlling a land that can produce W, U, B, R, or G for Exotic Orchard.</small></label></div>`+body;
