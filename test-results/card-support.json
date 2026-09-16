@@ -1,13 +1,16 @@
 {
-  "version": "1.4.10",
+  "version": "1.5.0",
+  "esikaRequestNames": 146,
+  "esikaRequestSupported": 146,
+  "newEsikaNames": 137,
   "latestRequestNames": 177,
   "latestRequestSupported": 177,
-  "supportedNames": 317,
+  "supportedNames": 454,
   "newlySupportedNames": 150,
   "allRequestedNamesSupported": true,
   "allNewNamesHaveFocusedTests": true,
-  "localDefinitions": 348,
-  "localImages": 351,
+  "localDefinitions": 495,
+  "localImages": 501,
   "lists": [
     {
       "name": "List 1",
@@ -55,6 +58,21 @@
       "fixedLands": 34,
       "activeLibrary": 99,
       "reserve": 5,
+      "duplicates": [],
+      "missing": [],
+      "partial": []
+    },
+    {
+      "name": "Revised Esika Gods pool",
+      "file": "esika-gods-pool.txt",
+      "uniqueNames": 146,
+      "copies": 146,
+      "mainCopies": 116,
+      "commanderCopies": 1,
+      "outsideCopies": 29,
+      "fixedLands": 38,
+      "activeLibrary": 99,
+      "reserve": 17,
       "duplicates": [],
       "missing": [],
       "partial": []

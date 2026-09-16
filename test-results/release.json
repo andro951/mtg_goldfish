@@ -1,30 +1,32 @@
 {
   "status": "passed",
-  "version": "1.4.10",
-  "engineTestsPassed": 1170,
-  "browserChecksPassed": 770,
+  "version": "1.5.0",
+  "engineTestsPassed": 1564,
+  "browserChecksPassed": 803,
   "portableChecksPassed": 8,
   "failedOrSkippedChecks": 0,
   "performanceChecksPassed": 6,
-  "landClickCasesPassed": 196,
-  "candidateCards": 317,
-  "localDefinitions": 348,
-  "verifiedLocalImages": 351,
+  "landClickCasesPassed": 332,
+  "candidateCards": 454,
+  "localDefinitions": 495,
+  "verifiedLocalImages": 501,
   "verifiedUIImages": 1,
-  "requestedListsVerified": 3,
+  "requestedListsVerified": 4,
   "allRequestedNamesSupported": true,
   "latestRequestedNames": 177,
   "latestRequestedSupported": 177,
+  "esikaRequestedNames": 146,
+  "esikaRequestedSupported": 146,
   "reproducibleBuilds": [
     {
       "path": "index.html",
-      "bytes": 1674336,
-      "sha256": "b062ea3c8cffcc7191a67259d5a24d03baa0a23192672ce95e96a793777b198f"
+      "bytes": 2103660,
+      "sha256": "d4bdbf2a4fb130baf7a6d121f18926da65dad498f3d525ee89bcc15dd213bcf2"
     },
     {
       "path": "Astra-standalone.html",
-      "bytes": 46855660,
-      "sha256": "e351f4ab7c7db34a0ee3cffe75c7ff1ae183ccfd2a859d26537bc04528acc0f6"
+      "bytes": 66423491,
+      "sha256": "3d2eb4b13219e52f8036cdbdf92dce94207f7969f65c033155887dfeed3a449a"
     }
   ],
   "archive": "dist/AstraSimulator.zip",
