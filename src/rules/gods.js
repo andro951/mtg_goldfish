@@ -148,8 +148,8 @@ export const GODS_POOL=[
  "Selvala, Heart of the Wilds",
  "Leyline of the Guildpact",
  "Penance",
- "Cryptolith Rite",
  "Cascading Cataracts",
+ "Cryptolith Rite",
  "Enduring Innocence"
 ];
 export function installGods(registry){

@@ -15,7 +15,7 @@ export function installGodsLands(r){
  const pool=()=>mana({}, {pool:true,singleMana:{colors:output,key:'color'},effectInputs:(g,s)=>[colorInput('color',output(g,s))],label:'Add one mana of a type a land you control could produce',effect:(g,c)=>[{op:'mana',color:c.inputs.color}]});
  reg(r,'Reflecting Pool',{entersTapped:false,possibleMana:[],replaceActivated:[pool()]});
  reg(r,'Cactus Preserve',{entersTapped:true,possibleMana:[],replaceActivated:[pool(),{id:'animate',cost:'{3}',label:'Become an X/X Plant with reach until end of turn',effect:(g,c)=>{
-  const x=Math.max(0,...Object.values(g.state.instances).filter(o=>o.commander).map(o=>g.characteristics(o).manaValue));
+  const x=Math.max(0,...Object.values(g.state.instances).filter(o=>o.commander&&o.owner===c.controller).map(o=>g.characteristics(o).manaValue));
   return [{op:'modify',ids:ref(g.object(c.source)),modification:{addTypes:['Creature'],addSubtypes:['Plant'],colors:['G'],basePower:x,baseToughness:x,keywords:['Reach']}}];
  }}]});
 }

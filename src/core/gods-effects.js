@@ -104,8 +104,8 @@ export function installGodsEffects(Engine){
    if(this.state.pending?.kind==='godsEntry'){
     const pending=this.state.pending,entry=this.state.godsEntry;
     let chosen;if(entry.kind==='color'){chosen=asArray(value)[0];requireRule(colors.includes(chosen),'Choose a color.');}
-    else {chosen=asArray(value)[0];requireRule(asArray(value).length===1&&pending.candidates.includes(chosen),'Choose a listed permanent.');chosen=ref(this.object(chosen));}
     else if(entry.kind==='shock'){chosen=asArray(value)[0];requireRule(pending.options.some(o=>o.value===chosen),'Choose an entry option.');if(chosen==='pay'){requireRule(this.state.players[entry.player].life>=2,'Not enough life.');this.changeLife(entry.player,-2,'shock-land-cost');}}
+    else {chosen=asArray(value)[0];requireRule(asArray(value).length===1&&pending.candidates.includes(chosen),'Choose a listed permanent.');chosen=ref(this.object(chosen));}
     this.state.pending=null;delete this.state.godsEntry;
     const context=entry.context;context.godsEntryChoices||={};context.godsEntryChoices[entry.id]={...(context.godsEntryChoices[entry.id]||{}),[entry.kind]:chosen};
     this.record('ENTRY_CHOICE',{object:entry.id,kind:entry.kind,value:chosen});const changes=this.moveBatch(entry.moves,context);
@@ -125,6 +125,9 @@ export function installGodsEffects(Engine){
    return old.startAfterKeep.call(this);
   },
   checkStateActions(){
+   // Becoming a noncreature removes an attacker from combat permanently, even
+   // if devotion or another animation effect makes it a creature again later.
+   if(!this._legacyGodsRules)for(const o of this.objects('battlefield'))if(o.flags.attacking&&!this.characteristics(o).types.includes('Creature')){delete o.flags.attacking;this.record('REMOVED_FROM_COMBAT',{object:ref(o),reason:'no-longer-a-creature'});this.touch();}
    for(const o of this.objects('battlefield'))if(o.flags.bestowed){const target=this.object(o.attachedTo);if(!target||target.zone!=='battlefield'||!this.characteristics(target).types.includes('Creature')){o.attachedTo=null;delete o.flags.bestowed;this.touch();}}
    return old.checkStateActions.call(this);
   },
