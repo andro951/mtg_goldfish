@@ -92,7 +92,6 @@
 1 Forbidden Orchard
 1 Transguild Promenade
 1 Rupture Spire
-1 Crystal Quarry
 1 Mirrodin's Core
 1 Exotic Orchard
 1 Serra's Sanctum
@@ -103,7 +102,18 @@
 1 Mana Confluence
 1 Valgavoth's Lair
 1 Hidden Hideout
-1 Cascading Cataracts
+1 Tundra
+1 Temple Garden
+1 Tropical Island
+1 Cactus Preserve
+1 Flooded Strand
+1 Misty Rainforest
+1 Breeding Pool
+1 Great Hall of the Citadel
+1 Reflecting Pool
+1 Savannah
+1 Spara's Headquarters
+1 Windswept Heath
 
 // Commander
 1 Esika, God of the Tree
@@ -130,9 +140,11 @@
 1 Veinwitch Coven
 1 Fanatic of Rhonas
 1 Ramos, Dragon Engine
+1 Crystal Quarry
 1 Blade Historian
 1 Selvala, Heart of the Wilds
 1 Leyline of the Guildpact
 1 Penance
+1 Cascading Cataracts
 1 Cryptolith Rite
 1 Enduring Innocence
