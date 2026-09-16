@@ -22,7 +22,8 @@ export function installGodsEngine(Engine){
    const source=this.object(value);if(!source||source.zone!=='battlefield'||!this.characteristics(source).types.includes('Land')||visited.has(source.id))return [];
    const seen=new Set(visited).add(source.id),module=this.module(source);
    const outputs=[];
-   for(const ability of this.abilities(source).filter(a=>a.mana)){
+   for(const ability of this.abilities(source,{ignoreAvailability:true}).filter(a=>a.mana)){
+    if(ability.pool){outputs.push(...this.controlled(source.controller).flatMap(o=>this.couldProduceColors(o,seen)));continue;}
     if(ability.orchard){outputs.push(...this.opposingLandColors(source,seen));continue;}
     const exact=ability.singleMana?.colors,declared=exact??ability.manaColors;
     if(declared){outputs.push(...(typeof declared==='function'?declared(this,source):declared));continue;}
@@ -30,11 +31,11 @@ export function installGodsEngine(Engine){
     // Legacy land modules have static output metadata; no effect is executed.
     outputs.push(...(module.possibleMana||[]));
    }
-   return unique(outputs.filter(c=>colors.includes(c)));
+   return unique(outputs.filter(c=>[...colors,'C'].includes(c)));
   },
   opposingLandColors(source,visited=new Set()){
    return unique(this.state.players.filter(p=>p.id!==source.controller&&!p.lost).flatMap(p=>[
-    ...(p.abstractLandColors||[]),...this.objects('battlefield').filter(o=>o.controller===p.id&&this.characteristics(o).types.includes('Land')).flatMap(o=>this.couldProduceColors(o,visited))
+    ...(p.abstractLandColors||[]),...this.objects('battlefield').filter(o=>o.controller===p.id&&this.characteristics(o).types.includes('Land')).flatMap(o=>this.couldProduceColors(o,visited).filter(c=>colors.includes(c)))
    ]));
   },
   islandCount(player){return this.count({zones:['battlefield'],controller:player,land:true,subtype:'Island'})+(this.state.players[player].abstractIslands||0);},

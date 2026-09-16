@@ -79,7 +79,7 @@ ct('Amalia Benavides Aguirre','ward is a life payment and does not silently pay 
  const g=game({battlefield:['Thassa, Deep-Dwelling',{name:'Amalia Benavides Aguirre',owner:1,controller:1}]},{mana:manaAll()});ability(g,'Thassa, Deep-Dwelling','tap',{target:[id(g,'Amalia Benavides Aguirre')]});assert.equal(g.state.stack.length,2);resolve(g);assert.ok(g.state.pending);choose(g,'decline');drain(g);assert.ok(!g.object(id(g,'Amalia Benavides Aguirre')).tapped);assert.equal(g.state.players[0].life,40);roundTrip(g);
 });
 ct('Well of Lost Dreams','bounds X by life gained and spends the chosen generic mana before drawing',()=>{
- const g=game({battlefield:['Well of Lost Dreams']},{mana:{C:2}});gainLife(g);resolve(g);assert.equal(g.state.pending.max,2);assert.equal(g.perform({type:'CHOOSE',value:3}).ok,false);choose(g,2);choose(g,'pay');assert.equal(g.state.zones.hand.length,2);assert.equal(g.state.players[0].mana.C,0);roundTrip(g);
+ const g=game({battlefield:['Well of Lost Dreams']},{mana:{C:2}});gainLife(g);resolve(g);choose(g,'YES');assert.equal(g.state.pending.max,2);assert.equal(g.perform({type:'CHOOSE',value:3}).ok,false);choose(g,2);choose(g,'pay');assert.equal(g.state.zones.hand.length,2);assert.equal(g.state.players[0].mana.C,0);roundTrip(g);
 });
 ct('Veinwitch Coven','optional black payment returns a targeted creature to hand, not the battlefield',()=>{
  const g=game({battlefield:['Veinwitch Coven'],graveyard:['Metalworker']},{mana:{B:1}});gainLife(g);choose(g,[id(g,'Metalworker')]);resolve(g);choose(g,'pay');assert.ok(id(g,'Metalworker','hand'));assert.equal(g.state.players[0].mana.B,0);roundTrip(g);

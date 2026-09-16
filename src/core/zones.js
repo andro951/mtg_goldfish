@@ -19,7 +19,7 @@ export const zoneMethods = {
       if (proposal.to === 'battlefield') {
         const module = this.module(object);
         if (module.entersTapped) proposal.tapped = true;
-        if (module.entryTapped) proposal.tapped=!!module.entryTapped(this,object,context);
+        if (module.entryTapped) proposal.tapped=!!move.tapped||!!module.entryTapped(this,object,context);
         const replacements = beforeSources.flatMap(source => (this.module(source).replacements || []).map(rule => ({ source, rule })))
           .filter(({ source, rule }) => rule.match(this, source, object, proposal, context));
         for (const effect of this.state.effects.filter(e => e.kind === 'landsEnterTapped' && e.controller === (move.controller ?? object.owner)))

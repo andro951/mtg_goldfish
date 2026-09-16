@@ -28,6 +28,15 @@ export function installGodsEffects(Engine){
      this.state.godsEntry={moves,context:clone(context),id:o.id,kind:'color'};
      this.state.pending={kind:'godsEntry',type:'option',label:`${c.name} — choose a color as it enters`,min:1,max:1,options:colors.map(value=>({value,label:value}))};return null;
     }
+    if(mod.shockLand){
+     const choice=auraChoices[o.id]?.shock;
+     if(choice===undefined){
+      const cost=2,owner=m.controller??o.owner;
+      this.state.godsEntry={moves,context:clone(context),id:o.id,kind:'shock',player:owner};
+      this.state.pending={kind:'godsEntry',type:'option',label:`${c.name} — pay 2 life as it enters?`,min:1,max:1,options:[{value:'tapped',label:'Do not pay (enter tapped)'},...(this.state.players[owner].life>=cost?[{value:'pay',label:'Pay 2 life'}]:[])]};return null;
+     }
+     if(choice==='tapped')m.tapped=true;
+    }
     if(c.subtypes.includes('Aura')||entrant.flags.bestowed){
      const target=auraChoices[o.id]?.target||m.attachedTo||(o.zone==='stackCards'&&asArray(context.inputs.target)[0]);
      if(target){const t=this.object(target);if(t&&this.attachmentLegal({...entrant,attachedTo:ref(t)},t)){m.attachedTo=ref(t);continue;}if(entrant.flags.bestowed){delete m.flags.bestowed;continue;}}
@@ -96,6 +105,7 @@ export function installGodsEffects(Engine){
     const pending=this.state.pending,entry=this.state.godsEntry;
     let chosen;if(entry.kind==='color'){chosen=asArray(value)[0];requireRule(colors.includes(chosen),'Choose a color.');}
     else {chosen=asArray(value)[0];requireRule(asArray(value).length===1&&pending.candidates.includes(chosen),'Choose a listed permanent.');chosen=ref(this.object(chosen));}
+    else if(entry.kind==='shock'){chosen=asArray(value)[0];requireRule(pending.options.some(o=>o.value===chosen),'Choose an entry option.');if(chosen==='pay'){requireRule(this.state.players[entry.player].life>=2,'Not enough life.');this.changeLife(entry.player,-2,'shock-land-cost');}}
     this.state.pending=null;delete this.state.godsEntry;
     const context=entry.context;context.godsEntryChoices||={};context.godsEntryChoices[entry.id]={...(context.godsEntryChoices[entry.id]||{}),[entry.kind]:chosen};
     this.record('ENTRY_CHOICE',{object:entry.id,kind:entry.kind,value:chosen});const changes=this.moveBatch(entry.moves,context);

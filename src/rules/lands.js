@@ -50,7 +50,7 @@ export function installLands(registry) {
   })] });
   registry.registerHandler('lands.saga-grant', (g, ctx, cmd) => { const source = g.object(ctx.source); if (source) source.flags[cmd.flag] = true; return []; });
   register(registry, 'Urza\'s Saga', { saga: 3, possibleMana: ['C'], activated: [
-    mana({ C: 1 }, { available: (g, s) => !!s.flags.sagaMana }),
+    mana({ C: 1 }, { exists: (g, s) => !!s.flags.sagaMana, available: (g, s) => !!s.flags.sagaMana }),
     { id: 'construct', label: 'Create a Construct', cost: '{2}', tap: true, available: (g, s) => !!s.flags.sagaConstruct, effect: () => [{ op: 'token', card: 'Construct' }] },
   ], triggers: [
     { id: 'chapter-1', label: 'I — Gain a colorless mana ability', event: 'SAGA_LORE', test: (g, s, e) => sameRef(s, e.object) && e.from < 1 && e.to >= 1, effect: () => [{ op: 'call', handler: 'lands.saga-grant', flag: 'sagaMana' }] },

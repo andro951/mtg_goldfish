@@ -1,3 +1,4 @@
+import {installGodsLands} from './gods-lands.js';
 import {installGodsShared} from './gods-shared.js';
 import {installGodsMana} from './gods-mana.js';
 import {installGodsEnchantments} from './gods-enchantments.js';
@@ -98,7 +99,6 @@ export const GODS_POOL=[
  "Forbidden Orchard",
  "Transguild Promenade",
  "Rupture Spire",
- "Crystal Quarry",
  "Mirrodin's Core",
  "Exotic Orchard",
  "Serra's Sanctum",
@@ -109,7 +109,18 @@ export const GODS_POOL=[
  "Mana Confluence",
  "Valgavoth's Lair",
  "Hidden Hideout",
- "Cascading Cataracts",
+ "Tundra",
+ "Temple Garden",
+ "Tropical Island",
+ "Cactus Preserve",
+ "Flooded Strand",
+ "Misty Rainforest",
+ "Breeding Pool",
+ "Great Hall of the Citadel",
+ "Reflecting Pool",
+ "Savannah",
+ "Spara's Headquarters",
+ "Windswept Heath",
  "Esika, God of the Tree",
  "Relive the Past",
  "Whip of Erebos",
@@ -132,13 +143,15 @@ export const GODS_POOL=[
  "Veinwitch Coven",
  "Fanatic of Rhonas",
  "Ramos, Dragon Engine",
+ "Crystal Quarry",
  "Blade Historian",
  "Selvala, Heart of the Wilds",
  "Leyline of the Guildpact",
  "Penance",
  "Cryptolith Rite",
+ "Cascading Cataracts",
  "Enduring Innocence"
 ];
 export function installGods(registry){
- installGodsShared(registry);installGodsMana(registry);installGodsEnchantments(registry);installGodsLife(registry);installGodsSpells(registry);
+ installGodsShared(registry);installGodsMana(registry);installGodsEnchantments(registry);installGodsLife(registry);installGodsSpells(registry);installGodsLands(registry);
 }

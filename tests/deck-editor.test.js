@@ -16,7 +16,7 @@ test('visual deck model preserves supplied quantities and sections',()=>{
 });
 
 test('database search is candidate-only and filters text, type, color and sort',()=>{
-  assert.equal(supportedCards(registry).length,445);
+  assert.equal(supportedCards(registry).length,454);
   assert.deepEqual(supportedCards(registry,{query:'mox opal'}).map(c=>c.name),['Mox Opal']);
   assert(supportedCards(registry,{type:'Land'}).every(c=>c.types.includes('Land')));
   assert(supportedCards(registry,{color:'U'}).every(c=>c.colorIdentity.includes('U')));

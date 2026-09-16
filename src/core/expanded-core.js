@@ -36,7 +36,7 @@ export function installExpandedEngine(Engine){
    const o=typeof value==='string'?this.object(value):value;if(!o)return {};
    return modeModule(this,o.copy?.rulesId||o.cardId,o);
   },
-  abilities(value){
+  abilities(value,{ignoreAvailability=false}={}){
    const o=typeof value==='string'?this.object(value):value;if(!o)return [];
    const abilities=[...(this.module(o).activated||[])];
    if(o.zone==='battlefield'){
@@ -47,7 +47,7 @@ export function installExpandedEngine(Engine){
     const printed=this.registry.get(o.cardId).subtypes||[];
     if(inherent.length&&c.subtypes.some(t=>basicTypes[t]&&!printed.includes(t)))abilities.push(this.registry.grantedAbilities.get('intrinsic-basic-mana'));
    }
-   return abilities.filter(a=>a&&(a.zone||'battlefield')===o.zone&&(!a.available||a.available(this,o)));
+   return abilities.filter(a=>a&&(a.zone||'battlefield')===o.zone&&(!a.exists||a.exists(this,o))&&(ignoreAvailability||!a.available||a.available(this,o)));
   },
   abilityDefinition(cardId,id,snapshot){return this.registry.grantedAbilities?.get(id)||(modeModule(this,cardId,snapshot).activated||[]).find(a=>a.id===id);},
   landAllowance(player=0){let n=old.landAllowance.call(this,player);for(const s of this.objects('battlefield'))n+=Number(this.module(s).globalExtraLands)||0;return n;},
