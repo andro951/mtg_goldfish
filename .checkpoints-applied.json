@@ -148,5 +148,7 @@
   "checkpoints/121b-tracked-and-opponent-mana.patch": "79762dda3ba72806cf0838908ee3e840bdccf9b230cc9f70e66545550f1ab343",
   "checkpoints/121c-revised-land-mechanics.patch": "05f6e21cadf3b86e3fa2168b702c8ac4694242305c94b9a06d0a7d77ba679bf6",
   "checkpoints/121d-entry-combat-correction.patch": "3d360e63d904cc86503f527b93cb8af1319af0cd4022640a405d86278ae25f4b",
-  "checkpoints/122a-esika-ui-release.patch": "19574e40c5aa03446227295769906bf9f71fe3e774add2f9c57642bd5de27a46"
+  "checkpoints/122a-esika-ui-release.patch": "19574e40c5aa03446227295769906bf9f71fe3e774add2f9c57642bd5de27a46",
+  "checkpoints/122b-esika-release-verification.patch": "cfc90dfc391786489598e8bf7fe1f7247180b895ac1242fb17be490b330bfdbe",
+  "checkpoints/122c-retain-workflow-permissions.patch": "967090de23fa39ed68ec4f96809aa65638adcd723240a88c5c0565d83d0edd28"
 }

@@ -39,8 +39,8 @@ def browser_report(path: str) -> dict:
 cards = read_json('data/cards.json')
 assets = read_json('data/assets-manifest.json')
 ui_assets = read_json('data/ui-assets.json')
-require(sum(bool(c.get('candidate')) for c in cards) == 317, 'Expected exactly 317 candidates.')
-require(len(cards) == 348 and len(assets) == 351, 'Expected 348 definitions and 351 local card/face images.')
+require(sum(bool(c.get('candidate')) for c in cards) == 454, 'Expected exactly 454 candidates.')
+require(len(cards) == 495 and len(assets) == 501, 'Expected 495 definitions and 501 local card/face images.')
 for name, entry in {**assets, **ui_assets}.items():
     contents = safe_file(name).read_bytes()
     require(len(contents) == entry['bytes'] and digest(contents) == entry['sha256'], f'Asset mismatch: {name}')
@@ -65,14 +65,14 @@ def total(label: str) -> int:
     require(len(matches) == 1, f'Missing or ambiguous test total: {label}')
     return int(matches[0])
 engine_tests = total('tests')
-require(engine_tests >= 1170 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+require(engine_tests >= 1564 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
 for label in ('fail', 'cancelled', 'skipped', 'todo'):
     require(total(label) == 0, f'Engine test {label} must be zero.')
 browser = browser_report('test-results/browser.json')
 portable = browser_report('test-results/portable.json')
 require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
-require(browser.get('uiVersion') == '1.4.10', 'The tested UI must be the compact tabletop, not the retired interface.')
-require(browser['checksPassed'] >= 765, 'Browser regression suite is incomplete.')
+require(browser.get('uiVersion') == '1.5.0', 'The tested UI must be the compact tabletop, not the retired interface.')
+require(browser['checksPassed'] >= 798, 'Browser regression suite is incomplete.')
 
 require(browser.get('testedBuildSHA256') == digest(safe_file('index.html').read_bytes()), 'Browser report belongs to a different build.')
 require(portable.get('uiVersion') == read_json('package.json')['version'], 'Portable report is for an older release.')
@@ -86,7 +86,8 @@ subprocess.run(['node', 'tools/verify-card-support.mjs'], cwd=ROOT, check=True)
 support = read_json('test-results/card-support.json')
 subprocess.run(['node', 'tools/verify-land-clicks.mjs'], cwd=ROOT, check=True)
 land_clicks = read_json('test-results/land-click-audit.json')
-require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 49 and land_clicks['cases'] == 196, 'Land click audit is incomplete.')
+require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 83 and land_clicks['cases'] == 332, 'Land click audit is incomplete.')
+require(support['esikaRequestNames'] == support['esikaRequestSupported'] == 146, 'Revised Esika pool is incomplete.')
 require(support['allRequestedNamesSupported'] and support['allNewNamesHaveFocusedTests'], 'Requested card support is incomplete.')
 
 builds = []
@@ -106,7 +107,7 @@ report = {
     'status': 'passed', 'version': read_json('package.json')['version'],
     'engineTestsPassed': engine_tests, 'browserChecksPassed': browser['checksPassed'],
     'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']), 'landClickCasesPassed': land_clicks['cases'],
-    'candidateCards': 317, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'],
+    'candidateCards': 454, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'], 'esikaRequestedNames': support['esikaRequestNames'], 'esikaRequestedSupported': support['esikaRequestSupported'],
     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
     'scope': 'supplied-pool goldfish; abstract opponents, automatic unblocked combat damage, no blocker AI',
 }
@@ -120,7 +121,7 @@ for folder in ('src', 'data', 'assets', 'tools', 'tests', 'docs', '.github', 'ch
     for path in (ROOT / folder).rglob('*'):
         if path.is_file() and '__pycache__' not in path.parts and path.suffix not in ('.pyc', '.log'):
             names.add(path.relative_to(ROOT).as_posix())
-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json'):
+for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json', 'esika-card-audit.json'):
     names.add('test-results/' + name)
 for path in (OUT / 'screenshots').glob('*.png'):
     if not path.name.startswith('FAIL-'):

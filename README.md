@@ -1,4 +1,14 @@
-# Astra 1.4.10 — The Goldfish Lab
+# Astra 1.5.0 — The Goldfish Lab
+
+## Revised Esika / Gods pool (1.5.0)
+
+The revised **146-card Esika list** is implemented with canonical card data and local images. This adds 137 names to the previous catalog for **454 supported candidates**. Load **Esika · Revised 146-card Gods pool** from the deck editor's preset menu. Its 116 main-pool cards, Esika commander and 29 outside-the-game cards are preserved exactly; the goldfish harness selects 99 active cards and leaves 17 main-pool cards in reserve. Your existing saved deck is not replaced automatically.
+
+Esika's two cast faces have separate choices and costs, including commander tax. Shared mechanics include devotion and God creature status, enchantment animation, bestow, hybrid mana, overload, lifegain thresholds, Enduring returns, transform faces, tutors, board wipes and reanimation. The revised lands include typed fetches, optional shock-land life payments, mana filters and dynamic mana types. New prompts use the existing movable decision and Look windows, and optional effects start at Ask.
+
+All 146 requested names have a passing focused rules test in addition to registry and legal-entry checks. The release includes `test-results/esika-card-audit.json`, listing each name, section, metadata status and passing scenarios. The old 177-card request remains supported. See `docs/esika-150.md` for controls, compatibility and scope.
+
+Export your session before upgrading, close the older tab, and import it into the new version as needed. The simulator remains a goldfish table with abstract opponents and no blocker AI. Opponent choices such as payments and discard types are reported explicitly rather than guessed. Existing attachment following, attacker-click selection, merged mana selectors, floating Look, responsive grids, loyalty overlays and incremental autosave are retained.
 
 ## Click creatures to select attackers (1.4.10)
 
