@@ -1,0 +1,78 @@
+diff --git a/src/core/gods-core.js b/src/core/gods-core.js
+--- a/src/core/gods-core.js
++++ b/src/core/gods-core.js
+@@ -24,7 +24,7 @@
+    const outputs=[];
+    for(const ability of this.abilities(source,{ignoreAvailability:true}).filter(a=>a.mana)){
+     if(ability.pool){outputs.push(...this.controlled(source.controller).flatMap(o=>this.couldProduceColors(o,seen)));continue;}
+-    if(ability.orchard){outputs.push(...this.opposingLandColors(source,seen));continue;}
++    if(ability.orchard){outputs.push(...(this.state.settings.exoticOrchardAllColors!==false?colors:this.opposingLandColors(source,seen)));continue;}
+     const exact=ability.singleMana?.colors,declared=exact??ability.manaColors;
+     if(declared){outputs.push(...(typeof declared==='function'?declared(this,source):declared));continue;}
+     if(ability.manaOutput){outputs.push(...Object.entries(ability.manaOutput).filter(([,n])=>n>0).map(([c])=>c));continue;}
+diff --git a/src/rules/gods-mana.js b/src/rules/gods-mana.js
+--- a/src/rules/gods-mana.js
++++ b/src/rules/gods-mana.js
+@@ -1,7 +1,7 @@
+ import {ref,sameRef,asArray,clone,unique,requireRule} from '../core/util.js';
+ import {BF,GY,HAND,anyColor,colorInput,options,mana,draw,move,choose,search,etb,upkeep,endStep,target,selfSacrifice,selfExile,discardCost,sacrifice,tapOthers,playerTarget} from './helpers.js';
+ import {registerG as reg,call,token,god,ownCreature,keywords,creatures,enchants,power} from './gods-shared.js';
+-const identity=(g,p=0)=>unique(Object.values(g.state.instances).filter(o=>o.commander&&o.owner===p).flatMap(o=>g.registry.get(o.cardId).colorIdentity));
++const identity=(g,p=0)=>{const found=new Set(Object.values(g.state.instances).filter(o=>o.commander&&o.owner===p).flatMap(o=>g.registry.get(o.cardId).colorIdentity));return anyColor.filter(c=>found.has(c));};
+ const single=(extra={})=>mana({}, {singleMana:{colors:anyColor,key:'color'},effectInputs:[colorInput()],label:'Add one mana of any color',effect:(g,c)=>[{op:'mana',color:c.inputs.color}],...extra});
+ const quantity=(label,amount,color='color',extra={})=>mana({}, {label,manaColors:(g,s)=>(color==='color'?anyColor:[color]).filter(v=>amount(g,g.context(s,{inputs:{color:v}}))>0),effectInputs:color==='color'?[colorInput()]:[],effect:(g,c)=>[{op:'mana',color:color==='color'?c.inputs.color:color,amount:amount(g,c)}],...extra});
+ const commandMana=single({singleMana:{colors:(g,s)=>identity(g,s.controller),key:'color'},effectInputs:(g,s)=>[colorInput('color',identity(g,s.controller))]});
+diff --git a/tests/carpet-path-convenience.test.js b/tests/carpet-path-convenience.test.js
+--- a/tests/carpet-path-convenience.test.js
++++ b/tests/carpet-path-convenience.test.js
+@@ -23,6 +23,15 @@
+  assert.deepEqual([2,3,4,5].map(turn=>carpetAmount(turn,0.5,2)),[2,3,3,4]);
+ });
+ 
++test('Carpet of Flowers adds the estimate only to the selected opponent’s actually modeled Islands',()=>{
++ const g=fixture({battlefield:['Carpet of Flowers',{name:'Tundra',owner:1,controller:1},{name:'Tropical Island',owner:2,controller:2},{name:"Spara's Headquarters",owner:2,controller:2}]});
++ g.state.controllerTurns=[5,0,0,0];
++ const source=g.object(id(g,'Carpet of Flowers')),handler=registry.handlers.get('gods.carpet');
++ const amount=player=>(handler(g,{controller:0,source:ref(source),inputs:{player},vars:{carpetColor:'G'}})[0]?.amount??0);
++ assert.equal(amount(1),3); // one real Island + floor((5 - 1) * 0.5)
++ assert.equal(amount(2),4); // two real Islands + the same estimate
++});
++
+ test('Carpet of Flowers accepts fractional rates, persists them, and uses the cumulative total',()=>{
+  const g=fixture({battlefield:['Carpet of Flowers']});
+  g.act({type:'SET_SETTING',key:'carpetIslandsPerTurn',value:'0.75'});
+@@ -45,7 +54,7 @@
+ });
+ 
+ test('Path of Ancestry is a direct mana click and opens its commander-color picker',()=>{
+- const g=fixture({battlefield:['Path of Ancestry'],command:['The Wandering Minstrel']});
++ const g=fixture({battlefield:['Path of Ancestry'],command:[{name:'The Wandering Minstrel',props:{commander:true}}]});
+  const path=id(g,'Path of Ancestry'),access=cardActions(g,path);
+  assert.equal(access.displayAbilities.length,1);
+  assert.equal(access.showAbilities,false);
+@@ -57,6 +66,10 @@
+  assert.equal(g.object(path).tapped,false);
+  g.act({type:'CHOOSE',value:'U'});
+  assert.equal(g.object(path).tapped,true);
+- assert.equal(g.state.players[0].mana.U,1);
++ assert.equal(g.state.players[0].mana.U,0);
++ assert.equal(g.state.players[0].restrictedMana.length,1);
++ assert.equal(g.state.players[0].restrictedMana[0].color,'U');
++ assert.equal(g.state.players[0].restrictedMana[0].amount,1);
++ assert.ok(g.state.players[0].restrictedMana[0].ancestry);
+  roundTrip(g);
+ });
+diff --git a/tests/gods-lands.test.js b/tests/gods-lands.test.js
+--- a/tests/gods-lands.test.js
++++ b/tests/gods-lands.test.js
+@@ -35,8 +35,8 @@
+  const f=game({battlefield:['Cactus Preserve',{...cmd,props:{...cmd.props,face:1}}]},{mana:{C:3}});ability(f,'Cactus Preserve','animate');resolve(f);assert.equal(ch(f,'Cactus Preserve').power,5);roundTrip(f);
+ });
+ ct('Exotic Orchard','reads opponent lands including mana grants, not merely static printed metadata',()=>{
+- const g=game({battlefield:['Exotic Orchard',{name:'Darksteel Citadel',owner:1,controller:1},{name:'Chromatic Lantern',owner:1,controller:1}]});assert.equal(g.couldProduceColors(id(g,'Exotic Orchard')).length,5);ability(g,'Exotic Orchard','mana',{color:'R'});assert.equal(g.state.players[0].mana.R,1);roundTrip(g);
+- const f=game({battlefield:['Exotic Orchard',{name:'Exotic Orchard',owner:1,controller:1}]});assert.deepEqual(f.couldProduceColors(id(f,'Exotic Orchard')),[]);roundTrip(f);
++ const g=game({battlefield:['Exotic Orchard',{name:'Darksteel Citadel',owner:1,controller:1},{name:'Chromatic Lantern',owner:1,controller:1}]});g.act({type:'SET_SETTING',key:'exoticOrchardAllColors',value:false});assert.equal(g.couldProduceColors(id(g,'Exotic Orchard')).length,5);ability(g,'Exotic Orchard','mana',{color:'R'});assert.equal(g.state.players[0].mana.R,1);roundTrip(g);
++ const f=game({battlefield:['Exotic Orchard',{name:'Exotic Orchard',owner:1,controller:1}]});f.act({type:'SET_SETTING',key:'exoticOrchardAllColors',value:false});assert.deepEqual(f.couldProduceColors(id(f,'Exotic Orchard')),[]);roundTrip(f);
+ });
+ for(const name of ['Archway Commons','Transguild Promenade','Rupture Spire','Gateway Plaza'])ct(name,'enters tapped and is sacrificed unless the entry payment is paid',()=>{
+  const g=game({hand:[name]});play(g,name);drain(g);assert.ok(id(g,name,'graveyard'));roundTrip(g);
