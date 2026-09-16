@@ -44,7 +44,7 @@ export const actionMethods = {
       this.state.optionalPreferences[key] = value; this.record('OPTIONAL_POLICY', { key, value }); return;
     }
     if (type === 'SET_SETTING') {
-      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
+      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls', 'exoticOrchardAllColors'].includes(action.key), 'Unknown setting.');
       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
     }
     if (type === 'NOTE') {

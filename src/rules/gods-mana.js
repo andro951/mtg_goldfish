@@ -65,6 +65,6 @@ export function installGodsMana(r){
  reg(r,'Valgavoth\'s Lair',{entersTapped:true,chooseEntryColor:true,possibleMana:anyColor,replaceActivated:[single({singleMana:{colors:(g,s)=>s.flags.chosenColor?[s.flags.chosenColor]:[],key:'color'},effectInputs:(g,s)=>[colorInput('color',s.flags.chosenColor?[s.flags.chosenColor]:[])],available:(g,s)=>!!s.flags.chosenColor})]});
  reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:null,ancestry:true,manaColors:(g,s)=>identity(g,s.controller),label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})]});
  reg(r,'Forbidden Orchard',{possibleMana:anyColor,replaceActivated:[single()],triggers:[{id:'spirit',label:'Target opponent creates a 1/1 Spirit',event:'LAND_TAPPED_FOR_MANA',test:(g,s,e)=>sameRef(s,e.object),inputs:[playerTarget('player',true)],effect:(g,c)=>[token('Spirit',{player:c.inputs.player,colors:[],keywords:[],types:['Creature'],subtypes:['Spirit'],power:1,toughness:1})]}]});
- const orchardColors=(g,s)=>g.opposingLandColors(s,new Set([s.id]));
+ const orchardColors=(g,s)=>g.state.settings.exoticOrchardAllColors!==false?[...anyColor]:g.opposingLandColors(s,new Set([s.id]));
  reg(r,'Exotic Orchard',{possibleMana:anyColor,replaceActivated:[single({orchard:true,singleMana:{colors:orchardColors,key:'color'},label:'Add a color an opponent’s lands could produce',effectInputs:(g,s)=>[colorInput('color',orchardColors(g,s))]})]});
 }
