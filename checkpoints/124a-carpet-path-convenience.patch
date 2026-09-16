@@ -7,7 +7,7 @@ diff --git a/src/core/deck.js b/src/core/deck.js
 diff --git a/src/core/actions.js b/src/core/actions.js
 --- a/src/core/actions.js
 +++ b/src/core/actions.js
-@@ -43,3 +43,9 @@
+@@ -43,4 +43,9 @@
      if (type === 'SET_SETTING') {
 +      if (action.key === 'carpetIslandsPerTurn') {
 +        const value = Number(action.value);
@@ -39,7 +39,7 @@ diff --git a/src/rules/gods-mana.js b/src/rules/gods-mana.js
 diff --git a/src/tabletop/dialogs.js b/src/tabletop/dialogs.js
 --- a/src/tabletop/dialogs.js
 +++ b/src/tabletop/dialogs.js
-@@ -78,1 +78,3 @@
+@@ -78,2 +78,4 @@
      body=`<div class="setting-row"><input id="setting-exoticOrchardAllColors" type="checkbox" data-setting="exoticOrchardAllColors" ${s.settings.exoticOrchardAllColors!==false?'checked':''}><label for="setting-exoticOrchardAllColors"><strong>Exotic Orchard: all colors</strong><small>Convenience rule, on by default: treat an opponent as controlling a land that can produce W, U, B, R, or G for Exotic Orchard.</small></label></div>`+body;
 +    const carpetRate=Number.isFinite(Number(s.settings.carpetIslandsPerTurn))?Number(s.settings.carpetIslandsPerTurn):0.5;
 +    body=`<div class="setting-row"><label class="grow" for="setting-carpetIslandsPerTurn"><strong>Carpet of Flowers: Islands per turn</strong><small>Default 0.5. The cumulative assumption is rounded down for Carpet only: your turn 2 = 0, turn 3 = 1, turn 4 = 1, turn 5 = 2.</small></label><input id="setting-carpetIslandsPerTurn" type="number" min="0" max="1000" step="any" data-number-setting="carpetIslandsPerTurn" value="${h(String(carpetRate))}"></div>`+body;
@@ -47,14 +47,14 @@ diff --git a/src/tabletop/dialogs.js b/src/tabletop/dialogs.js
 diff --git a/src/tabletop/app.js b/src/tabletop/app.js
 --- a/src/tabletop/app.js
 +++ b/src/tabletop/app.js
-@@ -393,0 +394,1 @@
+@@ -393,1 +393,2 @@
 + if(el.dataset.numberSetting){run({type:'SET_SETTING',key:el.dataset.numberSetting,value:el.value});return;}
   if(el.dataset.setting){const r=run({type:'SET_SETTING',key:el.dataset.setting,value:el.checked});if(r.ok&&['holdPriority','orderTriggers','manualControls'].includes(el.dataset.setting)){prefs[el.dataset.setting]=el.checked;savePreferences();}}
 diff --git a/tests/carpet-path-convenience.test.js b/tests/carpet-path-convenience.test.js
 new file mode 100644
 --- /dev/null
 +++ b/tests/carpet-path-convenience.test.js
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,62 @@
 +import test from 'node:test';
 +import assert from 'node:assert/strict';
 +import {fixture,id,registry,roundTrip} from './helpers.js';
