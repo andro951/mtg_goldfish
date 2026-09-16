@@ -3,6 +3,16 @@ from ui_acceptance_support import *
 def number(p,n):
  p.locator('#number-choice').fill(str(n));click(p,'confirm-number','[data-floating=decision]')
 
+def carpet_path_convenience(p):
+ fixture(p,'path-click');path=obj(p,'Path of Ancestry');before_history=state(p,'history.length');card(p,path['id'],'battlefield').click()
+ check('Path battlefield click opens the five commander colors directly without inspector',p.locator('.inspector-window').count()==0 and p.locator('.mana-choice').count()==5 and [o['value'] for o in pending(p)['options']]==['W','U','B','R','G'])
+ check('Path stays untapped until a color is chosen',not obj(p,'Path of Ancestry')['tapped'] and state(p,'history.length')==before_history)
+ choose_option(p,'U');tracked=state(p,'state.players[0].restrictedMana')
+ check('Path color choice taps once and preserves ancestry-tracked mana',obj(p,'Path of Ancestry')['tapped'] and len(tracked)==1 and tracked[0]['color']=='U' and tracked[0].get('ancestry') is not None)
+ menu(p,'settings');rate=p.locator('[data-number-setting=carpetIslandsPerTurn]')
+ check('Carpet convenience rate is exposed in settings with the 0.5 default',rate.input_value()=='0.5')
+ close(p)
+
 def gods_faces(p):
  fixture(p,'gods-esika');hold(p,True)
  cast(p,'Esika, God of the Tree','command')

@@ -125,6 +125,7 @@ save('click-attack-main',{battlefield:['Walking Atlas','Metalworker','Ancient De
 
 // Esika / Gods real-control acceptance.
 const godsMana={W:30,U:30,B:30,R:30,G:30,C:30};
+save('path-click',{command:[{name:'The Wandering Minstrel',props:{commander:true}}],battlefield:['Path of Ancestry','Carpet of Flowers']});
 save('gods-esika',{command:[{name:'Esika, God of the Tree',props:{commander:true}}],hand:['Kestia, the Cultivator','Damn',"Arcanist's Owl"],battlefield:['Metalworker'],libraryActive:['Ancient Den','Heliod, Sun-Crowned','Walking Atlas']},{mana:godsMana});
 save('gods-entry',{hand:['Temple Garden',"Valgavoth's Lair",'Wild Growth'],battlefield:['Azusa, Lost but Seeking','Ancient Den']},{mana:godsMana});
 save('gods-azcanta',{battlefield:['Search for Azcanta'],graveyard:Array(6).fill('Metalworker'),libraryActive:['Damn','Ancient Den','True Conviction','Walking Atlas']});
