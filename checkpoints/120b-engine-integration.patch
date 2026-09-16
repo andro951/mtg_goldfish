@@ -1,0 +1,99 @@
+diff --git a/src/core/engine.js b/src/core/engine.js
+index 390619b..41ab2f9 100644
+--- a/src/core/engine.js
++++ b/src/core/engine.js
+@@ -82,3 +82,4 @@ export class Engine {
+         }
+-        for (const layer of [4, 6, 7.1, 7.2, 7.3, 7.4]) {
++        const continuous=this.continuousRules?.(all,sources,view)||[];
++        for (const layer of [4, 5, 6, 7.1, 7.2, 7.3, 7.4]) {
+           if (layer === 4) for (const target of all) {
+@@ -87,5 +88,8 @@ export class Engine {
+           if (layer === 7.1) for (const target of all) this.module(target).cda?.(this, target, view[target.id]);
+-          for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
+-            for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
+-          for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
++          if(this.applyContinuousLayer&&!this._legacyGodsRules)this.applyContinuousLayer({all,sources,view,statics,modifications,continuous,layer});
++          else {
++            for (const { source, rule } of statics.filter(x => (x.rule.layer === 7 || !x.rule.layer ? 7.3 : x.rule.layer) === layer))
++              for (const target of all) if (!rule.match || rule.match(this, source, target, view[target.id])) rule.apply(this, source, target, view[target.id]);
++            for (const { target, modification } of modifications) this.applyCharacteristicModification(view[target.id], modification, layer);
++          }
+           if (layer === 7.3) for (const target of all) this.module(target).characteristics?.(this, target, view[target.id]);
+@@ -109,2 +113,6 @@ export class Engine {
+     }
++    if (layer === 5 && modification.colors) c.colors=[...modification.colors];
++    if (layer === 6 && modification.removeKeywords) c.keywords=c.keywords.filter(k=>!modification.removeKeywords.includes(k));
++    if (layer === 6 && modification.grantedDraw) c.grantedDraw=(c.grantedDraw||0)+modification.grantedDraw;
++    if (layer === 6 && modification.preventAllDamage) c.preventAllDamage=true;
+     if (layer === 6 && modification.persistInstances) c.persistInstances = (c.persistInstances || 0) + modification.persistInstances;
+@@ -167,3 +175,3 @@ export class Engine {
+     const attemptBefore = this.snapshotState(), newTransaction = !this.transaction;
+-    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type, choiceDefaults: 'ask' };
++    if (newTransaction) this.transaction = { before: attemptBefore, intents: [], events: [], label: action.type, choiceDefaults: 'ask', rulesRevision: 2 };
+     const previousIntents = this.transaction.intents.length, previousEvents = this.transaction.events.length;
+@@ -196,3 +204,3 @@ export class Engine {
+       this.history.push({ index: this.cursor + 1, label: transaction.label, actions: transaction.intents, events: transaction.events,
+-        patches, choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
++        patches, rulesRevision: transaction.rulesRevision || 2, ...(transaction.legacyRulesIntents?{legacyRulesIntents:transaction.legacyRulesIntents}:{}), choiceDefaults: transaction.choiceDefaults || 'ask', ...(transaction.legacyIntentCount?{legacyIntentCount:transaction.legacyIntentCount}:{}), beforeHash: stateHash(transaction.before), afterHash: stateHash(this.state),
+         rngBefore: transaction.before.rng.count, rngAfter: this.state.rng.count });
+@@ -261,2 +269,3 @@ export class Engine {
+         pendingReplay._legacyReplayDefaults=document.transaction.choiceDefaults!=='ask'||i<(document.transaction.legacyIntentCount||0);
++        pendingReplay._legacyGodsRules=document.transaction.rulesRevision!==2||i<(document.transaction.legacyRulesIntents||0);
+         pendingReplay.act(intent);
+@@ -269,2 +278,3 @@ export class Engine {
+     }
++    if(engine.transaction&&engine.transaction.rulesRevision!==2){engine.transaction.legacyRulesIntents=engine.transaction.intents.length;engine.transaction.rulesRevision=2;}
+     return engine;
+@@ -276,2 +286,3 @@ export class Engine {
+         replay._legacyReplayDefaults=entry.choiceDefaults!=='ask'||i<(entry.legacyIntentCount||0);
++        replay._legacyGodsRules=entry.rulesRevision!==2||i<(entry.legacyRulesIntents||0);
+         replay.act(action);
+diff --git a/src/core/events.js b/src/core/events.js
+index 6492ec3..bea4df0 100644
+--- a/src/core/events.js
++++ b/src/core/events.js
+@@ -143,3 +143,5 @@ export const eventMethods = {
+       this.object(t.ref) && this.matches(this.object(t.ref), t.selector, { ...context, controller: object.controller }));
+-    if ((object.targets || []).length && !legalTargets.length) {
++    const bestowFallback=object.kind==='spell'&&object.permission?.bestow&&!legalTargets.length;
++    if(bestowFallback){const card=this.object(object.source);if(card){delete card.flags.bestowed;this.touch();}object.permission.bestow=false;object.permission.alternateId=null;}
++    if ((object.targets || []).length && !legalTargets.length&&!bestowFallback) {
+       this.record('FIZZLED', { stackId: object.id, label: object.label, reason: 'All targets are illegal.' });
+@@ -155,3 +157,3 @@ export const eventMethods = {
+     else if (object.kind === 'ability') definition = this.abilityDefinition(object.sourceCardId,object.abilityId,object.context?.sourceSnapshot);
+-    else definition = this.registry.module(object.sourceCardId).spell || {};
++    else definition = this.spellDefinition?this.spellDefinition(object.sourceCardId,object.permission,context):this.registry.module(object.sourceCardId).spell || {};
+     if (!definition) throw new Error(`No effect registered for ${object.label}`);
+diff --git a/src/core/index.js b/src/core/index.js
+index 13fff83..642dbb3 100644
+--- a/src/core/index.js
++++ b/src/core/index.js
+@@ -1 +1,2 @@
++import { installGodsEngine } from './gods-core.js';
+ import { pairingMethods } from './pairing.js';
+@@ -11,2 +12,3 @@ Object.assign(Engine.prototype, actionMethods, zoneMethods, effectMethods, event
+ installExpandedEngine(Engine);
++installGodsEngine(Engine);
+ export { Engine };
+diff --git a/src/core/zones.js b/src/core/zones.js
+index 2a1b9c7..aaaf54e 100644
+--- a/src/core/zones.js
++++ b/src/core/zones.js
+@@ -74,2 +74,3 @@ export const zoneMethods = {
+       if (to === 'battlefield') {
++        if(!this._legacyGodsRules)object.flags.continuousTimestamp=this.state.eventSerial+1;
+         if(wasCast)Object.assign(object.flags,castFlags);
+@@ -275,3 +276,3 @@ export const zoneMethods = {
+     if (!source || source.zone !== 'battlefield') return;
+-    if (target && (target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature'))) return;
++    if (target && (target.zone !== 'battlefield' || !(this.attachmentLegal?this.attachmentLegal(source,target):this.characteristics(target).types.includes('Creature')))) return;
+     source.attachedTo = ref(target); this.touch(); this.emit('ATTACHED', { object: ref(source), target: ref(target) });
+@@ -292,5 +293,5 @@ export const zoneMethods = {
+         const target = this.object(object.attachedTo);
+-        if (!target || target.zone !== 'battlefield' || !this.characteristics(target).types.includes('Creature')) { object.attachedTo = null; this.touch(); }
++        if (!target || target.zone !== 'battlefield' || !(this.attachmentLegal?this.attachmentLegal(object,target):this.characteristics(target).types.includes('Creature'))) { object.attachedTo = null; this.touch(); }
+       }
+-      if (c.subtypes.includes('Aura') && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
++      if (c.subtypes.includes('Aura') && !object.flags.bestowed && !object.attachedTo && !death.some(m => m.id.id === object.id)) death.push({ id: ref(object), to: 'graveyard', cause: 'unattached-aura' });
+       const plus = object.counters['+1/+1'] || 0, minus = object.counters['-1/-1'] || 0;
