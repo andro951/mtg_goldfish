@@ -1,0 +1,124 @@
+--- a/package.json
++++ b/package.json
+@@ -2,6 +2,6 @@
+   "name": "astra-mtg-goldfish",
+-  "version": "1.4.10",
++  "version": "1.5.0",
+   "private": true,
+   "type": "module",
+-  "description": "Offline rules-aware 317-card MTG goldfish laboratory",
++  "description": "Offline rules-aware 454-card MTG goldfish laboratory",
+   "engines": { "node": ">=22" },
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -592,3 +592,3 @@
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.4.10'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.5.0'};
+ async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -59,3 +59,3 @@
+   if(!ui.modal)return '';
+-  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.4.10';narrow=true;body=menuBody(ctx);}
++  if(ui.modal==='menu'){title='Astra';sub='The Goldfish Lab · 1.5.0';narrow=true;body=menuBody(ctx);}
+   else if(ui.modal==='combat'){
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -35,2 +35,4 @@
+ 
++from ui_acceptance_gods import gods_faces,gods_choices,gods_rebuild,gods_persistence
++
+ server=None
+@@ -42,3 +44,3 @@
+   b=pw.chromium.launch(**({'executable_path':path} if path else {}),args=['--no-sandbox'])
+-  groups=[attacker_clicks,attacker_guards,attacker_saved_draft,mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
++  groups=[gods_faces,gods_choices,gods_rebuild,gods_persistence,attacker_clicks,attacker_guards,attacker_saved_draft,mana_union,mana_union_payment,mana_union_grants,look_popup,arrival_grids,attachment_controls,attachment_groups,attachment_persistence,soulbond_connections,ask_loyalty,journal_persistence,arrivals,arrival_sources,latest_controls,notes_focus_race,opening,mana,payments,recursion,libraries,triggers,special,inspector_choices,menus,geometry,panels,persistence,responsive,extra_controls,phase_controls,grid_organization,order_large,player_defaults,auto_selection,sequence_editor,player_automation,stack_shortcuts,multi_auto_selection,raft_resolution_sequences,sequence_controls,new_controls_persistence,rule_edit_validation,interaction_performance,expansion_controls,expansion_payments,expansion_arrows,expansion_lists,expansion_suspend,expansion_mechanics,expansion_combat,vault_ability_access,special_lands_access,granted_ability_access,ability_button_geometry,grid_resize_visual,deck_text_editor]
+   if args.groups:groups=[g for g in groups if g.__name__ in args.groups.split(',')]
+@@ -59,3 +61,3 @@
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.4.10');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.5.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+@@ -65,3 +67,3 @@
+  if server:server.terminate();server.wait(timeout=5)
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.4.10','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.5.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -33,5 +33,5 @@
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.4.10')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.5.0')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+-        check('all 351 card/face images and the real Magic back are embedded', count == 352)
++        check('all 501 card/face images and the real Magic back are embedded', count == 502)
+         image_report = page.evaluate('''async () => {
+@@ -63,3 +63,3 @@
+ 
+-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.4.10', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.5.0', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+ OUT.mkdir(parents=True, exist_ok=True)
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -3,3 +3,3 @@
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.4.10')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.5.0')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+--- a/tests/ui_acceptance_menus.py
++++ b/tests/ui_acceptance_menus.py
+@@ -4,3 +4,3 @@
+  menu(p);check('rare actions live under a single Menu',p.locator('.app-menu-grid button').count()==12)
+- click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 317 candidates',p.locator('.registry-card').count()==317)
++ click(p,'dialog','.modal','[data-dialog=cards]');check('registry includes all 454 candidates',p.locator('.registry-card').count()==454)
+  p.locator('#card-search').fill('Minstrel');check('registry search keeps focus and filters',p.locator('.registry-card').count()==1 and p.locator('#card-search').input_value()=='Minstrel');p.locator('.registry-card button').click();check('enlarged card shows canonical text',p.locator('.oracle').inner_text().startswith('Lands you control'));click(p,'zoom-back','.modal')
+@@ -8,3 +8,3 @@
+  shot(p,'07-card-registry.png');close(p);menu(p,'deck')
+- check('visual deck editor exposes all 317 supported cards',p.locator('.deck-browser-card').count()==317)
++ check('visual deck editor exposes all 454 supported cards',p.locator('.deck-browser-card').count()==454)
+  check('deck editor opens with supplied section counts',p.locator('[data-deck-drop=main] b').inner_text()=='119' and p.locator('[data-deck-drop=command] b').inner_text()=='1' and p.locator('[data-deck-drop=outside] b').inner_text()=='41');shot(p,'10-deck-editor.png')
+--- a/tests/ui_acceptance_expansion.py
++++ b/tests/ui_acceptance_expansion.py
+@@ -56,3 +56,3 @@
+ def expansion_lists(p):
+- menu(p,'deck');check('visual editor includes the complete 317-card union',p.locator('.deck-browser-card').count()==317)
++ menu(p,'deck');check('visual editor includes the complete 454-card union',p.locator('.deck-browser-card').count()==454)
+  for name in ['Thrasios, Triton Hero','Captain Kathryn Janeway','Omni-Cheese Pizza','Transmute Artifact','Gifts Ungiven','Mox Jasper','Perennial Behemoth']:
+--- a/tests/make_ui_fixtures.mjs
++++ b/tests/make_ui_fixtures.mjs
+@@ -124 +124,10 @@
+ save('click-attack-main',{battlefield:['Walking Atlas','Metalworker','Ancient Den'],libraryActive:[]},{step:'main1'});
++
++// Esika / Gods real-control acceptance.
++const godsMana={W:30,U:30,B:30,R:30,G:30,C:30};
++save('gods-esika',{command:[{name:'Esika, God of the Tree',props:{commander:true}}],hand:['Kestia, the Cultivator','Damn',"Arcanist's Owl"],battlefield:['Metalworker'],libraryActive:['Ancient Den','Heliod, Sun-Crowned','Walking Atlas']},{mana:godsMana});
++save('gods-entry',{hand:['Temple Garden',"Valgavoth's Lair",'Wild Growth'],battlefield:['Azusa, Lost but Seeking','Ancient Den']},{mana:godsMana});
++save('gods-azcanta',{battlefield:['Search for Azcanta'],graveyard:Array(6).fill('Metalworker'),libraryActive:['Damn','Ancient Den','True Conviction','Walking Atlas']});
++save('gods-market',{battlefield:['Black Market Connections'],libraryActive:['Ancient Den']},{step:'draw'});
++save('gods-wrath',{battlefield:['Enduring Vitality','Metalworker','Heliod, Sun-Crowned',{name:'Walking Atlas',owner:1,controller:1}],hand:['Wrath of God','Dance of the Manse']},{mana:godsMana});
++save('gods-well',{battlefield:['Well of Lost Dreams','Zuran Orb','Ancient Den']},{mana:{C:2}});
+--- a/tools/build.mjs
++++ b/tools/build.mjs
+@@ -23,6 +23,6 @@
+ const embedded=standalone?Object.fromEntries([...new Set([...cards.flatMap(c=>[c.image,c.backImage].filter(Boolean)),...Object.keys(JSON.parse(read('data/ui-assets.json')))])].map(p=>[p,'data:image/jpeg;base64,'+fs.readFileSync(path.join(root,p)).toString('base64')])):null;
+-const deckPresets=[{id:'expanded',label:'List 1 · Expanded pool',text:read('data/decks/expanded-pool.txt')},{id:'refined',label:'List 2 · Refined pool',text:read('data/decks/refined-pool.txt')},{id:'september-13',label:'13 September · Requested 177-card pool',text:read('data/decks/2026-09-13-pool.txt')}];
++const deckPresets=[{id:'expanded',label:'List 1 · Expanded pool',text:read('data/decks/expanded-pool.txt')},{id:'refined',label:'List 2 · Refined pool',text:read('data/decks/refined-pool.txt')},{id:'september-13',label:'13 September · Requested 177-card pool',text:read('data/decks/2026-09-13-pool.txt')},{id:'esika-gods',label:'Esika · Revised 146-card Gods pool',text:read('data/decks/esika-gods-pool.txt')}];
+ const payload=JSON.stringify({cards,pool,deckPresets,deckText:read('data/candidate-pool.txt')}).replace(/</g,'\\u003c');
+ const runtime=`(()=>{'use strict';const factories={${[...modules].map(([id,s])=>`${JSON.stringify(id)}:(module,exports,require)=>{\n${s}\n}`).join(',\n')}};const cache={};function require(id){if(cache[id])return cache[id].exports;if(!factories[id])throw new Error('Missing module '+id);const module=cache[id]={exports:{}};factories[id](module,module.exports,require);return module.exports;}require('src/tabletop/app.js');})();`;
+-const html=`<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: file:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="description" content="An offline, rules-aware Magic goldfish laboratory for the supported 317-card pool."><title>Astra · The Goldfish Lab</title><link rel="icon" href="data:,"><style>${read('src/tabletop/styles.css')}</style></head><body><div id="app"><div class="starting">Opening your laboratory…</div></div><div id="overlay"></div><noscript>JavaScript is required. No network connection is needed.</noscript><script>${embedded?`window.ASTRA_IMAGES=${JSON.stringify(embedded)};`:""}window.ASTRA_DATA=${payload};</script><script>${runtime.replace(/<\/script/gi,'<\\/script')}</script></body></html>\n`;
++const html=`<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: file:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="description" content="An offline, rules-aware Magic goldfish laboratory for the supported 454-card pool."><title>Astra · The Goldfish Lab</title><link rel="icon" href="data:,"><style>${read('src/tabletop/styles.css')}</style></head><body><div id="app"><div class="starting">Opening your laboratory…</div></div><div id="overlay"></div><noscript>JavaScript is required. No network connection is needed.</noscript><script>${embedded?`window.ASTRA_IMAGES=${JSON.stringify(embedded)};`:""}window.ASTRA_DATA=${payload};</script><script>${runtime.replace(/<\/script/gi,'<\\/script')}</script></body></html>\n`;
+ const output=standalone?'Astra-standalone.html':'index.html';
+--- a/tests/benchmark_browser.py
++++ b/tests/benchmark_browser.py
+@@ -20,3 +20,3 @@
+   browser=pw.chromium.launch(args=['--no-sandbox'])
+-  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_4_10',ROOT/'index.html')]:
++  for label,file in [('before_1_4_5',Path(args.baseline)),('after_1_5_0',ROOT/'index.html')]:
+    context=browser.new_context(viewport={'width':1366,'height':768});page=context.new_page();page.set_default_timeout(15000)
+@@ -48,3 +48,3 @@
+ finally:server.terminate();server.wait(timeout=5)
+-a,b=reports['before_1_4_5'],reports['after_1_4_10']
++a,b=reports['before_1_4_5'],reports['after_1_5_0']
+ checks={'both_used_real_indexeddb':a['storageMode']==b['storageMode']=='indexeddb',
