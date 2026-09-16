@@ -1,0 +1,22 @@
+diff --git a/tests/card-acceptance.test.js b/tests/card-acceptance.test.js
+--- a/tests/card-acceptance.test.js
++++ b/tests/card-acceptance.test.js
+@@ -14 +14 @@
+-  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
++  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales','Metalworker'], libraryActive:library});
+@@ -86,0 +87,5 @@
++      if(card.name==='Cleric Class'&&ability.id==='level-3')g.state.instances.subject.flags.classLevel=2;
++      if(card.name==='Ramos, Dragon Engine')g.state.instances.subject.counters['+1/+1']=5;
++      if(card.name==="Valgavoth's Lair")g.state.instances.subject.flags.chosenColor='G';
++      if(card.name==='Hidden Hideout')for(const o of g.objects('battlefield'))if(g.characteristics(o).types.includes('Creature'))o.counters['+1/+1']=1;
++      if(card.name==='Exotic Orchard')g.object(g.state.zones.battlefield.find(id=>g.definition(g.object(id)).name==='Tree of Tales')).controller=1;
+--- a/tests/deck-editor.test.js
++++ b/tests/deck-editor.test.js
+@@ -19 +19 @@
+-  assert.equal(supportedCards(registry).length,317);
++  assert.equal(supportedCards(registry).length,445);
+--- a/tests/integrity.test.js
++++ b/tests/integrity.test.js
+@@ -82 +82 @@
+-  assert.equal(cards.filter(c=>c.candidate).length,317);assert.equal(g.state.zones.libraryActive.length,99);
++  assert.equal(cards.filter(c=>c.candidate).length,445);assert.equal(g.state.zones.libraryActive.length,99);
