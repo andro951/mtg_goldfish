@@ -1,0 +1,87 @@
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -41,4 +41,4 @@
+ ui_assets = read_json('data/ui-assets.json')
+-require(sum(bool(c.get('candidate')) for c in cards) == 317, 'Expected exactly 317 candidates.')
+-require(len(cards) == 348 and len(assets) == 351, 'Expected 348 definitions and 351 local card/face images.')
++require(sum(bool(c.get('candidate')) for c in cards) == 454, 'Expected exactly 454 candidates.')
++require(len(cards) == 495 and len(assets) == 501, 'Expected 495 definitions and 501 local card/face images.')
+ for name, entry in {**assets, **ui_assets}.items():
+@@ -67,3 +67,3 @@
+ engine_tests = total('tests')
+-require(engine_tests >= 1170 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
++require(engine_tests >= 1564 and total('pass') == engine_tests, 'Engine acceptance is incomplete.')
+ for label in ('fail', 'cancelled', 'skipped', 'todo'):
+@@ -73,4 +73,4 @@
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.4.10', 'The tested UI must be the compact tabletop, not the retired interface.')
+-require(browser['checksPassed'] >= 765, 'Browser regression suite is incomplete.')
++require(browser.get('uiVersion') == '1.5.0', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser['checksPassed'] >= 798, 'Browser regression suite is incomplete.')
+ 
+@@ -88,3 +88,4 @@
+ land_clicks = read_json('test-results/land-click-audit.json')
+-require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 49 and land_clicks['cases'] == 196, 'Land click audit is incomplete.')
++require(land_clicks['status'] == 'passed' and land_clicks['catalogLands'] == 83 and land_clicks['cases'] == 332, 'Land click audit is incomplete.')
++require(support['esikaRequestNames'] == support['esikaRequestSupported'] == 146, 'Revised Esika pool is incomplete.')
+ require(support['allRequestedNamesSupported'] and support['allNewNamesHaveFocusedTests'], 'Requested card support is incomplete.')
+@@ -108,3 +109,3 @@
+     'portableChecksPassed': portable['checksPassed'], 'failedOrSkippedChecks': 0, 'performanceChecksPassed': len(performance['checks']), 'landClickCasesPassed': land_clicks['cases'],
+-    'candidateCards': 317, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'],
++    'candidateCards': 454, 'localDefinitions': len(cards), 'verifiedLocalImages': len(assets), 'verifiedUIImages': len(ui_assets), 'requestedListsVerified': len(support['lists']), 'allRequestedNamesSupported': True, 'latestRequestedNames': support['latestRequestNames'], 'latestRequestedSupported': support['latestRequestSupported'], 'esikaRequestedNames': support['esikaRequestNames'], 'esikaRequestedSupported': support['esikaRequestSupported'],
+     'reproducibleBuilds': builds, 'archive': 'dist/AstraSimulator.zip',
+@@ -122,3 +123,3 @@
+             names.add(path.relative_to(ROOT).as_posix())
+-for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json'):
++for name in ('build.json', 'build-standalone.json', 'browser.json', 'portable.json', 'engine.tap', 'release.json', 'card-support.json', 'requested-card-audit.json', 'performance.json', 'land-click-audit.json', 'esika-card-audit.json'):
+     names.add('test-results/' + name)
+--- a/tools/verify-card-support.mjs
++++ b/tools/verify-card-support.mjs
+@@ -9,3 +9,3 @@
+ const cards=JSON.parse(read('data/cards.json')),registry=createRegistry(cards),names=new Set(),reports=[];
+-for(const [name,file] of [['List 1','expanded-pool.txt'],['List 2','refined-pool.txt'],['13 September request','2026-09-13-pool.txt']]){
++for(const [name,file] of [['List 1','expanded-pool.txt'],['List 2','refined-pool.txt'],['13 September request','2026-09-13-pool.txt'],['Revised Esika Gods pool','esika-gods-pool.txt']]){
+  const {records,errors}=parseDeck(read('data/decks/'+file));assert.equal(errors.length,0);
+@@ -16,3 +16,3 @@
+ }
+-assert.equal(names.size,317);assert.equal(cards.filter(c=>c.candidate).length,317);
++assert.equal(names.size,454);assert.equal(cards.filter(c=>c.candidate).length,454);
+ for(const n of names){const c=registry.get(n);assert.equal(c.candidate,true);assert.equal(registry.module(c.id).status,'full');assert.ok(fs.existsSync(path.join(root,c.image)));}
+@@ -26,3 +26,13 @@
+ fs.writeFileSync(path.join(root,'test-results/requested-card-audit.json'),JSON.stringify(audit,null,2)+'\n');
+-const out={version:JSON.parse(read('package.json')).version,latestRequestNames:latest.length,latestRequestSupported:latestReport.supported.length,supportedNames:317,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
++const esika=parseDeck(read('data/decks/esika-gods-pool.txt')).records,esikaReport=registry.report(esika);
++assert.equal(esika.length,146);assert.equal(esikaReport.supported.length,146);
++const esikaAudit=esika.map(row=>{
++ const c=registry.get(row.name),prefix='gods rules: '+row.name+' |';
++ const focused=tap.split('\n').filter(line=>/^ok \d+ - /.test(line)&&line.includes(prefix)).map(line=>line.slice(line.indexOf(prefix)+prefix.length).trim());
++ assert.ok(focused.length,'Missing passing focused test: '+row.name);assert.equal(c.metadataStatus,'canonical');
++ assert.ok(tap.split('\n').some(line=>/^ok \d+ - /.test(line)&&line.endsWith('card acceptance: '+c.name+' — metadata and legal entry')),'Missing passing legal-entry test: '+row.name);
++ return {name:row.name,pool:row.pool,quantity:row.quantity,rulesStatus:registry.module(c.id).status,metadataStatus:c.metadataStatus,localImage:c.image,focusedTestsPassed:focused.length,focusedTests:focused};
++});
++fs.writeFileSync(path.join(root,'test-results/esika-card-audit.json'),JSON.stringify(esikaAudit,null,2)+'\n');
++const out={version:JSON.parse(read('package.json')).version,esikaRequestNames:esika.length,esikaRequestSupported:esikaReport.supported.length,newEsikaNames:137,latestRequestNames:latest.length,latestRequestSupported:latestReport.supported.length,supportedNames:454,newlySupportedNames:newCards.length,allRequestedNamesSupported:true,allNewNamesHaveFocusedTests:true,localDefinitions:cards.length,localImages:Object.keys(JSON.parse(read('data/assets-manifest.json'))).length,lists:reports};
+ fs.writeFileSync(path.join(root,'test-results/card-support.json'),JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out,null,2));
+--- a/.github/workflows/verify.yml
++++ b/.github/workflows/verify.yml
+@@ -69,3 +69,3 @@
+           git add index.html test-results/build.json test-results/build-standalone.json test-results/browser.json test-results/portable.json test-results/engine.tap test-results/performance.json
+-          for report in test-results/release.json test-results/package-verification.json test-results/card-support.json test-results/requested-card-audit.json; do
++          for report in test-results/release.json test-results/package-verification.json test-results/card-support.json test-results/requested-card-audit.json test-results/esika-card-audit.json test-results/land-click-audit.json; do
+             if [ -f "$report" ]; then git add "$report"; fi
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,12 @@
+-# Astra 1.4.10 — The Goldfish Lab
++# Astra 1.5.0 — The Goldfish Lab
++
++## Revised Esika / Gods pool (1.5.0)
++
++The revised **146-card Esika list** is implemented with canonical card data and local images. This adds 137 names to the previous catalog for **454 supported candidates**. Load **Esika · Revised 146-card Gods pool** from the deck editor's preset menu. Its 116 main-pool cards, Esika commander and 29 outside-the-game cards are preserved exactly; the goldfish harness selects 99 active cards and leaves 17 main-pool cards in reserve. Your existing saved deck is not replaced automatically.
++
++Esika's two cast faces have separate choices and costs, including commander tax. Shared mechanics include devotion and God creature status, enchantment animation, bestow, hybrid mana, overload, lifegain thresholds, Enduring returns, transform faces, tutors, board wipes and reanimation. The revised lands include typed fetches, optional shock-land life payments, mana filters and dynamic mana types. New prompts use the existing movable decision and Look windows, and optional effects start at Ask.
++
++All 146 requested names have a passing focused rules test in addition to registry and legal-entry checks. The release includes `test-results/esika-card-audit.json`, listing each name, section, metadata status and passing scenarios. The old 177-card request remains supported. See `docs/esika-150.md` for controls, compatibility and scope.
++
++Export your session before upgrading, close the older tab, and import it into the new version as needed. The simulator remains a goldfish table with abstract opponents and no blocker AI. Opponent choices such as payments and discard types are reported explicitly rather than guessed. Existing attachment following, attacker-click selection, merged mana selectors, floating Look, responsive grids, loyalty overlays and incremental autosave are retained.
+ 
