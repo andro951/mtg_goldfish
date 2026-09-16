@@ -79,7 +79,7 @@ test('navigation to an eliminated opponent is rejected atomically',()=>{
 });
 test('candidate construction keeps source copies and fixed lands in the active partition',()=>{
   const g=Engine.create(registry,pool,'acceptance-partitions',{openingHand:0});
-  assert.equal(cards.filter(c=>c.candidate).length,317);assert.equal(g.state.zones.libraryActive.length,99);
+  assert.equal(cards.filter(c=>c.candidate).length,445);assert.equal(g.state.zones.libraryActive.length,99);
   assert.equal(g.state.zones.libraryReserve.length,20);assert.equal(g.state.zones.outside.length,41);
   assert.equal(g.state.zones.command.length,1);
   assert.equal(g.objects('libraryActive').filter(o=>g.characteristics(o).types.includes('Land')).length,34);

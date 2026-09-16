@@ -11,7 +11,7 @@ const stable = ['The Wandering Minstrel','Metalwork Colossus', 'Walking Atlas', 
 const grave = ['Sol Ring','Scroll Rack','Scrap Trawler','Metalwork Colossus','Ancient Den','Tree of Tales',"Faith's Reward",'Manabond','Summon: Bahamut'];
 const library = ['Mox Amber','Sol Ring','Scroll Rack','Scrap Trawler','Krark-Clan Ironworks','Gilded Lotus','Metalwork Colossus','Urza, Lord High Artificer','The Wandering Minstrel','Ancient Den','Tree of Tales', ...Array(30).fill('Ancient Den')].filter(n=>registry.has(n));
 function setup(card, zone) {
-  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales'], libraryActive:library});
+  const g=fixture({battlefield:[...stable.filter(n=>registry.has(n)&&n!==card.name), ...(card.name==='Mox Jasper'?['Amareth, the Lustrous']:[])], graveyard:grave.filter(n=>registry.has(n)&&n!==card.name), hand:['Ancient Den','Tree of Tales','Metalworker'], libraryActive:library});
   const d=registry.get(card.id), state=g.state;
   // Build explicit fixture state before the engine's initial snapshot is taken.
   const proto={id:'subject',oid:1,cardId:d.id,zone,owner:0,controller:0,tapped:false,counters:{},damage:0,token:false,commander:false,face:0,enteredTurn:0,controlledSince:-1,attachedTo:null,flags:{},modifications:[],copy:null,lastMove:null,attacksThisTurn:0,location:null};
@@ -84,6 +84,11 @@ for(const card of cards.filter(c=>c.candidate)){
       // Timing-restricted abilities are tested at their documented legal time.
       if(ability.upkeepOnly||card.name==='Scourglass')g.state.step='upkeep';
       if(card.name==="Urza's Saga"&&ability.id==='construct')g.state.instances.subject.flags.sagaConstruct=true;
+      if(card.name==='Cleric Class'&&ability.id==='level-3')g.state.instances.subject.flags.classLevel=2;
+      if(card.name==='Ramos, Dragon Engine')g.state.instances.subject.counters['+1/+1']=5;
+      if(card.name==="Valgavoth's Lair")g.state.instances.subject.flags.chosenColor='G';
+      if(card.name==='Hidden Hideout')for(const o of g.objects('battlefield'))if(g.characteristics(o).types.includes('Creature'))o.counters['+1/+1']=1;
+      if(card.name==='Exotic Orchard')g.object(g.state.zones.battlefield.find(id=>g.definition(g.object(id)).name==='Tree of Tales')).controller=1;
       const ready=new Engine(registry,g.state);
       ready.act({type:'ACTIVATE_ABILITY',id:'subject',abilityId:ability.id,payment:'auto'});settle(ready);verify(ready);
     });
