@@ -1,0 +1,100 @@
+--- a/src/core/deck.js
++++ b/src/core/deck.js
+@@ -69,3 +69,3 @@
+-    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true },
++    optionalPreferences: {}, settings: { holdPriority: true, orderTriggers: true, autoResolveOptional: false, manualControls: false, debug: false, firstMulliganFree: true, exoticOrchardAllColors: true },
+     mulligans: 0, notes: [], diagnostics: [], manualAssistance: [], status: 'playing',
+   };
+--- a/src/core/actions.js
++++ b/src/core/actions.js
+@@ -42,3 +42,3 @@
+     }
+     if (type === 'SET_SETTING') {
+-      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls'].includes(action.key), 'Unknown setting.');
++      requireRule(['holdPriority', 'orderTriggers', 'debug', 'firstMulliganFree', 'manualControls', 'exoticOrchardAllColors'].includes(action.key), 'Unknown setting.');
+       this.state.settings[action.key] = !!action.value; this.record('SETTING_CHANGED', { key: action.key, value: !!action.value }); return;
+     }
+--- a/src/rules/gods-mana.js
++++ b/src/rules/gods-mana.js
+@@ -69,4 +69,4 @@
+  reg(r,'Path of Ancestry',{entersTapped:true,possibleMana:anyColor,replaceActivated:[single({...commandMana,singleMana:null,ancestry:true,manaColors:(g,s)=>identity(g,s.controller),label:'Add a commander color; scry for a shared creature type',effect:(g,c)=>[{op:'mana',color:c.inputs.color,track:true}]})]});
+  reg(r,'Forbidden Orchard',{possibleMana:anyColor,replaceActivated:[single()],triggers:[{id:'spirit',label:'Target opponent creates a 1/1 Spirit',event:'LAND_TAPPED_FOR_MANA',test:(g,s,e)=>sameRef(s,e.object),inputs:[playerTarget('player',true)],effect:(g,c)=>[token('Spirit',{player:c.inputs.player,colors:[],keywords:[],types:['Creature'],subtypes:['Spirit'],power:1,toughness:1})]}]});
+- const orchardColors=(g,s)=>g.opposingLandColors(s,new Set([s.id]));
++ const orchardColors=(g,s)=>g.state.settings.exoticOrchardAllColors!==false?[...anyColor]:g.opposingLandColors(s,new Set([s.id]));
+  reg(r,'Exotic Orchard',{possibleMana:anyColor,replaceActivated:[single({orchard:true,singleMana:{colors:orchardColors,key:'color'},label:'Add a color an opponent’s lands could produce',effectInputs:(g,s)=>[colorInput('color',orchardColors(g,s))]})]});
+ }
+--- a/src/tabletop/dialogs.js
++++ b/src/tabletop/dialogs.js
+@@ -69,4 +69,4 @@
+   else if(ui.modal==='settings'){
+     title='Settings';sub='Your table layout is saved automatically.';
+-    const setting=(key,name,help)=>`<div class="setting-row"><input id="setting-${key}" type="checkbox" data-setting="${key}" ${s.settings[key]?'checked':''}><label for="setting-${key}"><strong>${name}</strong><small>${help}</small></label></div>`;
+-    body=`${setting('holdPriority','Hold priority','Off: automatically resolve after casting or activating, pausing for choices. On: keep the stack to respond.')}${setting('orderTriggers','Choose simultaneous trigger order','Choose which of your simultaneous triggers resolves first.')}${setting('firstMulliganFree','First mulligan is free','Later mulligans use London bottoming.')}<div class="setting-row"><input id="reserve-access" type="checkbox" ${s.reserveAccess?'checked':''}><label for="reserve-access"><strong>Allow reserve access</strong><small>On by default. Searches can include reserve candidates; the reserve stays beneath the active library.</small></label></div><div class="setting-row"><span class="grow"><strong>Saved table layout</strong><small>Drag the rail, hand and side-zone dividers. Wheel over a table to zoom. Drag popup title bars to move them.</small></span>${button('Reset layout','reset-layout')}</div><h3 style="margin-top:14px">Abstract opponents</h3>${s.players.slice(1).map(p=>`<div class="setting-row"><strong>OP${p.id}</strong><label>Creatures <input type="number" min="0" max="1000" data-player-field="abstractCreatures" data-player="${p.id}" value="${p.abstractCreatures}"></label><label>Hand <input type="number" min="0" max="1000" data-player-field="abstractHand" data-player="${p.id}" value="${p.abstractHand}"></label></div>`).join('')}${Object.keys(s.optionalPreferences).length?'<h3 style="margin-top:14px">Remembered choices</h3>':''}${Object.entries(s.optionalPreferences).map(([key,value])=>{const [id,name]=key.split('/'),options=key.endsWith('/token-kind')?['ASK','Treasure','Food']:['ASK','YES','NO'];return `<div class="setting-row"><label class="grow">${h(registry.has(id)?registry.get(id).name:id)}<small>${h(name)}</small></label><select data-policy="${h(key)}">${options.map(o=>`<option ${o===value?'selected':''}>${o}</option>`).join('')}</select></div>`;}).join('')}${setting('debug','Developer overrides','Off by default. Overrides are marked in the action log and are not rules-valid play.')}${s.settings.debug?`<div class="row wrap" style="margin-top:10px"><select id="debug-card">${registry.list().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${h(c.id)}">${h(c.name)}</option>`).join('')}</select><select id="debug-zone"><option value="battlefield">Battlefield</option><option value="hand">Hand</option><option value="graveyard">Graveyard</option></select>${button('Spawn','debug-spawn','','danger')}<input id="debug-count" type="number" value="1" min="0" max="1000">${button('Draw','debug-draw','','danger')}${button('Mill','debug-mill','','danger')}${button('Shuffle','debug-shuffle','','danger')}</div>`:''}`;
++    const setting=(key,name,help,checked=s.settings[key])=>`<div class="setting-row"><input id="setting-${key}" type="checkbox" data-setting="${key}" ${checked?'checked':''}><label for="setting-${key}"><strong>${name}</strong><small>${help}</small></label></div>`;
++    body=`${setting('holdPriority','Hold priority','Off: automatically resolve after casting or activating, pausing for choices. On: keep the stack to respond.')}${setting('orderTriggers','Choose simultaneous trigger order','Choose which of your simultaneous triggers resolves first.')}${setting('firstMulliganFree','First mulligan is free','Later mulligans use London bottoming.')}${setting('exoticOrchardAllColors','Exotic Orchard: all colors','Convenience rule, on by default: treat an opponent as controlling a land that can produce W, U, B, R, or G for Exotic Orchard.',s.settings.exoticOrchardAllColors!==false)}<div class="setting-row"><input id="reserve-access" type="checkbox" ${s.reserveAccess?'checked':''}><label for="reserve-access"><strong>Allow reserve access</strong><small>On by default. Searches can include reserve candidates; the reserve stays beneath the active library.</small></label></div><div class="setting-row"><span class="grow"><strong>Saved table layout</strong><small>Drag the rail, hand and side-zone dividers. Wheel over a table to zoom. Drag popup title bars to move them.</small></span>${button('Reset layout','reset-layout')}</div><h3 style="margin-top:14px">Abstract opponents</h3>${s.players.slice(1).map(p=>`<div class="setting-row"><strong>OP${p.id}</strong><label>Creatures <input type="number" min="0" max="1000" data-player-field="abstractCreatures" data-player="${p.id}" value="${p.abstractCreatures}"></label><label>Hand <input type="number" min="0" max="1000" data-player-field="abstractHand" data-player="${p.id}" value="${p.abstractHand}"></label></div>`).join('')}${Object.keys(s.optionalPreferences).length?'<h3 style="margin-top:14px">Remembered choices</h3>':''}${Object.entries(s.optionalPreferences).map(([key,value])=>{const [id,name]=key.split('/'),options=key.endsWith('/token-kind')?['ASK','Treasure','Food']:['ASK','YES','NO'];return `<div class="setting-row"><label class="grow">${h(registry.has(id)?registry.get(id).name:id)}<small>${h(name)}</small></label><select data-policy="${h(key)}">${options.map(o=>`<option ${o===value?'selected':''}>${o}</option>`).join('')}</select></div>`;}).join('')}${setting('debug','Developer overrides','Off by default. Overrides are marked in the action log and are not rules-valid play.')}${s.settings.debug?`<div class="row wrap" style="margin-top:10px"><select id="debug-card">${registry.list().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${h(c.id)}">${h(c.name)}</option>`).join('')}</select><select id="debug-zone"><option value="battlefield">Battlefield</option><option value="hand">Hand</option><option value="graveyard">Graveyard</option></select>${button('Spawn','debug-spawn','','danger')}<input id="debug-count" type="number" value="1" min="0" max="1000">${button('Draw','debug-draw','','danger')}${button('Mill','debug-mill','','danger')}${button('Shuffle','debug-shuffle','','danger')}</div>`:''}`;
+   }else if(ui.modal==='log'){
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "astra-mtg-goldfish",
+-  "version": "1.5.0",
++  "version": "1.5.1",
+   "private": true,
+   "type": "module",
+--- a/src/tabletop/app.js
++++ b/src/tabletop/app.js
+@@ -592,3 +592,3 @@
+ window.addEventListener('pagehide',()=>{persistPreferences(prefs);saveNow().catch(()=>{});});
+-window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.5.0'};
++window.astra={programs,get engine(){return g;},registry,ui,get prefs(){return prefs;},run,flushSave:saveNow,get storage(){return store;},exported,version:'1.5.1'};
+ async function boot(){await store.open();if(store.problem)toast(store.problem,true);saveStatus.text=store.mode==='memory'?(store.problem||'Autosave unavailable — export to preserve your session.'):'Browser storage ready.';saveStatus.error=store.mode==='memory';
+--- a/tests/browser_tabletop.py
++++ b/tests/browser_tabletop.py
+@@ -61,3 +61,3 @@
+    try:
+-    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.5.0');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
++    p.goto((ROOT/'index.html').as_uri());p.wait_for_function('()=>window.astra?.engine');check('direct file starts the compact controller',p.evaluate('astra.version')=='1.5.1');check('direct file loads real local card back',p.locator('.deck-back img').evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+    except Exception as e:failures.append({'group':'direct-file','message':str(e)})
+@@ -67,3 +67,3 @@
+  if server:server.terminate();server.wait(timeout=5)
+-report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.5.0','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
++report={'testedBuildSHA256':hashlib.sha256((ROOT/('Astra-standalone.html' if args.memory else 'index.html')).read_bytes()).hexdigest(),'mode':'in-memory rendering' if args.memory else 'HTTP and direct-file Chromium','uiVersion':'1.5.1','checksPassed':len(checks),'checks':checks,'failures':failures,'browserErrors':errors,'externalRequests':requests,'skipped':skipped}
+ (OUT/('tabletop-memory.json' if args.memory else 'browser.json')).write_text(json.dumps(report,indent=2)+'\n')
+--- a/tests/portable_test.py
++++ b/tests/portable_test.py
+@@ -33,3 +33,3 @@
+         page.wait_for_function('() => window.astra?.engine')
+-        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.5.0')
++        check('single file starts while browser is offline', page.locator('.toolbar').is_visible() and page.evaluate('astra.version') == '1.5.1')
+         count = page.evaluate('Object.keys(window.ASTRA_IMAGES || {}).length')
+@@ -63,3 +63,3 @@
+-report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.5.0', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
++report = {'testedBuildSHA256': hashlib.sha256((ROOT / 'Astra-standalone.html').read_bytes()).hexdigest(), 'uiVersion': '1.5.1', 'mode': 'isolated single-file Chromium with offline networking', 'checksPassed': len(checks), 'checks': checks, 'failures': failures, 'browserErrors': errors, 'externalRequests': requests, 'skipped': []}
+ OUT.mkdir(parents=True, exist_ok=True)
+--- a/tests/ui_acceptance_game.py
++++ b/tests/ui_acceptance_game.py
+@@ -3,3 +3,3 @@
+ def opening(p):
+- check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.5.0')
++ check('release uses compact tabletop controller',p.evaluate('astra.version')=='1.5.1')
+  check('hold priority defaults off; reserve access defaults on',not state(p,'state.settings.holdPriority') and state(p,'state.reserveAccess'))
+--- a/tools/package.py
++++ b/tools/package.py
+@@ -73,3 +73,3 @@
+ require(browser['mode'] == 'HTTP and direct-file Chromium', 'A memory-only browser report is not a release check.')
+-require(browser.get('uiVersion') == '1.5.0', 'The tested UI must be the compact tabletop, not the retired interface.')
++require(browser.get('uiVersion') == '1.5.1', 'The tested UI must be the compact tabletop, not the retired interface.')
+ require(browser['checksPassed'] >= 798, 'Browser regression suite is incomplete.')
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,8 @@
+-# Astra 1.5.0 — The Goldfish Lab
++# Astra 1.5.1 — The Goldfish Lab
++
++## Exotic Orchard convenience (1.5.1)
++
++**Exotic Orchard: all colors** is a game setting and defaults to **on**. While enabled, Exotic Orchard behaves as though an opponent controls a land that can produce W, U, B, R, or G, so it always offers all five colored mana choices in goldfish play. Disable it under **Menu → Settings** to return to modeled opponent-land behavior.
++
++Older saved sessions that do not contain this setting also use the on-by-default behavior until explicitly disabled. The setting is stored in the game session once changed and is undoable/replayable like the other engine settings.
+ 
